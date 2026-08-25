@@ -10,6 +10,24 @@ const router = express.Router();
 // PUBLIC — shareable trip status page (no auth). Must come before protected routes.
 router.get('/share/:token', sharedTrip);
 
+// PUBLIC — instant fare estimate for the booking form (no auth).
+// ?mode=trip|hire|outstation & vehicleType= & distanceKm= & days= & tripType=
+router.get('/estimate', (req, res) => {
+  const { estimateRange } = require('../utils/fare');
+  const { mode, vehicleType } = req.query;
+  const distanceKm = Number(req.query.distanceKm) || 0;
+  const days = Number(req.query.days) || 1;
+  const tripType = req.query.tripType === 'round-trip' ? 'round-trip' : 'one-way';
+  const range = estimateRange({
+    mode: ['hire', 'outstation'].includes(mode) ? mode : 'trip',
+    vehicleType: vehicleType || 'car',
+    distanceKm,
+    days,
+    tripType,
+  });
+  res.json({ estimate: range });
+});
+
 router.post('/', protect, authorize('rider'), requestTrip);
 router.get('/mine', protect, myTrips);
 router.get('/available', protect, authorize('driver'), availableTrips);

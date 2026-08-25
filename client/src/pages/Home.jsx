@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useT } from '../services/i18n';
 
 const VEHICLE_TYPES = [
   { key: 'car', label: 'Car', hi: 'कार', emoji: '🚗' },
@@ -41,6 +42,7 @@ const FAQS = [
 export default function Home() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const t = useT();
   const [openFaq, setOpenFaq] = useState(null);
 
   const go = (path) => {
@@ -57,25 +59,24 @@ export default function Home() {
             🚕 Now serving Darbhanga & Muzaffarpur
           </div>
           <h1 className="text-3xl sm:text-5xl font-bold mb-4 leading-tight">
-            Rent vehicles & book rides<br className="hidden sm:block" /> across Mithilanchal
+            {t('heroTitle')}
           </h1>
           <p className="text-brand-50 text-lg max-w-2xl mx-auto mb-8">
-            Cars, autos, tempos, buses and trucks — with a driver. In-city rides, full-day
-            hire, and outstation trips. Live tracking, verified drivers, pay directly — no commission.
+            {t('heroSub')}
           </p>
           <div className="flex flex-wrap justify-center gap-3">
             {user?.role === 'rider' && (
               <Link to="/book" className="bg-white text-brand-700 font-semibold px-8 py-3 rounded-lg shadow hover:shadow-lg transition">
-                Book a ride
+                {t('bookRide')}
               </Link>
             )}
             {!user && (
               <>
                 <Link to="/register" className="bg-white text-brand-700 font-semibold px-8 py-3 rounded-lg shadow hover:shadow-lg transition">
-                  Get started
+                  {t('getStarted')}
                 </Link>
                 <Link to="/login" className="border border-white/70 px-8 py-3 rounded-lg hover:bg-white/10 transition">
-                  Login
+                  {t('login')}
                 </Link>
               </>
             )}
@@ -85,8 +86,8 @@ export default function Home() {
 
       {/* Vehicle types — tappable */}
       <section className="max-w-6xl mx-auto px-4 py-14">
-        <h2 className="text-2xl font-bold mb-1 text-center">What do you need?</h2>
-        <p className="text-gray-500 text-center mb-8">Tap a vehicle to start booking</p>
+        <h2 className="text-2xl font-bold mb-1 text-center">{t('whatNeed')}</h2>
+        <p className="text-gray-500 text-center mb-8">{t('tapVehicle')}</p>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
           {VEHICLE_TYPES.map((v) => (
             <button
@@ -155,8 +156,8 @@ export default function Home() {
       {/* Popular routes */}
       <section className="bg-white border-y">
         <div className="max-w-6xl mx-auto px-4 py-14">
-          <h2 className="text-2xl font-bold mb-1 text-center">Popular routes from Darbhanga</h2>
-          <p className="text-gray-500 text-center mb-8">Tap to book an outstation trip</p>
+          <h2 className="text-2xl font-bold mb-1 text-center">{t('popularRoutes')}</h2>
+          <p className="text-gray-500 text-center mb-8">{t('tapToBook')}</p>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {POPULAR_ROUTES.map(([to, dist, time]) => (
               <button
@@ -214,7 +215,7 @@ export default function Home() {
       {/* FAQ */}
       <section className="bg-white border-t">
         <div className="max-w-3xl mx-auto px-4 py-14">
-          <h2 className="text-2xl font-bold mb-6 text-center">Frequently asked questions</h2>
+          <h2 className="text-2xl font-bold mb-6 text-center">{t('faq')}</h2>
           <div className="space-y-2">
             {FAQS.map(([q, a], i) => (
               <div key={i} className="border rounded-lg">
@@ -234,14 +235,14 @@ export default function Home() {
 
       {/* Driver CTA */}
       <section className="max-w-6xl mx-auto px-4 py-16 text-center">
-        <h2 className="text-2xl font-bold mb-2">Own a vehicle?</h2>
+        <h2 className="text-2xl font-bold mb-2">{t('ownVehicle')}</h2>
         <p className="text-gray-600 mb-6 max-w-xl mx-auto">
           List your car, tempo, bus or truck and earn from local rides, day hires and
           outstation trips. Keep 100% of your fare.
         </p>
         {!user && (
           <Link to="/register" className="bg-brand-500 text-white px-8 py-3 rounded-lg inline-block shadow hover:bg-brand-600 transition">
-            Register as a driver
+            {t('registerDriver')}
           </Link>
         )}
       </section>

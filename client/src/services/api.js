@@ -44,6 +44,7 @@ export const tripAPI = {
   confirmPayment: (id) => api.put(`/trips/${id}/confirm-payment`),
   sos: (id, coords) => api.put(`/trips/${id}/sos`, coords),
   shared: (token) => api.get(`/trips/share/${token}`),
+  estimate: (params) => api.get('/trips/estimate', { params }),
 };
 
 export const settingsAPI = {

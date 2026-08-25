@@ -4,12 +4,22 @@ import toast from 'react-hot-toast';
 import { cityAPI, tripAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { getCoordinates } from '../services/location';
+import { useT } from '../services/i18n';
 
 const VEHICLE_TYPES = ['car', 'auto', 'tempo', 'bus', 'truck', 'bike'];
+
+// A sensible default schedule value (~1 hour from now) in the local
+// "YYYY-MM-DDTHH:mm" format that <input type="datetime-local"> expects.
+function defaultSchedule() {
+  const d = new Date(Date.now() + 60 * 60 * 1000);
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
 
 export default function RiderBook() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const t = useT();
   const [searchParams] = useSearchParams();
   // Prefill from query params set when tapping cards/routes on Home.
   const preType = VEHICLE_TYPES.includes(searchParams.get('type')) ? searchParams.get('type') : 'car';
@@ -38,12 +48,39 @@ export default function RiderBook() {
   const [pickupCoords, setPickupCoords] = useState(null);
   const [locating, setLocating] = useState(false);
   const [loading, setLoading] = useState(false);
+  // Live fare estimate range { low, high }
+  const [estimate, setEstimate] = useState(null);
 
   useEffect(() => {
     cityAPI.list().then((res) => setCities(res.data.cities)).catch(() => {});
     // Try to grab location up front so the nearest driver is found automatically.
     getCoordinates().then((c) => c && setPickupCoords(c));
   }, []);
+
+  // Recompute the instant estimate whenever the inputs that affect fare change.
+  useEffect(() => {
+    const params = {
+      mode: form.mode,
+      vehicleType: form.vehicleType,
+      distanceKm: form.distanceKm || 0,
+      days: form.days || 1,
+      tripType: form.tripType,
+    };
+    // For hire we don't need distance; for trip/outstation we need a distance to be useful.
+    const canEstimate = form.mode === 'hire' || Number(form.distanceKm) > 0;
+    if (!canEstimate) {
+      setEstimate(null);
+      return;
+    }
+    let active = true;
+    tripAPI
+      .estimate(params)
+      .then((res) => active && setEstimate(res.data.estimate))
+      .catch(() => active && setEstimate(null));
+    return () => {
+      active = false;
+    };
+  }, [form.mode, form.vehicleType, form.distanceKm, form.days, form.tripType]);
 
   const useMyLocation = async () => {
     setLocating(true);
@@ -82,8 +119,8 @@ export default function RiderBook() {
         drop: form.mode === 'trip' ? { address: form.drop } : undefined,
         destination: form.mode === 'outstation' ? form.destination : undefined,
         tripType: form.mode === 'outstation' ? form.tripType : undefined,
-        distanceKm: form.mode === 'outstation' && form.distanceKm ? Number(form.distanceKm) : undefined,
-        scheduledAt: form.mode === 'outstation' && form.scheduledAt ? form.scheduledAt : undefined,
+        distanceKm: form.distanceKm ? Number(form.distanceKm) : undefined,
+        scheduledAt: form.scheduledAt || undefined,
         days: form.mode === 'hire' ? Number(form.days) : 1,
         paymentMode: form.paymentMode,
         notes: form.notes,
@@ -103,7 +140,7 @@ export default function RiderBook() {
 
   return (
     <div className="max-w-lg mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">Book a ride, hire, or outstation trip</h1>
+      <h1 className="text-2xl font-bold mb-6">{t('bookTitle')}</h1>
 
       <form onSubmit={submit} className="space-y-4 bg-white border rounded-lg p-5">
         {/* City */}
@@ -119,12 +156,12 @@ export default function RiderBook() {
 
         {/* Mode */}
         <div>
-          <label className="block text-sm font-medium mb-1">Booking type</label>
+          <label className="block text-sm font-medium mb-1">{t('bookingType')}</label>
           <div className="grid grid-cols-3 gap-2">
             {[
-              ['trip', 'In-city', 'Point to point'],
-              ['hire', 'Hire', 'Per day'],
-              ['outstation', 'Outstation', 'Long trip'],
+              ['trip', t('inCity'), 'Point to point'],
+              ['hire', t('hire'), 'Per day'],
+              ['outstation', t('outstation'), 'Long trip'],
             ].map(([val, label, sub]) => (
               <button
                 key={val}
@@ -175,13 +212,21 @@ export default function RiderBook() {
           )}
         </div>
 
-        {/* In-city point-to-point: drop location */}
+        {/* In-city point-to-point: drop location + approx distance */}
         {form.mode === 'trip' && (
-          <div>
-            <label className="block text-sm font-medium mb-1">Drop location</label>
-            <input value={form.drop} onChange={set('drop')} placeholder="e.g. Darbhanga Junction"
-              className="w-full border rounded-md px-3 py-2" />
-          </div>
+          <>
+            <div>
+              <label className="block text-sm font-medium mb-1">Drop location</label>
+              <input value={form.drop} onChange={set('drop')} placeholder="e.g. Darbhanga Junction"
+                className="w-full border rounded-md px-3 py-2" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Approx. distance (km, optional)</label>
+              <input type="number" min={0} value={form.distanceKm} onChange={set('distanceKm')}
+                placeholder="e.g. 6" className="w-full border rounded-md px-3 py-2" />
+              <p className="text-xs text-gray-400 mt-1">Add distance to see an instant fare estimate.</p>
+            </div>
+          </>
         )}
 
         {/* Hire: number of days */}
@@ -230,21 +275,61 @@ export default function RiderBook() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">Pickup date & time</label>
-              <input type="datetime-local" value={form.scheduledAt} onChange={set('scheduledAt')}
-                className="w-full border rounded-md px-3 py-2" />
-            </div>
-
-            <div>
               <label className="block text-sm font-medium mb-1">Approx. distance (km, optional)</label>
               <input type="number" min={0} value={form.distanceKm} onChange={set('distanceKm')}
                 placeholder="e.g. 130"
                 className="w-full border rounded-md px-3 py-2" />
               <p className="text-xs text-gray-400 mt-1">
-                Helps drivers quote — the final fare is confirmed by the driver.
+                Add distance for an instant estimate — the driver confirms the final fare.
               </p>
             </div>
           </>
+        )}
+
+        {/* When — Now vs Schedule (all modes) */}
+        <div>
+          <label className="block text-sm font-medium mb-1">{t('when')}</label>
+          <div className="flex rounded-md border overflow-hidden mb-2">
+            {[
+              ['now', t('now')],
+              ['later', t('schedule')],
+            ].map(([val, label]) => {
+              const isLater = val === 'later';
+              const activeLater = !!form.scheduledAt;
+              const active = isLater ? activeLater : !activeLater;
+              return (
+                <button
+                  key={val}
+                  type="button"
+                  onClick={() =>
+                    setForm((f) => ({
+                      ...f,
+                      // switching to Now clears the schedule; Schedule seeds a sensible default
+                      scheduledAt: isLater ? f.scheduledAt || defaultSchedule() : '',
+                    }))
+                  }
+                  className={`flex-1 py-2 text-sm ${active ? 'bg-brand-500 text-white' : 'bg-white text-gray-600'}`}
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+          {form.scheduledAt && (
+            <input type="datetime-local" value={form.scheduledAt} onChange={set('scheduledAt')}
+              className="w-full border rounded-md px-3 py-2" />
+          )}
+        </div>
+
+        {/* Instant fare estimate */}
+        {estimate && estimate.high > 0 && (
+          <div className="bg-green-50 border border-green-200 rounded-md p-3 text-center">
+            <div className="text-sm text-green-700">{t('estFare')}</div>
+            <div className="text-xl font-bold text-green-800">
+              ₹{estimate.low} – ₹{estimate.high}
+            </div>
+            <div className="text-xs text-gray-500 mt-0.5">Includes driver · final fare confirmed on the trip</div>
+          </div>
         )}
 
         {/* Fare slab hint */}
@@ -283,7 +368,7 @@ export default function RiderBook() {
 
         <button disabled={loading}
           className="w-full bg-brand-500 text-white py-2.5 rounded-md hover:bg-brand-600 disabled:opacity-60">
-          {loading ? 'Requesting…' : 'Request trip'}
+          {loading ? t('requesting') : t('requestTrip')}
         </button>
       </form>
     </div>
