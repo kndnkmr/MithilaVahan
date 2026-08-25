@@ -61,6 +61,11 @@ const userSchema = new mongoose.Schema(
     emergencyContactName: { type: String, default: '' },
     emergencyContactPhone: { type: String, default: '' },
 
+    // Referral / share-to-earn
+    referralCode: { type: String, unique: true, sparse: true, default: undefined },
+    referredBy: { type: String, default: '' }, // referral code of whoever referred them
+    referralCount: { type: Number, default: 0 },
+
     // Password reset
     resetPasswordToken: { type: String, default: undefined },
     resetPasswordExpire: { type: Date, default: undefined },

@@ -25,13 +25,15 @@ function publicUser(u) {
     ratingCount: u.ratingCount,
     emergencyContactName: u.emergencyContactName,
     emergencyContactPhone: u.emergencyContactPhone,
+    referralCode: u.referralCode,
+    referralCount: u.referralCount,
   };
 }
 
 // POST /api/auth/register
 async function register(req, res) {
   try {
-    const { name, phone, email, password, role, city } = req.body;
+    const { name, phone, email, password, role, city, referralCode: refUsed } = req.body;
 
     if (!name || !phone || !password) {
       return res.status(400).json({ message: 'Name, phone, and password are required' });
@@ -52,6 +54,18 @@ async function register(req, res) {
       return res.status(400).json({ message: 'An account with this phone already exists' });
     }
 
+    // Generate a short unique referral code (e.g. MV3F9K2Q).
+    const genCode = () => 'MV' + Math.random().toString(36).slice(2, 8).toUpperCase();
+    let referralCode = genCode();
+    while (await User.exists({ referralCode })) referralCode = genCode();
+
+    // Validate the referrer's code if one was used.
+    let referredBy = '';
+    if (refUsed) {
+      const referrer = await User.findOne({ referralCode: String(refUsed).toUpperCase() });
+      if (referrer) referredBy = referrer.referralCode;
+    }
+
     const user = await User.create({
       name,
       phone: formattedPhone,
@@ -59,9 +73,16 @@ async function register(req, res) {
       password,
       role: safeRole,
       city: city || undefined,
+      referralCode,
+      referredBy,
       // drivers start unapproved; riders are usable immediately
       driverStatus: safeRole === 'driver' ? 'pending' : undefined,
     });
+
+    // Credit the referrer.
+    if (referredBy) {
+      await User.updateOne({ referralCode: referredBy }, { $inc: { referralCount: 1 } });
+    }
 
     res.status(201).json({
       message: 'Registration successful!',

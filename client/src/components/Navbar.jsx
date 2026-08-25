@@ -52,12 +52,14 @@ export default function Navbar() {
             <>
               <Link to="/book" className="text-gray-600 hover:text-brand-600">{t('book')}</Link>
               <Link to="/trips" className="text-gray-600 hover:text-brand-600">{t('myTrips')}</Link>
+              <Link to="/refer" className="text-gray-600 hover:text-brand-600 hidden sm:inline">{t('refer')}</Link>
             </>
           )}
           {user?.role === 'driver' && (
             <>
               <Link to="/driver" className="text-gray-600 hover:text-brand-600">Dashboard</Link>
               <Link to="/trips" className="text-gray-600 hover:text-brand-600">{t('myTrips')}</Link>
+              <Link to="/refer" className="text-gray-600 hover:text-brand-600 hidden sm:inline">{t('refer')}</Link>
             </>
           )}
           {user?.role === 'admin' && (

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { authAPI, cityAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -7,8 +7,11 @@ import { useAuth } from '../context/AuthContext';
 const HOME_BY_ROLE = { rider: '/book', driver: '/driver', admin: '/admin' };
 
 export default function Register() {
+  const [searchParams] = useSearchParams();
+  const refFromUrl = searchParams.get('ref') || '';
   const [form, setForm] = useState({
     name: '', phone: '', email: '', password: '', role: 'rider', city: '',
+    referralCode: refFromUrl,
   });
   const [cities, setCities] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -80,6 +83,16 @@ export default function Register() {
           type="password" value={form.password} onChange={set('password')}
           placeholder="Password (min 6 chars)" className="w-full border rounded-md px-3 py-2" required
         />
+
+        {/* Referral code (prefilled from a ?ref= link, editable) */}
+        <input
+          value={form.referralCode} onChange={set('referralCode')}
+          placeholder="Referral code (optional)"
+          className="w-full border rounded-md px-3 py-2 uppercase"
+        />
+        {refFromUrl && (
+          <p className="text-xs text-green-600">🎉 You were invited with code {refFromUrl}</p>
+        )}
 
         {form.role === 'driver' && (
           <p className="text-xs text-gray-500">

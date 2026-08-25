@@ -1,5 +1,18 @@
 // Displays a single trip; shows role-appropriate actions.
 
+import { useState } from 'react';
+import { driverAPI } from '../services/api';
+
+// Render ★ rating compactly.
+function Stars({ value }) {
+  const full = Math.round(value);
+  return (
+    <span className="text-amber-500" title={`${value} / 5`}>
+      {'★'.repeat(full)}{'☆'.repeat(5 - full)}
+    </span>
+  );
+}
+
 const STATUS_STYLES = {
   requested: 'bg-yellow-100 text-yellow-700',
   accepted: 'bg-blue-100 text-blue-700',
@@ -16,6 +29,20 @@ function waLink(phone, text) {
 
 export default function TripCard({ trip, role, onAction }) {
   const other = role === 'rider' ? trip.driver : trip.rider;
+  const [reviews, setReviews] = useState(null);
+  const [showReviews, setShowReviews] = useState(false);
+
+  const toggleReviews = async () => {
+    if (!showReviews && reviews === null && trip.driver?._id) {
+      try {
+        const res = await driverAPI.reviews(trip.driver._id);
+        setReviews(res.data.reviews || []);
+      } catch {
+        setReviews([]);
+      }
+    }
+    setShowReviews((s) => !s);
+  };
 
   return (
     <div className="bg-white border rounded-lg p-4">
@@ -110,24 +137,64 @@ export default function TripCard({ trip, role, onAction }) {
         </div>
       )}
 
-      {/* The other party's contact once assigned */}
+      {/* The other party once assigned. For riders, a richer driver trust card. */}
       {other && (
-        <div className="mt-2 text-sm border-t pt-2 flex items-center justify-between">
-          <span>
-            {role === 'rider' ? 'Driver' : 'Rider'}: <b>{other.name}</b>
-            {role === 'rider' && other.ratingCount > 0 && (
-              <span className="text-gray-400"> · ★ {other.ratingAvg}</span>
+        <div className="mt-2 text-sm border-t pt-2">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              {/* Vehicle photo (rider view) */}
+              {role === 'rider' && trip.vehicle?.photos?.[0] && (
+                <img src={trip.vehicle.photos[0]} alt="" className="w-11 h-11 object-cover rounded-md border" />
+              )}
+              <div>
+                <div>
+                  {role === 'rider' ? 'Driver' : 'Rider'}: <b>{other.name}</b>
+                </div>
+                {role === 'rider' && (
+                  <div className="text-xs text-gray-500">
+                    {other.ratingCount > 0 ? (
+                      <>
+                        <Stars value={other.ratingAvg} /> {other.ratingAvg} ({other.ratingCount})
+                      </>
+                    ) : (
+                      <span className="text-gray-400">New driver</span>
+                    )}
+                    {trip.vehicle?.model && <> · {trip.vehicle.model}</>}
+                    {trip.vehicle?.registrationNumber && <> · {trip.vehicle.registrationNumber}</>}
+                  </div>
+                )}
+              </div>
+            </div>
+            {other.phone && (
+              <a
+                href={waLink(other.phone, `Hi, regarding our MithilaVahan ${trip.vehicleType} trip.`)}
+                target="_blank"
+                rel="noreferrer"
+                className="text-green-600 font-medium shrink-0"
+              >
+                WhatsApp
+              </a>
             )}
-          </span>
-          {other.phone && (
-            <a
-              href={waLink(other.phone, `Hi, regarding our MithilaVahan ${trip.vehicleType} trip.`)}
-              target="_blank"
-              rel="noreferrer"
-              className="text-green-600 font-medium"
-            >
-              WhatsApp
-            </a>
+          </div>
+
+          {/* See reviews (rider view, when the driver has any rating history) */}
+          {role === 'rider' && other.ratingCount > 0 && (
+            <div className="mt-1">
+              <button onClick={toggleReviews} className="text-brand-600 text-xs font-medium">
+                {showReviews ? 'Hide reviews' : 'See reviews'}
+              </button>
+              {showReviews && (
+                <div className="mt-1 space-y-1">
+                  {reviews === null && <div className="text-xs text-gray-400">Loading…</div>}
+                  {reviews?.length === 0 && <div className="text-xs text-gray-400">No written reviews yet.</div>}
+                  {reviews?.map((r, i) => (
+                    <div key={i} className="text-xs bg-gray-50 rounded p-2">
+                      <Stars value={r.rating} /> <span className="text-gray-600">{r.review}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           )}
         </div>
       )}

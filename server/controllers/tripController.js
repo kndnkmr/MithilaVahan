@@ -441,7 +441,35 @@ async function raiseSos(req, res) {
   }
 }
 
+// GET /api/drivers/:id/reviews  (PUBLIC) — a driver's recent ratings/reviews.
+// Powers the trust display when a rider is deciding.
+async function driverReviews(req, res) {
+  try {
+    const driver = await User.findById(req.params.id).select('name ratingAvg ratingCount role');
+    if (!driver || driver.role !== 'driver') {
+      return res.status(404).json({ message: 'Driver not found' });
+    }
+    const trips = await Trip.find({ driver: driver._id, rating: { $gte: 1 } })
+      .select('rating review completedAt')
+      .sort({ completedAt: -1 })
+      .limit(10);
+
+    res.json({
+      driver: {
+        name: String(driver.name).split(' ')[0], // first name only for privacy
+        ratingAvg: driver.ratingAvg,
+        ratingCount: driver.ratingCount,
+      },
+      reviews: trips
+        .filter((t) => t.review) // only ones with text
+        .map((t) => ({ rating: t.rating, review: t.review, at: t.completedAt })),
+    });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to load reviews', error: err.message });
+  }
+}
+
 module.exports = {
   requestTrip, availableTrips, myTrips, acceptTrip, updateStatus, cancelTrip, rateTrip,
-  claimPaid, confirmPayment, sharedTrip, raiseSos,
+  claimPaid, confirmPayment, sharedTrip, raiseSos, driverReviews,
 };

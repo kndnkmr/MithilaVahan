@@ -38,6 +38,7 @@ const DICT = {
   myTrips: { en: 'My Trips', hi: 'मेरी यात्राएँ' },
   getApp: { en: 'Get App', hi: 'ऐप लें' },
   explore: { en: 'Explore', hi: 'घूमें' },
+  refer: { en: 'Refer', hi: 'रेफर करें' },
 
   // home
   heroTitle: { en: 'Rent vehicles & book rides across Mithilanchal', hi: 'मिथिलांचल में वाहन किराए पर लें और सवारी बुक करें' },
