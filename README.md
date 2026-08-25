@@ -322,6 +322,10 @@ Push to GitHub → Render + Vercel auto-redeploy.
 ## Roadmap (Phase 2+)
 
 **Done in Phase 2:**
+- **Web Push notifications** ✅ — free phone alerts for trip events (driver assigned, trip
+  started/completed, nearby request). Logged-in users get a dismissible "Enable" prompt; the
+  service worker shows the notification even when the app is closed. Requires the `VAPID_*`
+  env vars set on the backend (see below) — without them it stays quietly off.
 - **PWA install** ✅ — installable on phones (web manifest + icons + a conservative
   network-first service worker). An "Install" button appears in the navbar on Android/Chrome;
   iOS users get "Add to Home Screen" guidance. Fully free, no third-party services.

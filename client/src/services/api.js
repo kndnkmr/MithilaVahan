@@ -46,6 +46,12 @@ export const driverAPI = {
   submitDocuments: (data) => api.put('/drivers/documents', data),
 };
 
+export const pushAPI = {
+  publicKey: () => api.get('/push/public-key'),
+  subscribe: (subscription) => api.post('/push/subscribe', subscription),
+  unsubscribe: (endpoint) => api.post('/push/unsubscribe', { endpoint }),
+};
+
 export const adminAPI = {
   stats: () => api.get('/admin/stats'),
   drivers: (status) => api.get('/admin/drivers', { params: { status } }),

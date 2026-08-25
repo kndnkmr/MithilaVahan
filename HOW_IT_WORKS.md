@@ -220,6 +220,39 @@ manifest + service worker.
 a ride app must not show a stale trip. Bump the `CACHE` version string in `sw.js` when you
 change cached assets so old caches are cleared.
 
+### Web Push notifications (Phase 2)
+
+Free phone notifications, reaching a user even when the app tab is closed — important in
+tier-2/3 cities where a paid SMS/WhatsApp API isn't worth it yet.
+
+```
+Enable (once):
+  EnablePush banner → subscribeToPush() (services/push.js)
+    → GET /api/push/public-key (VAPID key; empty ⇒ push disabled server-side)
+    → Notification.requestPermission()
+    → reg.pushManager.subscribe({ applicationServerKey })
+    → POST /api/push/subscribe { endpoint, keys }  → saved to PushSubscription
+
+Send (on trip events):
+  tripController → sendPushToUser(userId, { title, body })  (utils/push.js, VAPID)
+    → browser push service → service worker 'push' event → showNotification(...)
+    → user taps → 'notificationclick' → focuses/opens the app at /trips
+```
+
+Key points:
+- **Backend was already wired** (`/api/push/*`, `PushSubscription`, `sendPushToUser`, and the
+  `sendPushToUser(...)` calls in `tripController`). This phase added only the browser side:
+  the service worker `push`/`notificationclick` handlers, the subscribe helper, and the prompt.
+- **Enabled by env, not code.** Push only works if the backend has `VAPID_PUBLIC_KEY` /
+  `VAPID_PRIVATE_KEY` / `VAPID_SUBJECT`. If they're absent, `/api/push/public-key` returns an
+  empty key and the whole feature stays quietly off — everything else keeps working via
+  Socket.io + in-app toasts. Generate keys once:
+  `node -e "console.log(require('web-push').generateVAPIDKeys())"`.
+- **Graceful.** Unsupported browser, denied permission, or no service worker (dev) → the
+  prompt hides itself; the app never depends on push.
+- **HTTPS required** for the service worker/push to register — Vercel provides this; on
+  localhost it works only in a production build (`npm run build && npm run preview`).
+
 ### Live GPS tracking (Phase 2)
 
 Once a trip is `accepted` or `started`, the rider can watch the driver's vehicle move on a
@@ -341,6 +374,8 @@ routes/middleware/sockets without error.
 | Live tracking (relay) | `server/socket.js` `driver:location` handler → `trip:driver-location` |
 | Live tracking (map) | `client/src/components/LiveTripMap.jsx` (Leaflet/OSM) + `MyTrips.jsx` |
 | PWA (installable) | `client/public/manifest.webmanifest` + `client/public/sw.js` + `InstallButton.jsx` |
+| Web Push (subscribe) | `client/src/services/push.js` + `EnablePush.jsx`; SW `push` handler in `sw.js` |
+| Web Push (send) | `server/utils/push.js` + `sendPushToUser(...)` calls in `tripController.js` |
 | Vehicle rules | `server/controllers/vehicleController.js` + `models/Vehicle.js` |
 | Admin actions | `server/controllers/adminController.js` |
 | Launch cities / fare slabs | `server/utils/seedCities.js` (initial) or `/api/admin/cities` (live) |

@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import Navbar from './components/Navbar';
+import EnablePush from './components/EnablePush';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -22,6 +23,7 @@ export default function App() {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
+      <EnablePush />
       <main className="flex-1">
         <Routes>
           <Route path="/" element={<Home />} />
