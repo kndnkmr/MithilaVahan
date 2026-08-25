@@ -33,10 +33,18 @@ const POPULAR_ROUTES = [
 ];
 
 const FAQS = [
-  ['How do I pay?', 'You pay the driver directly by cash or UPI after the trip — MithilaVahan takes no commission and never holds your money.'],
-  ['Can I track my ride?', 'Yes. Once a driver accepts, you see them live on a map and can share your trip link with family for safety.'],
-  ['Do you do outstation trips?', 'Yes — one-way or round-trip to Patna, Madhubani, Kathmandu and beyond, with a driver.'],
-  ['Are drivers verified?', 'Every driver and vehicle is reviewed and approved by our team before they can accept trips.'],
+  ['How do I book a ride?', 'Pick your city, vehicle type, and pickup/drop (or a destination for outstation). You’ll see an instant fare estimate, then tap Request. A nearby driver accepts and heads to you.'],
+  ['How do I pay?', 'You pay the driver directly by cash or UPI after the trip — MithilaVahan takes no commission and never holds your money. For UPI, the driver’s UPI ID or QR is shown on the trip.'],
+  ['Can I track my ride?', 'Yes. Once a driver accepts, you see them live on a map. You can also share a live trip link with your family, and raise an SOS if you feel unsafe.'],
+  ['Do you do outstation and long trips?', 'Yes — one-way or round-trip to Patna, Bodh Gaya, Kathmandu, Janakpur and more, with a driver. See the Explore page for popular destinations.'],
+  ['Can I hire a vehicle for a full day?', 'Yes. Choose “Hire” to book a car, tempo, bus or truck with a driver by the day — great for events, goods transport, or sightseeing.'],
+  ['Can I schedule a ride for later?', 'Yes. On the booking form, choose “Schedule” and pick a date and time — useful for early-morning trains, flights, or planned trips.'],
+  ['Which vehicles can I book?', 'Cars, autos, tempos, buses, trucks and bikes — whatever local owners have listed in your city.'],
+  ['Are drivers verified?', 'Every driver and vehicle is reviewed and approved by our team before they can accept trips. You can also see a driver’s rating and reviews when matched.'],
+  ['What if I need to cancel?', 'You can cancel a trip that’s still requested or accepted from My Trips. Since you pay the driver directly, there’s nothing for us to refund.'],
+  ['Which cities do you serve?', 'We’re live in Darbhanga and Muzaffarpur, and expanding across Mithilanchal. Outstation trips can go well beyond these cities.'],
+  ['Is it free to use?', 'Yes — MithilaVahan is currently free. We take no commission; you simply pay the driver for the trip.'],
+  ['I own a vehicle — can I earn?', 'Absolutely. Register as a driver, list your vehicle, and earn from local rides, day hires and outstation trips — keeping 100% of your fare.'],
 ];
 
 export default function Home() {
@@ -219,21 +227,27 @@ export default function Home() {
 
       {/* FAQ */}
       <section className="bg-white border-t">
-        <div className="max-w-3xl mx-auto px-4 py-14">
-          <h2 className="text-2xl font-bold mb-6 text-center">{t('faq')}</h2>
-          <div className="space-y-2">
-            {FAQS.map(([q, a], i) => (
-              <div key={i} className="border rounded-lg">
-                <button
-                  onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                  className="w-full flex justify-between items-center px-4 py-3 text-left font-medium"
-                >
-                  {q}
-                  <span className="text-gray-400">{openFaq === i ? '−' : '+'}</span>
-                </button>
-                {openFaq === i && <p className="px-4 pb-3 text-sm text-gray-600">{a}</p>}
-              </div>
-            ))}
+        <div className="max-w-3xl mx-auto px-4 py-16">
+          <h2 className="text-2xl font-bold mb-2 text-center">{t('faq')}</h2>
+          <p className="text-gray-500 text-center mb-8">Everything you need to know before booking</p>
+          <div className="space-y-3">
+            {FAQS.map(([q, a], i) => {
+              const open = openFaq === i;
+              return (
+                <div key={i} className={`card overflow-hidden transition ${open ? 'ring-1 ring-brand-200' : ''}`}>
+                  <button
+                    onClick={() => setOpenFaq(open ? null : i)}
+                    className="w-full flex justify-between items-center gap-3 px-5 py-4 text-left font-medium hover:bg-gray-50"
+                  >
+                    <span>{q}</span>
+                    <span className={`shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-sm ${open ? 'bg-brand-500 text-white' : 'bg-gray-100 text-gray-500'}`}>
+                      {open ? '−' : '+'}
+                    </span>
+                  </button>
+                  {open && <p className="px-5 pb-4 text-sm text-gray-600 leading-relaxed">{a}</p>}
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>

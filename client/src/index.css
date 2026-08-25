@@ -2,7 +2,33 @@
 @tailwind components;
 @tailwind utilities;
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   @apply bg-gray-50 text-gray-900 antialiased;
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Reusable component classes for a consistent, modern look */
+@layer components {
+  .btn-primary {
+    @apply bg-brand-500 text-white font-semibold px-5 py-2.5 rounded-lg shadow-sm
+      hover:bg-brand-600 active:scale-[0.98] transition disabled:opacity-60;
+  }
+  .btn-outline {
+    @apply border border-gray-300 text-gray-700 font-medium px-5 py-2.5 rounded-lg
+      hover:border-brand-400 hover:text-brand-600 transition;
+  }
+  .card {
+    @apply bg-white border border-gray-200 rounded-2xl shadow-sm;
+  }
+  .input {
+    @apply w-full border border-gray-300 rounded-lg px-3 py-2.5
+      focus:outline-none focus:border-brand-500 transition;
+  }
+  .section {
+    @apply max-w-6xl mx-auto px-4;
+  }
 }

@@ -1,6 +1,8 @@
-import { Routes, Route, Navigate, Link } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import Navbar from './components/Navbar';
+import Footer from './components/Footer';
+import BottomNav from './components/BottomNav';
 import EnablePush from './components/EnablePush';
 import Home from './pages/Home';
 import Login from './pages/Login';
@@ -14,6 +16,10 @@ import InstallApp from './pages/InstallApp';
 import Destinations from './pages/Destinations';
 import Refer from './pages/Refer';
 import DestinationDetail from './pages/DestinationDetail';
+import Terms from './pages/legal/Terms';
+import Privacy from './pages/legal/Privacy';
+import CancellationRefund from './pages/legal/CancellationRefund';
+import AboutUs from './pages/legal/AboutUs';
 
 // Guards a route by auth + optional role list.
 function Protected({ children, roles }) {
@@ -39,6 +45,10 @@ export default function App() {
           <Route path="/install" element={<InstallApp />} />
           <Route path="/destinations" element={<Destinations />} />
           <Route path="/destinations/:slug" element={<DestinationDetail />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/cancellation-refund" element={<CancellationRefund />} />
+          <Route path="/about" element={<AboutUs />} />
           <Route
             path="/refer"
             element={
@@ -84,16 +94,8 @@ export default function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
-      <footer className="bg-gray-900 text-gray-300 text-sm py-8">
-        <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div>MithilaVahan · Vehicles of Mithila · Darbhanga · Muzaffarpur</div>
-          <div className="flex gap-4">
-            <Link to="/destinations" className="hover:text-white">Explore</Link>
-            <Link to="/install" className="hover:text-white">Get the App</Link>
-            <Link to="/register" className="hover:text-white">Become a driver</Link>
-          </div>
-        </div>
-      </footer>
+      <Footer />
+      <BottomNav />
     </div>
   );
 }
