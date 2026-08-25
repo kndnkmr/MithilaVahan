@@ -322,11 +322,16 @@ without changing any callers.
 
 ## Deployment
 
+**Full step-by-step guide: [DEPLOYMENT.md](./DEPLOYMENT.md)** (Atlas → Render → Vercel,
+with exact settings, env-var tables, and a live smoke test). A Render **Blueprint**
+(`render.yaml`) is included to auto-configure the backend.
+
 Same zero-cost path as ProMedicoz:
 - **Database:** MongoDB Atlas (free M0)
-- **Backend:** Render (set env vars incl. `MONGODB_URI`, `JWT_SECRET`, `CLIENT_URL`)
-- **Frontend:** Vercel (set `VITE_API_URL` to the Render API URL, and `VITE_SOCKET_URL`
-  to the Render host for websockets)
+- **Backend:** Render — root dir `server`, env vars incl. `MONGODB_URI`, `JWT_SECRET`,
+  `CLIENT_URL`, `ADMIN_PHONE`/`ADMIN_PASSWORD`
+- **Frontend:** Vercel — root dir `client`, set `VITE_API_URL` (Render URL + `/api`) and
+  `VITE_SOCKET_URL` (Render URL, for websockets — real-time/live-tracking/SOS need it)
 
 Push to GitHub → Render + Vercel auto-redeploy.
 

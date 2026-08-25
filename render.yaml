@@ -1,0 +1,40 @@
+# Render Blueprint for the MithilaVahan backend.
+# In Render: New + → Blueprint → connect this repo → it reads this file and
+# pre-fills the Web Service (root dir, build/start commands). You still set the
+# secret env vars marked sync:false in the dashboard.
+#
+# Docs: https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: mithilavahan-api
+    runtime: node
+    rootDir: server
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # --- Secrets: set these in the Render dashboard (not committed) ---
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: CLIENT_URL
+        sync: false
+      # First admin — auto-created/promoted on startup
+      - key: ADMIN_PHONE
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: ADMIN_NAME
+        value: Administrator
+      # Web Push (optional — generate with: node -e "console.log(require('web-push').generateVAPIDKeys())")
+      - key: VAPID_PUBLIC_KEY
+        sync: false
+      - key: VAPID_PRIVATE_KEY
+        sync: false
+      - key: VAPID_SUBJECT
+        value: mailto:support@mithilavahan.in
