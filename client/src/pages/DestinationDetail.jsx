@@ -55,12 +55,17 @@ export default function DestinationDetail() {
 
   return (
     <div>
-      <section className="bg-gradient-to-br from-brand-500 to-brand-700 text-white">
-        <div className="max-w-4xl mx-auto px-4 py-12">
-          <Link to="/destinations" className="text-brand-100 text-sm">← All destinations</Link>
-          <h1 className="text-3xl font-bold mt-2">Darbhanga to {dest.name} taxi</h1>
-          <p className="text-brand-50 mt-2">Approx {dest.km} km · {dest.time} · with a driver</p>
-          <button onClick={book} className="mt-5 bg-white text-brand-700 font-semibold px-6 py-3 rounded-lg">
+      <section
+        className="relative text-white bg-brand-700 bg-cover bg-center"
+        style={dest.img ? { backgroundImage: `url(${dest.img})` } : undefined}
+      >
+        {/* Dark overlay for text readability over the photo */}
+        <div className="absolute inset-0 bg-gradient-to-br from-black/70 to-black/40" />
+        <div className="relative max-w-4xl mx-auto px-4 py-16">
+          <Link to="/destinations" className="text-white/80 text-sm hover:text-white">← All destinations</Link>
+          <h1 className="text-3xl sm:text-4xl font-bold mt-2">Darbhanga to {dest.name} taxi</h1>
+          <p className="text-white/90 mt-2">Approx {dest.km} km · {dest.time} · with a driver</p>
+          <button onClick={book} className="mt-5 bg-white text-brand-700 font-semibold px-6 py-3 rounded-lg shadow">
             Book this trip
           </button>
         </div>

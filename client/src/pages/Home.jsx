@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useT } from '../services/i18n';
+import { HERO_IMG } from '../data/destinations';
 
 const VEHICLE_TYPES = [
   { key: 'car', label: 'Car', hi: 'कार', emoji: '🚗' },
@@ -61,8 +62,13 @@ export default function Home() {
   return (
     <div>
       {/* Hero */}
-      <section className="bg-gradient-to-br from-brand-500 via-brand-600 to-brand-700 text-white">
-        <div className="max-w-6xl mx-auto px-4 py-20 text-center">
+      <section
+        className="relative text-white bg-brand-700 bg-cover bg-center"
+        style={{ backgroundImage: `url(${HERO_IMG})` }}
+      >
+        {/* Brand-tinted dark overlay so text stays readable over the photo */}
+        <div className="absolute inset-0 bg-gradient-to-br from-brand-700/85 via-brand-600/75 to-black/60" />
+        <div className="relative max-w-6xl mx-auto px-4 py-24 text-center">
           <div className="inline-block bg-white/15 rounded-full px-4 py-1 text-sm mb-4">
             🚕 Now serving Darbhanga & Muzaffarpur
           </div>
