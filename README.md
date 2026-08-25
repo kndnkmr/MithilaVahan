@@ -8,6 +8,9 @@ to expand city-by-city.
 Built on the same stack and patterns as ProMedicoz (MERN + Vite + Tailwind + Socket.io
 + free Web Push), so deployment and maintenance knowledge carries over.
 
+**Related docs:** [HOW_IT_WORKS.md](./HOW_IT_WORKS.md) — the deeper technical walkthrough
+(architecture, data model, real-time rooms, and step-by-step user journeys).
+
 ---
 
 ## Table of Contents
@@ -23,6 +26,7 @@ Built on the same stack and patterns as ProMedicoz (MERN + Vite + Tailwind + Soc
 9. [How the Trip Flow Works](#how-the-trip-flow-works)
 10. [Deployment](#deployment)
 11. [Roadmap (Phase 2+)](#roadmap-phase-2)
+12. [Documentation](#documentation)
 
 ---
 
@@ -322,3 +326,16 @@ Deliberately deferred to keep Phase 1 shippable:
 - **SOS / trip sharing** for safety.
 - Expansion to more Mithilanchal cities (just add a City row — everything is city-scoped).
 ```
+
+---
+
+## Documentation
+
+| Doc | What's inside |
+|-----|---------------|
+| [README.md](./README.md) | Setup, environment, run instructions, and API reference (this file) |
+| [HOW_IT_WORKS.md](./HOW_IT_WORKS.md) | Architecture, database structure, security model, real-time rooms, and step-by-step user journeys (driver onboarding, booking, the race-safe accept, lifecycle, ratings) |
+
+If you're new to the codebase, read **HOW_IT_WORKS.md** first for the mental model, then
+use this README's [Local Setup](#local-setup) to run it. The "Where Things Live" table at
+the end of HOW_IT_WORKS.md is a quick "I want to change X → look in Y" map.
