@@ -59,17 +59,20 @@ export default function DriverDashboard() {
     }
   }, []);
 
-  // While online, stream location to the server so nearest-driver dispatch has
-  // fresh coordinates. Stops watching when going offline.
+  // Stream location to the server (via driver:location) whenever it's useful:
+  //  - while ONLINE, so nearest-driver dispatch has fresh coordinates
+  //  - while on an ACTIVE trip (accepted/started), so the rider can watch the
+  //    vehicle move on their map — even if the driver toggled offline meanwhile.
+  const hasActiveTrip = myTrips.some((t) => ['accepted', 'started'].includes(t.status));
   useEffect(() => {
-    if (!online) return;
+    if (!online && !hasActiveTrip) return;
     const socket = getSocket();
     if (!socket) return;
     const stop = watchCoordinates(([lng, lat]) => {
       socket.emit('driver:location', { lng, lat });
     });
     return stop;
-  }, [online]);
+  }, [online, hasActiveTrip]);
 
   const toggleOnline = async () => {
     try {

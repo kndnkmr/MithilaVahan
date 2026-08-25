@@ -201,6 +201,37 @@ are returned nearest-first; a driver beyond 15 km, an offline driver, a pending 
 driver, and an other-city driver are all correctly excluded; and a `[0,0]` pickup returns
 an empty list (broadcast-only fallback).
 
+### Live GPS tracking (Phase 2)
+
+Once a trip is `accepted` or `started`, the rider can watch the driver's vehicle move on a
+map — using **free OpenStreetMap tiles via Leaflet**, so there's no maps API key or billing.
+
+```
+Driver's browser (dashboard, while online OR on an active trip)
+   → watchCoordinates() → socket.emit('driver:location', { lng, lat })
+
+Server (socket.js, driver:location handler)
+   → stores currentLocation (also used for nearest-driver dispatch)
+   → finds the driver's active trip (status accepted|started)
+   → io.to(user:<riderId>).emit('trip:driver-location', { tripId, lng, lat })
+
+Rider's browser (MyTrips)
+   → on 'trip:driver-location', updates driverLocations[tripId]
+   → <LiveTripMap> renders the driver marker (+ pickup) and recenters on each update
+```
+
+Key points:
+- **Rider-scoped.** Location is relayed only to the one rider on that driver's active trip
+  (their personal `user:<id>` room), never broadcast.
+- **Shown only while active.** The map appears for `accepted`/`started` trips and disappears
+  once completed/cancelled.
+- **Free maps.** `LiveTripMap` uses OpenStreetMap tiles through Leaflet/react-leaflet — no
+  Google/Mapbox key, no billing. (Coords are stored `[lng, lat]`; Leaflet wants `[lat, lng]`,
+  so the component flips them.)
+- **Web MVP honesty.** Location updates only while the driver's browser tab is open (this is
+  a web PWA, not a native app), and the free Render tier's cold start can delay the first
+  fix. Good enough for an MVP; native apps / background location come later.
+
 ### Journey 3: Driver accepts (the race-safe part)
 ```
 Driver clicks Accept
@@ -288,6 +319,8 @@ routes/middleware/sockets without error.
 | Real-time events | `server/socket.js` (server) + `client/src/services/socket.js` |
 | Nearest-driver dispatch | `server/utils/dispatch.js` + `tripController.requestTrip` |
 | Browser geolocation | `client/src/services/location.js` (used by RiderBook + DriverDashboard) |
+| Live tracking (relay) | `server/socket.js` `driver:location` handler → `trip:driver-location` |
+| Live tracking (map) | `client/src/components/LiveTripMap.jsx` (Leaflet/OSM) + `MyTrips.jsx` |
 | Vehicle rules | `server/controllers/vehicleController.js` + `models/Vehicle.js` |
 | Admin actions | `server/controllers/adminController.js` |
 | Launch cities / fare slabs | `server/utils/seedCities.js` (initial) or `/api/admin/cities` (live) |

@@ -39,13 +39,32 @@ function initSocket(server) {
       socket.join(`city:${socket.city}:drivers`);
     }
 
-    // Driver can update their live location (used later for map/dispatch).
+    // Driver streams their live location. We (a) store it for nearest-driver
+    // dispatch, and (b) relay it to the rider on the driver's current active
+    // trip so they can watch the vehicle move on a map.
     socket.on('driver:location', async ({ lng, lat }) => {
       if (socket.role !== 'driver') return;
+      if (!Number.isFinite(lng) || !Number.isFinite(lat)) return;
       try {
         await User.findByIdAndUpdate(socket.userId, {
           currentLocation: { type: 'Point', coordinates: [lng, lat] },
         });
+
+        // Find the driver's active trip (accepted or started) and push the
+        // location to that trip's rider only.
+        const Trip = require('./models/Trip');
+        const activeTrip = await Trip.findOne({
+          driver: socket.userId,
+          status: { $in: ['accepted', 'started'] },
+        }).select('_id rider');
+
+        if (activeTrip) {
+          io.to(`user:${activeTrip.rider}`).emit('trip:driver-location', {
+            tripId: String(activeTrip._id),
+            lng,
+            lat,
+          });
+        }
       } catch (_) {}
     });
 

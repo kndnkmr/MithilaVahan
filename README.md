@@ -322,6 +322,10 @@ Push to GitHub → Render + Vercel auto-redeploy.
 ## Roadmap (Phase 2+)
 
 **Done in Phase 2:**
+- **Live GPS tracking** ✅ — while a trip is `accepted`/`started`, the driver streams
+  location and the rider watches the vehicle move on a **free OpenStreetMap (Leaflet)** map
+  (no maps API key / billing). Relayed rider-only via Socket.io (`trip:driver-location`).
+  See [HOW_IT_WORKS.md](./HOW_IT_WORKS.md#live-gps-tracking-phase-2).
 - **Nearest-driver dispatch** ✅ — when a rider requests a trip, the closest online
   approved drivers (within 15 km, via the `2dsphere` geo index) get a prioritized
   `trip:nearby` ping + Web Push, on top of the city-wide broadcast fallback. The rider
@@ -329,10 +333,10 @@ Push to GitHub → Render + Vercel auto-redeploy.
   See [HOW_IT_WORKS.md](./HOW_IT_WORKS.md#nearest-driver-dispatch-phase-2).
 
 Still deferred:
-- **Live GPS tracking** on a map (needs a maps provider; costs money at scale). The
-  `currentLocation` field + `driver:location` socket event + `2dsphere` index are already
-  in place as the foundation.
-- **Distance-based auto-fare** via a maps distance API.
+- **Distance-based auto-fare** via a maps distance API (would make the outstation/trip
+  fare estimate automatic instead of the rider-entered approximate distance). This is the
+  one piece that needs a paid maps provider (Google/Mapbox) + billing.
+- **Native mobile apps** for smoother background location than a web tab allows.
 - **Online payments** (Razorpay/UPI collect) + optional commission.
 - **Document upload UI** for driver verification (schema + endpoints already exist).
 - **PWA install** + more Hindi localization (Home already has bilingual vehicle labels).

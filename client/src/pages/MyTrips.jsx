@@ -4,10 +4,13 @@ import { tripAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { getSocket } from '../services/socket';
 import TripCard from '../components/TripCard';
+import LiveTripMap from '../components/LiveTripMap';
 
 export default function MyTrips() {
   const { user } = useAuth();
   const [trips, setTrips] = useState([]);
+  // Latest driver location per trip: { [tripId]: [lng, lat] }
+  const [driverLocations, setDriverLocations] = useState({});
   const [loading, setLoading] = useState(true);
 
   const load = () => {
@@ -28,8 +31,16 @@ export default function MyTrips() {
           return exists ? prev.map((t) => (t._id === updated._id ? updated : t)) : [updated, ...prev];
         });
       };
+      // Live driver location for a trip this rider is on.
+      const onDriverLocation = ({ tripId, lng, lat }) => {
+        setDriverLocations((prev) => ({ ...prev, [tripId]: [lng, lat] }));
+      };
       socket.on('trip:updated', onUpdate);
-      return () => socket.off('trip:updated', onUpdate);
+      socket.on('trip:driver-location', onDriverLocation);
+      return () => {
+        socket.off('trip:updated', onUpdate);
+        socket.off('trip:driver-location', onDriverLocation);
+      };
     }
   }, []);
 
@@ -60,9 +71,25 @@ export default function MyTrips() {
         <p className="text-gray-500">No trips yet.</p>
       ) : (
         <div className="space-y-3">
-          {trips.map((t) => (
-            <TripCard key={t._id} trip={t} role={user.role} onAction={handleAction} />
-          ))}
+          {trips.map((t) => {
+            const showMap = user.role === 'rider' && ['accepted', 'started'].includes(t.status);
+            return (
+              <div key={t._id} className="space-y-2">
+                <TripCard trip={t} role={user.role} onAction={handleAction} />
+                {showMap && (
+                  <LiveTripMap
+                    driver={driverLocations[t._id] || null}
+                    pickup={
+                      t.pickup?.coordinates &&
+                      !(t.pickup.coordinates[0] === 0 && t.pickup.coordinates[1] === 0)
+                        ? t.pickup.coordinates
+                        : null
+                    }
+                  />
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
