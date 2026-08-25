@@ -3,6 +3,7 @@ import { useAuth } from './context/AuthContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import BottomNav from './components/BottomNav';
+import ScrollToTop from './components/ScrollToTop';
 import EnablePush from './components/EnablePush';
 import Home from './pages/Home';
 import Login from './pages/Login';
@@ -36,6 +37,7 @@ function Protected({ children, roles }) {
 export default function App() {
   return (
     <div className="min-h-screen flex flex-col">
+      <ScrollToTop />
       <Navbar />
       <EnablePush />
       <main className="flex-1">

@@ -126,7 +126,7 @@ export default function AdminDashboard() {
       )}
 
       {/* Tabs — scrollable on small screens */}
-      <div className="flex gap-2 mb-4 text-sm overflow-x-auto pb-1 -mx-1 px-1">
+      <div className="flex gap-2 mb-4 text-sm overflow-x-auto pb-1">
         {[['drivers', 'Drivers'], ['vehicles', 'Vehicles'], ['complaints', 'Complaints'], ['settings', 'Settings']].map(([key, label]) => (
           <button key={key} onClick={() => setTab(key)}
             className={`px-4 py-2 rounded-full whitespace-nowrap shrink-0 transition ${

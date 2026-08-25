@@ -129,7 +129,7 @@ export default function DriverDashboard() {
       <OnboardingChecklist user={user} vehicles={vehicles} onGoToTab={setTab} />
 
       {/* Tabs — horizontally scrollable so they never clip on small phones */}
-      <div className="flex gap-2 mb-4 text-sm overflow-x-auto pb-1 -mx-1 px-1">
+      <div className="flex gap-2 mb-4 text-sm overflow-x-auto pb-1">
         {[
           ['requests', 'Requests'],
           ['active', 'My trips'],
