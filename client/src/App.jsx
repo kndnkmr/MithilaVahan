@@ -11,6 +11,7 @@ import DriverDashboard from './pages/DriverDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import SharedTrip from './pages/SharedTrip';
 import InstallApp from './pages/InstallApp';
+import Destinations from './pages/Destinations';
 
 // Guards a route by auth + optional role list.
 function Protected({ children, roles }) {
@@ -34,6 +35,7 @@ export default function App() {
           {/* Public, no-login shared trip tracking */}
           <Route path="/t/:token" element={<SharedTrip />} />
           <Route path="/install" element={<InstallApp />} />
+          <Route path="/destinations" element={<Destinations />} />
 
           <Route
             path="/book"
@@ -75,6 +77,7 @@ export default function App() {
         <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div>MithilaVahan · Vehicles of Mithila · Darbhanga · Muzaffarpur</div>
           <div className="flex gap-4">
+            <Link to="/destinations" className="hover:text-white">Explore</Link>
             <Link to="/install" className="hover:text-white">Get the App</Link>
             <Link to="/register" className="hover:text-white">Become a driver</Link>
           </div>

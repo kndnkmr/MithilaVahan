@@ -31,6 +31,7 @@ export default function Navbar() {
             {lang === 'en' ? 'हिंदी' : 'EN'}
           </button>
 
+          <Link to="/destinations" className="text-gray-600 hover:text-brand-600 hidden sm:inline">{t('explore')}</Link>
           <Link to="/install" className="text-gray-600 hover:text-brand-600 hidden sm:inline">📲 {t('getApp')}</Link>
           <InstallButton />
           {!user && (

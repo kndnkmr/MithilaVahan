@@ -157,7 +157,12 @@ export default function Home() {
       <section className="bg-white border-y">
         <div className="max-w-6xl mx-auto px-4 py-14">
           <h2 className="text-2xl font-bold mb-1 text-center">{t('popularRoutes')}</h2>
-          <p className="text-gray-500 text-center mb-8">{t('tapToBook')}</p>
+          <p className="text-gray-500 text-center mb-6">{t('tapToBook')}</p>
+          <div className="text-center mb-6">
+            <Link to="/destinations" className="text-brand-600 font-medium text-sm hover:underline">
+              See all places to explore →
+            </Link>
+          </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {POPULAR_ROUTES.map(([to, dist, time]) => (
               <button
