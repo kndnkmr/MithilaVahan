@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 import { driverAPI, tripAPI, vehicleAPI, cityAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { getSocket } from '../services/socket';
+import { watchCoordinates } from '../services/location';
 import TripCard from '../components/TripCard';
 
 const VEHICLE_TYPES = ['car', 'auto', 'tempo', 'bus', 'truck', 'bike'];
@@ -32,9 +33,15 @@ export default function DriverDashboard() {
     // Real-time: new trip requests in the driver's city.
     const socket = getSocket();
     if (socket) {
-      const onNew = (trip) => {
+      const addToAvailable = (trip) =>
         setAvailable((prev) => (prev.some((t) => t._id === trip._id) ? prev : [trip, ...prev]));
-        toast('New trip request in your city!', { icon: '🚗' });
+
+      // City-wide broadcast (fallback / keeps list fresh for everyone).
+      const onNew = (trip) => addToAvailable(trip);
+      // Targeted nearest-driver ping — louder toast since it's meant for you.
+      const onNearby = (trip) => {
+        addToAvailable(trip);
+        toast('Trip request near you — accept fast!', { icon: '📍', duration: 6000 });
       };
       const onUpdate = (updated) => {
         setMyTrips((prev) => prev.map((t) => (t._id === updated._id ? updated : t)));
@@ -42,13 +49,27 @@ export default function DriverDashboard() {
         setAvailable((prev) => prev.filter((t) => t._id !== updated._id || updated.status === 'requested'));
       };
       socket.on('trip:new', onNew);
+      socket.on('trip:nearby', onNearby);
       socket.on('trip:updated', onUpdate);
       return () => {
         socket.off('trip:new', onNew);
+        socket.off('trip:nearby', onNearby);
         socket.off('trip:updated', onUpdate);
       };
     }
   }, []);
+
+  // While online, stream location to the server so nearest-driver dispatch has
+  // fresh coordinates. Stops watching when going offline.
+  useEffect(() => {
+    if (!online) return;
+    const socket = getSocket();
+    if (!socket) return;
+    const stop = watchCoordinates(([lng, lat]) => {
+      socket.emit('driver:location', { lng, lat });
+    });
+    return stop;
+  }, [online]);
 
   const toggleOnline = async () => {
     try {

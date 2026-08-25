@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { cityAPI, tripAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { getCoordinates } from '../services/location';
 
 const VEHICLE_TYPES = ['car', 'auto', 'tempo', 'bus', 'truck', 'bike'];
 
@@ -21,11 +22,28 @@ export default function RiderBook() {
     paymentMode: 'cash',
     notes: '',
   });
+  // Pickup GPS coords [lng, lat] — powers nearest-driver dispatch. Optional.
+  const [pickupCoords, setPickupCoords] = useState(null);
+  const [locating, setLocating] = useState(false);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     cityAPI.list().then((res) => setCities(res.data.cities)).catch(() => {});
+    // Try to grab location up front so the nearest driver is found automatically.
+    getCoordinates().then((c) => c && setPickupCoords(c));
   }, []);
+
+  const useMyLocation = async () => {
+    setLocating(true);
+    const c = await getCoordinates();
+    setLocating(false);
+    if (c) {
+      setPickupCoords(c);
+      toast.success('Location captured — nearest drivers will be notified first');
+    } else {
+      toast.error('Could not get location. Your request still goes to all city drivers.');
+    }
+  };
 
   // Fare slabs for the selected city (used as a helpful hint for point-to-point).
   const selectedCity = cities.find((c) => c.name === form.city);
@@ -44,7 +62,7 @@ export default function RiderBook() {
         city: form.city,
         mode: form.mode,
         vehicleType: form.vehicleType,
-        pickup: { address: form.pickup },
+        pickup: { address: form.pickup, coordinates: pickupCoords || undefined },
         drop: form.mode === 'trip' ? { address: form.drop } : undefined,
         days: form.mode === 'hire' ? Number(form.days) : 1,
         paymentMode: form.paymentMode,
@@ -109,9 +127,24 @@ export default function RiderBook() {
 
         {/* Pickup / Drop */}
         <div>
-          <label className="block text-sm font-medium mb-1">Pickup location</label>
+          <div className="flex items-center justify-between mb-1">
+            <label className="block text-sm font-medium">Pickup location</label>
+            <button
+              type="button"
+              onClick={useMyLocation}
+              className="text-xs text-brand-600 font-medium disabled:opacity-50"
+              disabled={locating}
+            >
+              {locating ? 'Locating…' : pickupCoords ? '📍 Location on' : '📍 Use my location'}
+            </button>
+          </div>
           <input value={form.pickup} onChange={set('pickup')} placeholder="e.g. Tower Chowk, Darbhanga"
             className="w-full border rounded-md px-3 py-2" required />
+          {pickupCoords && (
+            <p className="text-xs text-gray-400 mt-1">
+              Nearest available drivers will be notified first.
+            </p>
+          )}
         </div>
 
         {form.mode === 'trip' ? (

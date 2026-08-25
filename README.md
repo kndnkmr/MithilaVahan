@@ -314,11 +314,17 @@ Push to GitHub → Render + Vercel auto-redeploy.
 
 ## Roadmap (Phase 2+)
 
-Deliberately deferred to keep Phase 1 shippable:
+**Done in Phase 2:**
+- **Nearest-driver dispatch** ✅ — when a rider requests a trip, the closest online
+  approved drivers (within 15 km, via the `2dsphere` geo index) get a prioritized
+  `trip:nearby` ping + Web Push, on top of the city-wide broadcast fallback. The rider
+  booking form captures pickup GPS; the driver dashboard streams location while online.
+  See [HOW_IT_WORKS.md](./HOW_IT_WORKS.md#nearest-driver-dispatch-phase-2).
+
+Still deferred:
 - **Live GPS tracking** on a map (needs a maps provider; costs money at scale). The
   `currentLocation` field + `driver:location` socket event + `2dsphere` index are already
   in place as the foundation.
-- **Nearest-driver dispatch** (instead of city-wide broadcast) using the geospatial index.
 - **Distance-based auto-fare** via a maps distance API.
 - **Online payments** (Razorpay/UPI collect) + optional commission.
 - **Document upload UI** for driver verification (schema + endpoints already exist).

@@ -7,6 +7,7 @@ const User = require('../models/User');
 const { estimateFare } = require('../utils/fare');
 const { emitNewTripToCity, emitToUser } = require('../socket');
 const { sendPushToUser } = require('../utils/push');
+const { findNearestDrivers } = require('../utils/dispatch');
 
 // Populate helper so both parties always get readable data.
 const POPULATE = [
@@ -56,10 +57,39 @@ async function requestTrip(req, res) {
 
     const populated = await Trip.findById(trip._id).populate(POPULATE);
 
-    // Broadcast to all online drivers in the city (simple dispatch for MVP).
+    // --- Dispatch ---
+    // 1) City-wide broadcast: any online driver in the city sees it in their
+    //    available list (this is the reliable fallback + keeps the list fresh).
     emitNewTripToCity(city, populated);
 
-    res.status(201).json({ message: 'Trip requested — finding a driver', trip: populated });
+    // 2) Nearest-driver targeting: if we have real pickup coordinates, find the
+    //    closest online approved drivers and give them a direct, prioritized
+    //    ping (socket event + Web Push) so the nearest driver reacts first.
+    //    If there are no coords, this is a no-op and the broadcast alone applies.
+    let notified = 0;
+    try {
+      const nearest = await findNearestDrivers({
+        city,
+        coordinates: trip.pickup?.coordinates,
+      });
+      for (const driver of nearest) {
+        emitToUser(String(driver._id), 'trip:nearby', populated);
+        sendPushToUser(driver._id, {
+          title: 'New trip request nearby',
+          body: `${vehicleType} pickup at ${trip.pickup.address}. Tap to accept.`,
+        });
+        notified += 1;
+      }
+    } catch (err) {
+      // Dispatch is best-effort — never fail the booking if geo lookup errors.
+      console.error('Nearest-driver dispatch failed:', err.message);
+    }
+
+    res.status(201).json({
+      message: 'Trip requested — finding a driver',
+      trip: populated,
+      nearbyDriversNotified: notified,
+    });
   } catch (err) {
     res.status(500).json({ message: 'Failed to request trip', error: err.message });
   }

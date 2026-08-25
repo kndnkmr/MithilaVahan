@@ -163,6 +163,42 @@ not just hidden in the UI.
 3. Every online driver in that city sees the request appear live
 ```
 
+### Nearest-driver dispatch (Phase 2)
+
+The plain flow above broadcasts a new request to **every** online driver in the city
+(`trip:new` → `city:<City>:drivers`). That still runs — it's the reliable fallback and
+keeps every driver's available list fresh. On top of it, when the rider's pickup has real
+GPS coordinates, the server **also** targets the closest drivers directly:
+
+```
+Rider requests a trip (with pickup [lng, lat] from the browser)
+   → POST /api/trips saves the trip
+   → emitNewTripToCity(...)                     ← city-wide broadcast (fallback)
+   → findNearestDrivers({ city, coordinates })  ← utils/dispatch.js
+        · $near on User.currentLocation (2dsphere index), sorted nearest-first
+        · filters: role=driver, approved, online, not suspended, same city, within 15km
+   → for each nearest driver:
+        emitToUser(driverId, 'trip:nearby', trip)   ← prioritized socket ping
+        sendPushToUser(driverId, …)                 ← Web Push "request nearby"
+```
+
+Key points:
+- **Best-effort, never blocks a booking.** If the geo lookup errors, it's caught and the
+  request still succeeds on the broadcast alone.
+- **No coords → no-op.** `findNearestDrivers` returns `[]` for a missing/`[0,0]` point, so
+  a rider who denies location still gets served city-wide.
+- **Fresh location.** The driver dashboard streams `driver:location` over the socket while
+  online (browser `watchPosition`), so the index reflects where drivers actually are.
+- **No paid maps API.** This uses MongoDB's built-in geospatial query — free.
+
+The response includes `nearbyDriversNotified` so the client/tests can see how many direct
+pings went out.
+
+**Verified** with an in-memory geo test (8/8): a near and a far driver inside the radius
+are returned nearest-first; a driver beyond 15 km, an offline driver, a pending (unapproved)
+driver, and an other-city driver are all correctly excluded; and a `[0,0]` pickup returns
+an empty list (broadcast-only fallback).
+
 ### Journey 3: Driver accepts (the race-safe part)
 ```
 Driver clicks Accept
@@ -244,6 +280,8 @@ routes/middleware/sockets without error.
 | The booking rules / lifecycle | `server/controllers/tripController.js` |
 | Fare math | `server/utils/fare.js` |
 | Real-time events | `server/socket.js` (server) + `client/src/services/socket.js` |
+| Nearest-driver dispatch | `server/utils/dispatch.js` + `tripController.requestTrip` |
+| Browser geolocation | `client/src/services/location.js` (used by RiderBook + DriverDashboard) |
 | Vehicle rules | `server/controllers/vehicleController.js` + `models/Vehicle.js` |
 | Admin actions | `server/controllers/adminController.js` |
 | Launch cities / fare slabs | `server/utils/seedCities.js` (initial) or `/api/admin/cities` (live) |
