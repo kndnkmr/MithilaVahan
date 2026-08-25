@@ -21,6 +21,8 @@ import Privacy from './pages/legal/Privacy';
 import CancellationRefund from './pages/legal/CancellationRefund';
 import AboutUs from './pages/legal/AboutUs';
 import Support from './pages/Support';
+import BlogList from './pages/BlogList';
+import BlogArticle from './pages/BlogArticle';
 
 // Guards a route by auth + optional role list.
 function Protected({ children, roles }) {
@@ -50,6 +52,8 @@ export default function App() {
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/cancellation-refund" element={<CancellationRefund />} />
           <Route path="/about" element={<AboutUs />} />
+          <Route path="/blog" element={<BlogList />} />
+          <Route path="/blog/:slug" element={<BlogArticle />} />
           <Route
             path="/refer"
             element={

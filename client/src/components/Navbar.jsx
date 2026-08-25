@@ -32,6 +32,7 @@ export default function Navbar() {
           </button>
 
           <Link to="/destinations" className="text-gray-600 hover:text-brand-600 hidden sm:inline">{t('explore')}</Link>
+          <Link to="/blog" className="text-gray-600 hover:text-brand-600 hidden md:inline">{t('blog')}</Link>
           <Link to="/install" className="text-gray-600 hover:text-brand-600 hidden sm:inline">📲 {t('getApp')}</Link>
           <InstallButton />
           {!user && (

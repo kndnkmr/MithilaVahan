@@ -6,6 +6,7 @@ const COLS = [
     links: [
       ['Book a ride', '/book'],
       ['Places to explore', '/destinations'],
+      ['Travel blog', '/blog'],
       ['Get the app', '/install'],
     ],
   },
