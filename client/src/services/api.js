@@ -50,6 +50,15 @@ export const settingsAPI = {
   get: () => api.get('/settings'),
 };
 
+export const uploadAPI = {
+  // file: a File object from an <input type="file">
+  image: (file) => {
+    const form = new FormData();
+    form.append('image', file);
+    return api.post('/uploads', form, { headers: { 'Content-Type': 'multipart/form-data' } });
+  },
+};
+
 export const driverAPI = {
   setOnline: (isOnline) => api.put('/drivers/online', { isOnline }),
   submitDocuments: (data) => api.put('/drivers/documents', data),

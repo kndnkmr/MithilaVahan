@@ -1,42 +1,80 @@
-import { Link } from 'react-router-dom';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const VEHICLE_TYPES = [
-  { key: 'car', label: 'Car', hi: 'कार' },
-  { key: 'auto', label: 'Auto', hi: 'ऑटो' },
-  { key: 'tempo', label: 'Tempo', hi: 'टेम्पो' },
-  { key: 'bus', label: 'Bus', hi: 'बस' },
-  { key: 'truck', label: 'Truck', hi: 'ट्रक' },
-  { key: 'bike', label: 'Bike', hi: 'बाइक' },
+  { key: 'car', label: 'Car', hi: 'कार', emoji: '🚗' },
+  { key: 'auto', label: 'Auto', hi: 'ऑटो', emoji: '🛺' },
+  { key: 'tempo', label: 'Tempo', hi: 'टेम्पो', emoji: '🚐' },
+  { key: 'bus', label: 'Bus', hi: 'बस', emoji: '🚌' },
+  { key: 'truck', label: 'Truck', hi: 'ट्रक', emoji: '🚚' },
+  { key: 'bike', label: 'Bike', hi: 'बाइक', emoji: '🏍️' },
+];
+
+// Indicative price guide (per-km for outstation, per-day for full-day hire).
+// These are typical local rates shown for guidance — the driver confirms the
+// final fare, and each owner sets their own rates on their listing.
+const PRICE_GUIDE = [
+  ['Hatchback', 'WagonR, Alto or similar', '₹9/km', '₹2,400'],
+  ['Sedan', 'Dzire, Etios or similar', '₹10/km', '₹2,600'],
+  ['SUV', 'Ertiga, Bolero, Innova', '₹13/km', '₹3,000'],
+  ['Tempo / Van', 'Pickup, mini goods', '₹18/km', '₹3,500'],
+];
+
+// Popular outstation routes from Darbhanga (tappable → prefills booking).
+const POPULAR_ROUTES = [
+  ['Patna', '140 km', '~3.5 hrs'],
+  ['Madhubani', '40 km', '~1 hr'],
+  ['Saharsa', '90 km', '~2.5 hrs'],
+  ['Muzaffarpur', '65 km', '~1.5 hrs'],
+  ['Sitamarhi', '90 km', '~2.5 hrs'],
+  ['Samastipur', '55 km', '~1.5 hrs'],
+];
+
+const FAQS = [
+  ['How do I pay?', 'You pay the driver directly by cash or UPI after the trip — MithilaVahan takes no commission and never holds your money.'],
+  ['Can I track my ride?', 'Yes. Once a driver accepts, you see them live on a map and can share your trip link with family for safety.'],
+  ['Do you do outstation trips?', 'Yes — one-way or round-trip to Patna, Madhubani, Kathmandu and beyond, with a driver.'],
+  ['Are drivers verified?', 'Every driver and vehicle is reviewed and approved by our team before they can accept trips.'],
 ];
 
 export default function Home() {
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const [openFaq, setOpenFaq] = useState(null);
+
+  const go = (path) => {
+    if (user?.role === 'rider') navigate(path);
+    else if (!user) navigate('/register');
+  };
 
   return (
     <div>
       {/* Hero */}
-      <section className="bg-gradient-to-br from-brand-500 to-brand-700 text-white">
-        <div className="max-w-6xl mx-auto px-4 py-16 text-center">
-          <h1 className="text-3xl sm:text-4xl font-bold mb-3">
-            Rent vehicles & book rides in Mithilanchal
+      <section className="bg-gradient-to-br from-brand-500 via-brand-600 to-brand-700 text-white">
+        <div className="max-w-6xl mx-auto px-4 py-20 text-center">
+          <div className="inline-block bg-white/15 rounded-full px-4 py-1 text-sm mb-4">
+            🚕 Now serving Darbhanga & Muzaffarpur
+          </div>
+          <h1 className="text-3xl sm:text-5xl font-bold mb-4 leading-tight">
+            Rent vehicles & book rides<br className="hidden sm:block" /> across Mithilanchal
           </h1>
-          <p className="text-brand-50 max-w-2xl mx-auto mb-8">
-            Cars, autos, tempos, buses and trucks — with a driver. Serving Darbhanga
-            and Muzaffarpur. Local owners rent out, locals ride.
+          <p className="text-brand-50 text-lg max-w-2xl mx-auto mb-8">
+            Cars, autos, tempos, buses and trucks — with a driver. In-city rides, full-day
+            hire, and outstation trips. Live tracking, verified drivers, pay directly — no commission.
           </p>
-          <div className="flex justify-center gap-3">
+          <div className="flex flex-wrap justify-center gap-3">
             {user?.role === 'rider' && (
-              <Link to="/book" className="bg-white text-brand-700 font-semibold px-6 py-3 rounded-lg">
+              <Link to="/book" className="bg-white text-brand-700 font-semibold px-8 py-3 rounded-lg shadow hover:shadow-lg transition">
                 Book a ride
               </Link>
             )}
             {!user && (
               <>
-                <Link to="/register" className="bg-white text-brand-700 font-semibold px-6 py-3 rounded-lg">
+                <Link to="/register" className="bg-white text-brand-700 font-semibold px-8 py-3 rounded-lg shadow hover:shadow-lg transition">
                   Get started
                 </Link>
-                <Link to="/login" className="border border-white px-6 py-3 rounded-lg">
+                <Link to="/login" className="border border-white/70 px-8 py-3 rounded-lg hover:bg-white/10 transition">
                   Login
                 </Link>
               </>
@@ -45,43 +83,164 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Vehicle types */}
-      <section className="max-w-6xl mx-auto px-4 py-12">
-        <h2 className="text-xl font-semibold mb-6 text-center">What do you need?</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
+      {/* Vehicle types — tappable */}
+      <section className="max-w-6xl mx-auto px-4 py-14">
+        <h2 className="text-2xl font-bold mb-1 text-center">What do you need?</h2>
+        <p className="text-gray-500 text-center mb-8">Tap a vehicle to start booking</p>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
           {VEHICLE_TYPES.map((v) => (
-            <div key={v.key} className="bg-white border rounded-lg p-4 text-center hover:shadow">
-              <div className="font-medium">{v.label}</div>
+            <button
+              key={v.key}
+              onClick={() => go(`/book?type=${v.key}`)}
+              className="bg-white border rounded-xl p-5 text-center hover:shadow-lg hover:border-brand-400 hover:-translate-y-0.5 transition"
+            >
+              <div className="text-3xl mb-2">{v.emoji}</div>
+              <div className="font-semibold">{v.label}</div>
               <div className="text-gray-400 text-sm">{v.hi}</div>
-            </div>
+            </button>
           ))}
         </div>
       </section>
 
-      {/* How it works */}
+      {/* Booking modes */}
       <section className="bg-white border-y">
-        <div className="max-w-6xl mx-auto px-4 py-12 grid md:grid-cols-3 gap-6">
+        <div className="max-w-6xl mx-auto px-4 py-14 grid sm:grid-cols-3 gap-6">
           {[
-            ['1. Request', 'Pick your city, vehicle type, pickup and drop. Get a fare estimate.'],
-            ['2. Driver accepts', 'A nearby verified driver accepts and heads to your pickup.'],
-            ['3. Ride & pay', 'Complete your trip and pay the driver directly by cash or UPI.'],
-          ].map(([title, desc]) => (
-            <div key={title}>
-              <div className="font-semibold text-brand-600 mb-1">{title}</div>
+            ['🏙️', 'In-city rides', 'Quick point-to-point trips within your city.', '/book?mode=trip'],
+            ['📅', 'Full-day hire', 'Book a vehicle with driver by the day.', '/book?mode=hire'],
+            ['🛣️', 'Outstation trips', 'Long trips to Patna, Kathmandu & beyond — one-way or round-trip.', '/book?mode=outstation'],
+          ].map(([icon, title, desc, path]) => (
+            <button key={title} onClick={() => go(path)} className="text-center rounded-xl p-4 hover:bg-brand-50 transition">
+              <div className="text-3xl mb-2">{icon}</div>
+              <div className="font-semibold text-lg mb-1">{title}</div>
               <p className="text-gray-600 text-sm">{desc}</p>
-            </div>
+            </button>
           ))}
+        </div>
+      </section>
+
+      {/* Indicative price guide */}
+      <section className="max-w-6xl mx-auto px-4 py-14">
+        <h2 className="text-2xl font-bold mb-1 text-center">Indicative fares in Darbhanga</h2>
+        <p className="text-gray-500 text-center mb-8">
+          Typical local rates — each owner sets their own, and the driver confirms the final fare.
+        </p>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm border rounded-lg overflow-hidden bg-white">
+            <thead className="bg-gray-50 text-gray-600">
+              <tr>
+                <th className="text-left px-4 py-3">Vehicle</th>
+                <th className="text-left px-4 py-3">Example models</th>
+                <th className="text-left px-4 py-3">Outstation /km</th>
+                <th className="text-left px-4 py-3">Full-day</th>
+              </tr>
+            </thead>
+            <tbody>
+              {PRICE_GUIDE.map(([cls, models, perKm, day]) => (
+                <tr key={cls} className="border-t">
+                  <td className="px-4 py-3 font-medium">{cls}</td>
+                  <td className="px-4 py-3 text-gray-500">{models}</td>
+                  <td className="px-4 py-3">{perKm}</td>
+                  <td className="px-4 py-3">{day}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p className="text-xs text-gray-400 mt-2 text-center">
+          Prices are indicative and include the driver. No hidden charges.
+        </p>
+      </section>
+
+      {/* Popular routes */}
+      <section className="bg-white border-y">
+        <div className="max-w-6xl mx-auto px-4 py-14">
+          <h2 className="text-2xl font-bold mb-1 text-center">Popular routes from Darbhanga</h2>
+          <p className="text-gray-500 text-center mb-8">Tap to book an outstation trip</p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {POPULAR_ROUTES.map(([to, dist, time]) => (
+              <button
+                key={to}
+                onClick={() => go(`/book?mode=outstation&to=${encodeURIComponent(to)}`)}
+                className="border rounded-xl p-4 text-left hover:shadow-md hover:border-brand-400 transition"
+              >
+                <div className="font-semibold">Darbhanga → {to}</div>
+                <div className="text-gray-500 text-sm">{dist} · {time}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Why MithilaVahan (differentiators) */}
+      <section className="bg-brand-50 border-b">
+        <div className="max-w-6xl mx-auto px-4 py-14">
+          <h2 className="text-2xl font-bold mb-8 text-center">Why MithilaVahan</h2>
+          <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-4">
+            {[
+              ['📍', 'Live tracking', 'Watch your driver approach on a live map.'],
+              ['🛟', 'SOS & trip sharing', 'Share your trip and raise an SOS to your emergency contact.'],
+              ['💸', 'No commission', 'Pay the driver directly — we never take a cut.'],
+              ['🏡', 'Local & verified', 'Mithilanchal drivers and vehicles, admin-approved.'],
+            ].map(([icon, title, desc]) => (
+              <div key={title} className="bg-white rounded-xl p-5">
+                <div className="text-2xl mb-1">{icon}</div>
+                <div className="font-semibold">{title}</div>
+                <p className="text-gray-600 text-sm">{desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Local content */}
+      <section className="max-w-4xl mx-auto px-4 py-14">
+        <h2 className="text-2xl font-bold mb-3">Travelling in and around Darbhanga</h2>
+        <div className="text-gray-600 space-y-3 text-sm leading-relaxed">
+          <p>
+            Darbhanga, the cultural heart of Mithilanchal, is known for Mithila (Madhubani)
+            painting, Dhrupad music and the heritage of the Darbhanga Raj. Whether you're visiting
+            the Raj Qila, Shyama Temple, or heading out to Madhubani for art, MithilaVahan makes it
+            easy to get a car, tempo or bus with a trusted local driver.
+          </p>
+          <p>
+            Need to reach Patna for work, the airport for a flight, or a wedding a few towns over?
+            Book an outstation trip one-way or round-trip. Moving goods? Hire a tempo or truck by
+            the day. It's local transport, run by locals — for Mithilanchal.
+          </p>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="bg-white border-t">
+        <div className="max-w-3xl mx-auto px-4 py-14">
+          <h2 className="text-2xl font-bold mb-6 text-center">Frequently asked questions</h2>
+          <div className="space-y-2">
+            {FAQS.map(([q, a], i) => (
+              <div key={i} className="border rounded-lg">
+                <button
+                  onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                  className="w-full flex justify-between items-center px-4 py-3 text-left font-medium"
+                >
+                  {q}
+                  <span className="text-gray-400">{openFaq === i ? '−' : '+'}</span>
+                </button>
+                {openFaq === i && <p className="px-4 pb-3 text-sm text-gray-600">{a}</p>}
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
       {/* Driver CTA */}
-      <section className="max-w-6xl mx-auto px-4 py-12 text-center">
-        <h2 className="text-xl font-semibold mb-2">Own a vehicle?</h2>
-        <p className="text-gray-600 mb-4">
-          List your car, tempo, bus or truck and earn from local rides and hires.
+      <section className="max-w-6xl mx-auto px-4 py-16 text-center">
+        <h2 className="text-2xl font-bold mb-2">Own a vehicle?</h2>
+        <p className="text-gray-600 mb-6 max-w-xl mx-auto">
+          List your car, tempo, bus or truck and earn from local rides, day hires and
+          outstation trips. Keep 100% of your fare.
         </p>
         {!user && (
-          <Link to="/register" className="bg-brand-500 text-white px-6 py-3 rounded-lg inline-block">
+          <Link to="/register" className="bg-brand-500 text-white px-8 py-3 rounded-lg inline-block shadow hover:bg-brand-600 transition">
             Register as a driver
           </Link>
         )}

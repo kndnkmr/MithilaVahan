@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import { driverAPI, tripAPI, vehicleAPI, cityAPI } from '../services/api';
+import { driverAPI, tripAPI, vehicleAPI, cityAPI, uploadAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { getSocket } from '../services/socket';
 import { watchCoordinates } from '../services/location';
@@ -131,8 +131,8 @@ export default function DriverDashboard() {
         </div>
       )}
 
-      {/* Tabs */}
-      <div className="flex gap-2 mb-4 text-sm">
+      {/* Tabs — horizontally scrollable so they never clip on small phones */}
+      <div className="flex gap-2 mb-4 text-sm overflow-x-auto pb-1 -mx-1 px-1">
         {[
           ['requests', 'Requests'],
           ['active', 'My trips'],
@@ -142,7 +142,9 @@ export default function DriverDashboard() {
           <button
             key={key}
             onClick={() => setTab(key)}
-            className={`px-3 py-1.5 rounded-md ${tab === key ? 'bg-brand-500 text-white' : 'bg-white border'}`}
+            className={`px-4 py-2 rounded-full whitespace-nowrap shrink-0 transition ${
+              tab === key ? 'bg-brand-500 text-white' : 'bg-white border text-gray-600 hover:border-brand-400'
+            }`}
           >
             {label}
           </button>
@@ -188,7 +190,24 @@ export default function DriverDashboard() {
 function PaymentTab({ user, updateUser }) {
   const [upiId, setUpiId] = useState(user.upiId || '');
   const [qrImage, setQrImage] = useState(user.qrImage || '');
+  const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  const onQr = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const res = await uploadAPI.image(file);
+      setQrImage(res.data.url);
+      toast.success('QR uploaded');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Upload failed');
+    } finally {
+      setUploading(false);
+      e.target.value = '';
+    }
+  };
 
   const save = async (e) => {
     e.preventDefault();
@@ -216,18 +235,17 @@ function PaymentTab({ user, updateUser }) {
           placeholder="yourname@upi" className="w-full border rounded-md px-3 py-2" />
       </div>
       <div>
-        <label className="block text-sm font-medium mb-1">QR image URL (optional)</label>
-        <input value={qrImage} onChange={(e) => setQrImage(e.target.value)}
-          placeholder="https://… link to your UPI QR image"
-          className="w-full border rounded-md px-3 py-2" />
-        <p className="text-xs text-gray-400 mt-1">
-          Paste a link to your UPI QR image so riders can scan it. (Image upload comes later.)
-        </p>
+        <label className="block text-sm font-medium mb-1">UPI QR image (optional)</label>
+        {qrImage && (
+          <img src={qrImage} alt="Your UPI QR" className="w-32 h-32 object-contain border rounded-md mb-2" />
+        )}
+        <label className="inline-block border-2 border-dashed rounded-md px-4 py-2 text-sm text-gray-500 cursor-pointer hover:border-brand-400">
+          {uploading ? 'Uploading…' : qrImage ? 'Replace QR image' : 'Upload your UPI QR'}
+          <input type="file" accept="image/*" className="hidden" onChange={onQr} disabled={uploading} />
+        </label>
+        <p className="text-xs text-gray-400 mt-1">Riders scan this to pay you.</p>
       </div>
-      {qrImage && (
-        <img src={qrImage} alt="Your UPI QR" className="w-32 h-32 object-contain border rounded-md" />
-      )}
-      <button disabled={saving}
+      <button disabled={saving || uploading}
         className="bg-brand-500 text-white px-4 py-2 rounded-md text-sm disabled:opacity-60">
         {saving ? 'Saving…' : 'Save'}
       </button>
@@ -241,8 +259,29 @@ function VehiclesTab({ vehicles, cities, onChange, defaultCity }) {
     type: 'car', model: '', registrationNumber: '', capacity: 4,
     city: defaultCity || '', perKmRate: '', perDayRate: '', baseFare: '',
   });
+  const [photos, setPhotos] = useState([]); // uploaded image URLs
+  const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
+
+  // Upload selected image files, appending returned URLs to photos[].
+  const onPhotos = async (e) => {
+    const files = Array.from(e.target.files || []).slice(0, 4);
+    if (files.length === 0) return;
+    setUploading(true);
+    try {
+      for (const file of files) {
+        const res = await uploadAPI.image(file);
+        setPhotos((prev) => [...prev, res.data.url]);
+      }
+      toast.success('Photo added');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Upload failed');
+    } finally {
+      setUploading(false);
+      e.target.value = '';
+    }
+  };
 
   const addVehicle = async (e) => {
     e.preventDefault();
@@ -250,6 +289,7 @@ function VehiclesTab({ vehicles, cities, onChange, defaultCity }) {
     try {
       await vehicleAPI.create({
         ...form,
+        photos,
         capacity: Number(form.capacity) || 1,
         perKmRate: Number(form.perKmRate) || 0,
         perDayRate: Number(form.perDayRate) || 0,
@@ -257,6 +297,7 @@ function VehiclesTab({ vehicles, cities, onChange, defaultCity }) {
       });
       toast.success('Vehicle added — pending approval');
       setForm((f) => ({ ...f, model: '', registrationNumber: '' }));
+      setPhotos([]);
       onChange();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to add');
@@ -273,9 +314,14 @@ function VehiclesTab({ vehicles, cities, onChange, defaultCity }) {
         ) : (
           vehicles.map((v) => (
             <div key={v._id} className="bg-white border rounded-lg p-3 flex justify-between items-center">
-              <div>
-                <div className="font-medium capitalize">{v.type} · {v.model}</div>
-                <div className="text-sm text-gray-500">{v.registrationNumber} · {v.city}</div>
+              <div className="flex items-center gap-3">
+                {v.photos?.[0] && (
+                  <img src={v.photos[0]} alt="" className="w-12 h-12 object-cover rounded-md border" />
+                )}
+                <div>
+                  <div className="font-medium capitalize">{v.type} · {v.model}</div>
+                  <div className="text-sm text-gray-500">{v.registrationNumber} · {v.city}</div>
+                </div>
               </div>
               <span className={`text-xs px-2 py-0.5 rounded-full ${
                 v.approvalStatus === 'approved' ? 'bg-green-100 text-green-700'
@@ -312,7 +358,32 @@ function VehiclesTab({ vehicles, cities, onChange, defaultCity }) {
           <input type="number" value={form.perDayRate} onChange={set('perDayRate')} placeholder="Per day ₹"
             className="border rounded-md px-3 py-2" />
         </div>
-        <button disabled={saving} className="bg-brand-500 text-white px-4 py-2 rounded-md text-sm disabled:opacity-60">
+
+        {/* Vehicle photos */}
+        <div>
+          <label className="block text-sm font-medium mb-1">Vehicle photos</label>
+          <div className="flex flex-wrap gap-2 mb-2">
+            {photos.map((url, i) => (
+              <div key={i} className="relative">
+                <img src={url} alt="" className="w-20 h-20 object-cover rounded-md border" />
+                <button
+                  type="button"
+                  onClick={() => setPhotos((p) => p.filter((_, idx) => idx !== i))}
+                  className="absolute -top-1.5 -right-1.5 bg-red-600 text-white rounded-full w-5 h-5 text-xs leading-none"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+            <label className="w-20 h-20 border-2 border-dashed rounded-md flex items-center justify-center cursor-pointer text-gray-400 hover:border-brand-400">
+              {uploading ? '…' : '＋'}
+              <input type="file" accept="image/*" multiple className="hidden" onChange={onPhotos} disabled={uploading} />
+            </label>
+          </div>
+          <p className="text-xs text-gray-400">Add up to 4 photos so riders can see your vehicle.</p>
+        </div>
+
+        <button disabled={saving || uploading} className="bg-brand-500 text-white px-4 py-2 rounded-md text-sm disabled:opacity-60">
           {saving ? 'Adding…' : 'Add vehicle'}
         </button>
       </form>

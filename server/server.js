@@ -28,6 +28,7 @@ app.use('/api/vehicles', require('./routes/vehicle'));
 app.use('/api/trips', require('./routes/trip'));
 app.use('/api/cities', require('./routes/city'));
 app.use('/api/settings', require('./routes/settings'));
+app.use('/api/uploads', require('./routes/upload'));
 app.use('/api/drivers', require('./routes/driver'));
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/push', require('./routes/push'));

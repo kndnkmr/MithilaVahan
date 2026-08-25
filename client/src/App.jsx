@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, Link } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import Navbar from './components/Navbar';
 import EnablePush from './components/EnablePush';
@@ -10,6 +10,7 @@ import MyTrips from './pages/MyTrips';
 import DriverDashboard from './pages/DriverDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import SharedTrip from './pages/SharedTrip';
+import InstallApp from './pages/InstallApp';
 
 // Guards a route by auth + optional role list.
 function Protected({ children, roles }) {
@@ -32,6 +33,7 @@ export default function App() {
           <Route path="/register" element={<Register />} />
           {/* Public, no-login shared trip tracking */}
           <Route path="/t/:token" element={<SharedTrip />} />
+          <Route path="/install" element={<InstallApp />} />
 
           <Route
             path="/book"
@@ -69,8 +71,14 @@ export default function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
-      <footer className="bg-gray-900 text-gray-300 text-sm text-center py-6">
-        MithilaVahan · Vehicles of Mithila · Darbhanga · Muzaffarpur
+      <footer className="bg-gray-900 text-gray-300 text-sm py-8">
+        <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div>MithilaVahan · Vehicles of Mithila · Darbhanga · Muzaffarpur</div>
+          <div className="flex gap-4">
+            <Link to="/install" className="hover:text-white">Get the App</Link>
+            <Link to="/register" className="hover:text-white">Become a driver</Link>
+          </div>
+        </div>
       </footer>
     </div>
   );

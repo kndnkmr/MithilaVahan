@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { cityAPI, tripAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -10,17 +10,24 @@ const VEHICLE_TYPES = ['car', 'auto', 'tempo', 'bus', 'truck', 'bike'];
 export default function RiderBook() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  // Prefill from query params set when tapping cards/routes on Home.
+  const preType = VEHICLE_TYPES.includes(searchParams.get('type')) ? searchParams.get('type') : 'car';
+  const preMode = ['trip', 'hire', 'outstation'].includes(searchParams.get('mode'))
+    ? searchParams.get('mode')
+    : 'trip';
+  const preTo = searchParams.get('to') || '';
 
   const [cities, setCities] = useState([]);
   const [form, setForm] = useState({
     city: user?.city || '',
-    mode: 'trip',
-    vehicleType: 'car',
+    mode: preMode,
+    vehicleType: preType,
     pickup: '',
     drop: '',
     days: 1,
     // Outstation fields
-    destination: '',
+    destination: preTo,
     tripType: 'one-way',
     scheduledAt: '',
     distanceKm: '',

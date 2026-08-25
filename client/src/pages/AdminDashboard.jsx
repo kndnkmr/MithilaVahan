@@ -100,11 +100,13 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* Tabs */}
-      <div className="flex gap-2 mb-4 text-sm">
+      {/* Tabs — scrollable on small screens */}
+      <div className="flex gap-2 mb-4 text-sm overflow-x-auto pb-1 -mx-1 px-1">
         {[['drivers', 'Drivers'], ['vehicles', 'Vehicles'], ['settings', 'Settings']].map(([key, label]) => (
           <button key={key} onClick={() => setTab(key)}
-            className={`px-3 py-1.5 rounded-md ${tab === key ? 'bg-brand-500 text-white' : 'bg-white border'}`}>
+            className={`px-4 py-2 rounded-full whitespace-nowrap shrink-0 transition ${
+              tab === key ? 'bg-brand-500 text-white' : 'bg-white border text-gray-600 hover:border-brand-400'
+            }`}>
             {label}
           </button>
         ))}

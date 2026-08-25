@@ -19,6 +19,7 @@ export default function Navbar() {
         </Link>
 
         <div className="flex items-center gap-4 text-sm">
+          <Link to="/install" className="text-gray-600 hover:text-brand-600 hidden sm:inline">📲 Get App</Link>
           <InstallButton />
           {!user && (
             <>
