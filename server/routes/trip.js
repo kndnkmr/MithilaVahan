@@ -12,18 +12,29 @@ router.get('/share/:token', sharedTrip);
 
 // PUBLIC — instant fare estimate for the booking form (no auth).
 // ?mode=trip|hire|outstation & vehicleType= & distanceKm= & days= & tripType=
-router.get('/estimate', (req, res) => {
+router.get('/estimate', async (req, res) => {
   const { estimateRange } = require('../utils/fare');
+  const Settings = require('../models/Settings');
   const { mode, vehicleType } = req.query;
   const distanceKm = Number(req.query.distanceKm) || 0;
   const days = Number(req.query.days) || 1;
   const tripType = req.query.tripType === 'round-trip' ? 'round-trip' : 'one-way';
+  const vt = vehicleType || 'car';
+
+  // Use the admin-set fare guide row for this vehicle type if available.
+  let rate;
+  try {
+    const s = await Settings.getSingleton();
+    rate = (s.fareGuide || []).find((r) => r.vehicleType === vt);
+  } catch (_) {}
+
   const range = estimateRange({
     mode: ['hire', 'outstation'].includes(mode) ? mode : 'trip',
-    vehicleType: vehicleType || 'car',
+    vehicleType: vt,
     distanceKm,
     days,
     tripType,
+    rate,
   });
   res.json({ estimate: range });
 });

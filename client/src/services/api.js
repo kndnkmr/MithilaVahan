@@ -87,7 +87,9 @@ export const adminAPI = {
   vehicles: (status) => api.get('/admin/vehicles', { params: { status } }),
   setVehicleStatus: (id, status) => api.put(`/admin/vehicles/${id}/status`, { status }),
   getSettings: () => api.get('/admin/settings'),
-  updateSettings: (commissionPercent) => api.put('/admin/settings', { commissionPercent }),
+  // Accepts { commissionPercent } and/or { fareGuide }
+  updateSettings: (data) =>
+    api.put('/admin/settings', typeof data === 'number' ? { commissionPercent: data } : data),
 };
 
 export default api;

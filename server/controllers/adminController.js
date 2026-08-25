@@ -115,20 +115,40 @@ async function setSuspension(req, res) {
 // GET /api/admin/settings
 async function getSettings(req, res) {
   const s = await Settings.getSingleton();
-  res.json({ settings: { commissionPercent: s.commissionPercent, updatedAt: s.updatedAt } });
+  res.json({
+    settings: { commissionPercent: s.commissionPercent, fareGuide: s.fareGuide, updatedAt: s.updatedAt },
+  });
 }
 
-// PUT /api/admin/settings  { commissionPercent }
+// PUT /api/admin/settings  { commissionPercent?, fareGuide? }
 async function updateSettings(req, res) {
-  const { commissionPercent } = req.body;
-  if (commissionPercent == null || commissionPercent < 0 || commissionPercent > 100) {
-    return res.status(400).json({ message: 'commissionPercent must be between 0 and 100' });
-  }
+  const { commissionPercent, fareGuide } = req.body;
   const s = await Settings.getSingleton();
-  s.commissionPercent = commissionPercent;
+
+  if (commissionPercent != null) {
+    if (commissionPercent < 0 || commissionPercent > 100) {
+      return res.status(400).json({ message: 'commissionPercent must be between 0 and 100' });
+    }
+    s.commissionPercent = commissionPercent;
+  }
+
+  if (Array.isArray(fareGuide)) {
+    // Sanitize each row; numbers can't be negative.
+    s.fareGuide = fareGuide.slice(0, 20).map((r) => ({
+      label: String(r.label || '').slice(0, 40),
+      vehicleType: String(r.vehicleType || 'car').slice(0, 20),
+      baseFare: Math.max(0, Number(r.baseFare) || 0),
+      perKm: Math.max(0, Number(r.perKm) || 0),
+      perDay: Math.max(0, Number(r.perDay) || 0),
+    }));
+  }
+
   s.updatedBy = req.user._id;
   await s.save();
-  res.json({ message: 'Settings updated', settings: { commissionPercent: s.commissionPercent } });
+  res.json({
+    message: 'Settings updated',
+    settings: { commissionPercent: s.commissionPercent, fareGuide: s.fareGuide },
+  });
 }
 
 module.exports = {

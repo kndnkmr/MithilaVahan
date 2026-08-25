@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useT } from '../services/i18n';
 import { HERO_IMG } from '../data/destinations';
+import { settingsAPI } from '../services/api';
 
 const VEHICLE_TYPES = [
   { key: 'car', label: 'Car', hi: 'कार', emoji: '🚗' },
@@ -53,6 +54,12 @@ export default function Home() {
   const navigate = useNavigate();
   const t = useT();
   const [openFaq, setOpenFaq] = useState(null);
+  // Admin-editable indicative fare guide (falls back to the static PRICE_GUIDE).
+  const [fareGuide, setFareGuide] = useState(null);
+
+  useEffect(() => {
+    settingsAPI.get().then((r) => setFareGuide(r.data.settings.fareGuide)).catch(() => {});
+  }, []);
 
   const go = (path) => {
     if (user?.role === 'rider') navigate(path);
@@ -145,16 +152,17 @@ export default function Home() {
             <thead className="bg-gray-50 text-gray-600">
               <tr>
                 <th className="text-left px-4 py-3">Vehicle</th>
-                <th className="text-left px-4 py-3">Example models</th>
                 <th className="text-left px-4 py-3">Outstation /km</th>
                 <th className="text-left px-4 py-3">Full-day</th>
               </tr>
             </thead>
             <tbody>
-              {PRICE_GUIDE.map(([cls, models, perKm, day]) => (
+              {(fareGuide && fareGuide.length > 0
+                ? fareGuide.map((r) => [r.label, `₹${r.perKm}/km`, `₹${(r.perDay || 0).toLocaleString('en-IN')}`])
+                : PRICE_GUIDE.map(([cls, , perKm, day]) => [cls, perKm, day])
+              ).map(([cls, perKm, day]) => (
                 <tr key={cls} className="border-t">
                   <td className="px-4 py-3 font-medium">{cls}</td>
-                  <td className="px-4 py-3 text-gray-500">{models}</td>
                   <td className="px-4 py-3">{perKm}</td>
                   <td className="px-4 py-3">{day}</td>
                 </tr>

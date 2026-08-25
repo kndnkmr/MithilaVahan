@@ -11,13 +11,18 @@ export default function AdminDashboard() {
   const [complaints, setComplaints] = useState([]);
   const [commission, setCommission] = useState(0);
   const [savingCommission, setSavingCommission] = useState(false);
+  const [fareGuide, setFareGuide] = useState([]);
+  const [savingFares, setSavingFares] = useState(false);
 
   const loadStats = () => adminAPI.stats().then((r) => setStats(r.data)).catch(() => {});
   const loadDrivers = () => adminAPI.drivers().then((r) => setDrivers(r.data.drivers)).catch(() => {});
   const loadVehicles = () => adminAPI.vehicles().then((r) => setVehicles(r.data.vehicles)).catch(() => {});
   const loadComplaints = () => complaintAPI.all().then((r) => setComplaints(r.data.complaints)).catch(() => {});
   const loadSettings = () =>
-    adminAPI.getSettings().then((r) => setCommission(r.data.settings.commissionPercent)).catch(() => {});
+    adminAPI.getSettings().then((r) => {
+      setCommission(r.data.settings.commissionPercent);
+      setFareGuide(r.data.settings.fareGuide || []);
+    }).catch(() => {});
 
   useEffect(() => {
     loadStats();
@@ -47,6 +52,30 @@ export default function AdminDashboard() {
       toast.error(err.response?.data?.message || 'Failed');
     } finally {
       setSavingCommission(false);
+    }
+  };
+
+  const updateFareRow = (i, field, value) => {
+    setFareGuide((prev) => prev.map((r, idx) => (idx === i ? { ...r, [field]: value } : r)));
+  };
+
+  const saveFares = async () => {
+    setSavingFares(true);
+    try {
+      const cleaned = fareGuide.map((r) => ({
+        label: r.label,
+        vehicleType: r.vehicleType,
+        baseFare: Number(r.baseFare) || 0,
+        perKm: Number(r.perKm) || 0,
+        perDay: Number(r.perDay) || 0,
+      }));
+      const res = await adminAPI.updateSettings({ fareGuide: cleaned });
+      setFareGuide(res.data.settings.fareGuide || []);
+      toast.success('Fare guide updated');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed');
+    } finally {
+      setSavingFares(false);
     }
   };
 
@@ -239,36 +268,84 @@ export default function AdminDashboard() {
       )}
 
       {tab === 'settings' && (
-        <div className="bg-white border rounded-lg p-4 max-w-md space-y-3">
-          <h3 className="font-medium">Platform commission</h3>
-          <p className="text-sm text-gray-500">
-            Percentage the platform charges per completed trip. Keep it at <b>0</b> to stay
-            fully free (riders pay drivers directly by UPI/cash). Raising it starts recording a
-            platform fee on new trips — historical trips keep the rate that applied when they
-            completed.
-          </p>
-          <div className="flex items-center gap-2">
-            <input
-              type="number"
-              min={0}
-              max={100}
-              value={commission}
-              onChange={(e) => setCommission(e.target.value)}
-              className="w-24 border rounded-md px-3 py-2"
-            />
-            <span className="text-gray-600">%</span>
-            <button
-              onClick={saveCommission}
-              disabled={savingCommission}
-              className="bg-brand-500 text-white px-4 py-2 rounded-md text-sm disabled:opacity-60"
-            >
-              {savingCommission ? 'Saving…' : 'Save'}
+        <div className="space-y-6">
+          {/* Commission */}
+          <div className="bg-white border rounded-lg p-4 max-w-md space-y-3">
+            <h3 className="font-medium">Platform commission</h3>
+            <p className="text-sm text-gray-500">
+              Percentage the platform charges per completed trip. Keep it at <b>0</b> to stay
+              fully free (riders pay drivers directly by UPI/cash). Raising it starts recording a
+              platform fee on new trips — historical trips keep the rate that applied when they
+              completed.
+            </p>
+            <div className="flex items-center gap-2">
+              <input
+                type="number" min={0} max={100}
+                value={commission}
+                onChange={(e) => setCommission(e.target.value)}
+                className="w-24 border rounded-md px-3 py-2"
+              />
+              <span className="text-gray-600">%</span>
+              <button onClick={saveCommission} disabled={savingCommission}
+                className="bg-brand-500 text-white px-4 py-2 rounded-md text-sm disabled:opacity-60">
+                {savingCommission ? 'Saving…' : 'Save'}
+              </button>
+            </div>
+          </div>
+
+          {/* Indicative fare guide */}
+          <div className="bg-white border rounded-lg p-4">
+            <h3 className="font-medium">Indicative fare guide</h3>
+            <p className="text-sm text-gray-500 mb-3">
+              Shown to riders on the home page and used for instant fare estimates. Each owner
+              still sets their own rate; these are guidance figures.
+            </p>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="text-gray-500">
+                  <tr>
+                    <th className="text-left py-1 pr-2">Label</th>
+                    <th className="text-left py-1 pr-2">Type</th>
+                    <th className="text-left py-1 pr-2">Base ₹</th>
+                    <th className="text-left py-1 pr-2">Per km ₹</th>
+                    <th className="text-left py-1 pr-2">Per day ₹</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {fareGuide.map((r, i) => (
+                    <tr key={i}>
+                      <td className="py-1 pr-2">
+                        <input value={r.label} onChange={(e) => updateFareRow(i, 'label', e.target.value)}
+                          className="border rounded px-2 py-1 w-28" />
+                      </td>
+                      <td className="py-1 pr-2">
+                        <select value={r.vehicleType} onChange={(e) => updateFareRow(i, 'vehicleType', e.target.value)}
+                          className="border rounded px-2 py-1">
+                          {['car', 'auto', 'tempo', 'bus', 'truck', 'bike'].map((t) => <option key={t} value={t}>{t}</option>)}
+                        </select>
+                      </td>
+                      <td className="py-1 pr-2">
+                        <input type="number" value={r.baseFare} onChange={(e) => updateFareRow(i, 'baseFare', e.target.value)}
+                          className="border rounded px-2 py-1 w-20" />
+                      </td>
+                      <td className="py-1 pr-2">
+                        <input type="number" value={r.perKm} onChange={(e) => updateFareRow(i, 'perKm', e.target.value)}
+                          className="border rounded px-2 py-1 w-20" />
+                      </td>
+                      <td className="py-1 pr-2">
+                        <input type="number" value={r.perDay} onChange={(e) => updateFareRow(i, 'perDay', e.target.value)}
+                          className="border rounded px-2 py-1 w-24" />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <button onClick={saveFares} disabled={savingFares}
+              className="mt-3 bg-brand-500 text-white px-4 py-2 rounded-md text-sm disabled:opacity-60">
+              {savingFares ? 'Saving…' : 'Save fares'}
             </button>
           </div>
-          <p className="text-xs text-gray-400">
-            Note: while payments are direct UPI, this fee is informational and recorded per
-            trip. Actual automatic collection needs an online payment gateway (added later).
-          </p>
         </div>
       )}
     </div>

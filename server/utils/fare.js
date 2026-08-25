@@ -42,8 +42,9 @@ const INDICATIVE = {
 // Compute an indicative fare RANGE (low–high) for the booking form.
 // Returns { low, high } rounded to the nearest ₹10, with a ±15% spread so it
 // reads as an estimate, not a fixed price.
-function estimateRange({ mode, vehicleType, distanceKm = 0, days = 1, tripType = 'one-way' }) {
-  const r = INDICATIVE[vehicleType] || INDICATIVE.car;
+function estimateRange({ mode, vehicleType, distanceKm = 0, days = 1, tripType = 'one-way', rate }) {
+  // Prefer an explicit rate (from the admin-set fare guide); else the static default.
+  const r = rate || INDICATIVE[vehicleType] || INDICATIVE.car;
   const mid = estimateFare({
     mode,
     vehicle: { baseFare: r.baseFare, perKmRate: r.perKm, perDayRate: r.perDay },
