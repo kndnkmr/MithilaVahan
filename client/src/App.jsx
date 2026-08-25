@@ -9,6 +9,7 @@ import RiderBook from './pages/RiderBook';
 import MyTrips from './pages/MyTrips';
 import DriverDashboard from './pages/DriverDashboard';
 import AdminDashboard from './pages/AdminDashboard';
+import SharedTrip from './pages/SharedTrip';
 
 // Guards a route by auth + optional role list.
 function Protected({ children, roles }) {
@@ -29,6 +30,8 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          {/* Public, no-login shared trip tracking */}
+          <Route path="/t/:token" element={<SharedTrip />} />
 
           <Route
             path="/book"

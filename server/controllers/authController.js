@@ -23,6 +23,8 @@ function publicUser(u) {
     upiId: u.upiId,
     ratingAvg: u.ratingAvg,
     ratingCount: u.ratingCount,
+    emergencyContactName: u.emergencyContactName,
+    emergencyContactPhone: u.emergencyContactPhone,
   };
 }
 
@@ -104,4 +106,17 @@ async function getMe(req, res) {
   res.json({ user: publicUser(req.user) });
 }
 
-module.exports = { register, login, getMe, publicUser };
+// PUT /api/auth/emergency-contact  (rider sets their safety contact)
+async function setEmergencyContact(req, res) {
+  const { name, phone } = req.body;
+  req.user.emergencyContactName = name || '';
+  req.user.emergencyContactPhone = phone || '';
+  await req.user.save();
+  res.json({
+    message: 'Emergency contact saved',
+    emergencyContactName: req.user.emergencyContactName,
+    emergencyContactPhone: req.user.emergencyContactPhone,
+  });
+}
+
+module.exports = { register, login, getMe, setEmergencyContact, publicUser };

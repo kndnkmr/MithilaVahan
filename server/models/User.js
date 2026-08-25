@@ -57,6 +57,10 @@ const userSchema = new mongoose.Schema(
     ratingAvg: { type: Number, default: 0 },
     ratingCount: { type: Number, default: 0 },
 
+    // Safety: a trusted contact alerted via the SOS button (rider).
+    emergencyContactName: { type: String, default: '' },
+    emergencyContactPhone: { type: String, default: '' },
+
     // Password reset
     resetPasswordToken: { type: String, default: undefined },
     resetPasswordExpire: { type: Date, default: undefined },

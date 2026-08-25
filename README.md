@@ -228,6 +228,7 @@ Quick test flow:
 | POST | `/api/auth/register` | Public | Register (rider/driver) |
 | POST | `/api/auth/login` | Public | Login by phone |
 | GET | `/api/auth/me` | Protected | Current user |
+| PUT | `/api/auth/emergency-contact` | Protected | Set safety contact (name + phone) |
 
 ### Cities & Settings
 | Method | Endpoint | Access | Description |
@@ -255,6 +256,8 @@ Quick test flow:
 | PUT | `/api/trips/:id/rate` | Rider | Rate completed trip |
 | PUT | `/api/trips/:id/claim-paid` | Rider | Mark a UPI trip as paid (→ awaiting driver confirm) |
 | PUT | `/api/trips/:id/confirm-payment` | Driver | Confirm payment received |
+| PUT | `/api/trips/:id/sos` | Rider | Raise an SOS on an active trip (alerts admins) |
+| GET | `/api/trips/share/:token` | **Public** | Read-only shared trip status (no login) |
 
 ### Driver
 | Method | Endpoint | Access | Description |
@@ -332,6 +335,12 @@ Push to GitHub → Render + Vercel auto-redeploy.
 ## Roadmap (Phase 2+)
 
 **Done in Phase 2:**
+- **Safety** ✅ — rider **emergency contact**, a one-tap **SOS** on active trips (flags the
+  trip for admins in real time + opens a pre-filled WhatsApp alert to the emergency contact
+  with a live link + location), and a **public "share my trip" link** (`/t/:token`, no login)
+  showing live status + map. The share page is deliberately minimal — first name, vehicle,
+  status, live location only; **no phone numbers**. Fully free.
+  See [HOW_IT_WORKS.md](./HOW_IT_WORKS.md#safety--sos--shareable-trip-link-phase-2).
 - **Web Push notifications** ✅ — free phone alerts for trip events (driver assigned, trip
   started/completed, nearby request). Logged-in users get a dismissible "Enable" prompt; the
   service worker shows the notification even when the app is closed. Requires the `VAPID_*`

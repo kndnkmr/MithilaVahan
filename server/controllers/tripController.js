@@ -4,6 +4,7 @@
 const Trip = require('../models/Trip');
 const Vehicle = require('../models/Vehicle');
 const User = require('../models/User');
+const crypto = require('crypto');
 const Settings = require('../models/Settings');
 const { estimateFare } = require('../utils/fare');
 const { emitNewTripToCity, emitToUser } = require('../socket');
@@ -144,6 +145,8 @@ async function acceptTrip(req, res) {
     }
 
     // Atomic claim: only succeeds if still 'requested' (prevents two drivers grabbing it).
+    // Also mint a share token now so the rider can share a live trip link.
+    const shareToken = crypto.randomBytes(12).toString('hex');
     const trip = await Trip.findOneAndUpdate(
       { _id: req.params.id, status: 'requested' },
       {
@@ -151,6 +154,7 @@ async function acceptTrip(req, res) {
         vehicle: vehicle ? vehicle._id : undefined,
         status: 'accepted',
         acceptedAt: new Date(),
+        shareToken,
       },
       { new: true }
     ).populate(POPULATE);
@@ -360,7 +364,84 @@ async function confirmPayment(req, res) {
   }
 }
 
+// GET /api/trips/share/:token  (PUBLIC — no auth)
+// Returns a deliberately MINIMAL, safe payload for the shareable trip page.
+// Never includes phone numbers, exact rider identity, or payment info.
+async function sharedTrip(req, res) {
+  try {
+    const trip = await Trip.findOne({ shareToken: req.params.token })
+      .populate('driver', 'name ratingAvg')
+      .populate('vehicle', 'type model registrationNumber');
+    if (!trip) return res.status(404).json({ message: 'Trip not found' });
+
+    // Only expose live location while the trip is actually in progress.
+    const active = ['accepted', 'started'].includes(trip.status);
+
+    res.json({
+      trip: {
+        status: trip.status,
+        vehicleType: trip.vehicleType,
+        mode: trip.mode,
+        destination: trip.mode === 'outstation' ? trip.destination : '',
+        pickup: trip.pickup?.address || '',
+        // driver first name only — enough for reassurance, not full identity
+        driverName: trip.driver ? String(trip.driver.name).split(' ')[0] : '',
+        driverRating: trip.driver?.ratingAvg || 0,
+        vehicle: trip.vehicle
+          ? { model: trip.vehicle.model, plate: trip.vehicle.registrationNumber, type: trip.vehicle.type }
+          : null,
+        driverLocation: active ? trip.lastDriverLocation || null : null,
+        pickupCoordinates:
+          trip.pickup?.coordinates &&
+          !(trip.pickup.coordinates[0] === 0 && trip.pickup.coordinates[1] === 0)
+            ? trip.pickup.coordinates
+            : null,
+        sosActive: !!trip.sosRaisedAt,
+      },
+    });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to load shared trip', error: err.message });
+  }
+}
+
+// PUT /api/trips/:id/sos  (rider raises an SOS during an active trip)
+async function raiseSos(req, res) {
+  try {
+    const { lng, lat } = req.body;
+    const trip = await Trip.findById(req.params.id).populate(POPULATE);
+    if (!trip) return res.status(404).json({ message: 'Trip not found' });
+    if (String(trip.rider._id) !== String(req.user._id)) {
+      return res.status(403).json({ message: 'Not your trip' });
+    }
+    if (!['accepted', 'started'].includes(trip.status)) {
+      return res.status(400).json({ message: 'SOS is only available during an active trip' });
+    }
+
+    trip.sosRaisedAt = new Date();
+    if (Number.isFinite(lng) && Number.isFinite(lat)) trip.sosLocation = [lng, lat];
+    await trip.save();
+
+    // Flag every admin (in-app + push) so the platform can act.
+    const admins = await User.find({ role: 'admin' }).select('_id');
+    for (const a of admins) {
+      emitToUser(String(a._id), 'trip:sos', {
+        tripId: String(trip._id),
+        riderName: trip.rider.name,
+        city: trip.city,
+      });
+      sendPushToUser(a._id, {
+        title: '🚨 SOS raised',
+        body: `${trip.rider.name} raised an SOS on a ${trip.vehicleType} trip in ${trip.city}.`,
+      });
+    }
+
+    res.json({ message: 'SOS raised', shareToken: trip.shareToken });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to raise SOS', error: err.message });
+  }
+}
+
 module.exports = {
   requestTrip, availableTrips, myTrips, acceptTrip, updateStatus, cancelTrip, rateTrip,
-  claimPaid, confirmPayment,
+  claimPaid, confirmPayment, sharedTrip, raiseSos,
 };

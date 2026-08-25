@@ -84,6 +84,20 @@ const tripSchema = new mongoose.Schema(
     // Rating (rider rates driver after completion)
     rating: { type: Number, min: 1, max: 5 },
     review: { type: String, default: '' },
+
+    // --- Safety ---
+    // Unguessable token for the public "share my trip" page (no login needed).
+    // Generated when a driver accepts, so there's a driver+vehicle to show.
+    shareToken: { type: String, unique: true, sparse: true, default: undefined },
+
+    // Latest driver location, cached here so the public share page can read it
+    // without touching the driver's User record. [lng, lat].
+    lastDriverLocation: { type: [Number], default: undefined },
+    lastDriverLocationAt: { type: Date },
+
+    // SOS: raised by the rider during an active trip.
+    sosRaisedAt: { type: Date },
+    sosLocation: { type: [Number], default: undefined }, // [lng, lat] where SOS was pressed
   },
   { timestamps: true }
 );

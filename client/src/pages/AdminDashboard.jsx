@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { adminAPI } from '../services/api';
+import { getSocket } from '../services/socket';
 
 export default function AdminDashboard() {
   const [tab, setTab] = useState('drivers');
@@ -21,6 +22,16 @@ export default function AdminDashboard() {
     loadDrivers();
     loadVehicles();
     loadSettings();
+
+    // Live SOS alerts — a raised SOS is the one thing an admin must not miss.
+    const socket = getSocket();
+    if (socket) {
+      const onSos = ({ riderName, city }) => {
+        toast.error(`🚨 SOS: ${riderName} in ${city}. Contact them immediately.`, { duration: 15000 });
+      };
+      socket.on('trip:sos', onSos);
+      return () => socket.off('trip:sos', onSos);
+    }
   }, []);
 
   const saveCommission = async () => {

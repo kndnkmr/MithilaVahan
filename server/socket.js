@@ -56,7 +56,7 @@ function initSocket(server) {
         const activeTrip = await Trip.findOne({
           driver: socket.userId,
           status: { $in: ['accepted', 'started'] },
-        }).select('_id rider');
+        }).select('_id rider lastDriverLocationAt');
 
         if (activeTrip) {
           io.to(`user:${activeTrip.rider}`).emit('trip:driver-location', {
@@ -64,6 +64,17 @@ function initSocket(server) {
             lng,
             lat,
           });
+
+          // Cache the location on the trip so the PUBLIC share page (which has
+          // no socket auth) can read it. Throttled to ~once every 10s to avoid
+          // hammering the DB with every GPS tick.
+          const last = activeTrip.lastDriverLocationAt?.getTime() || 0;
+          if (Date.now() - last > 10000) {
+            await Trip.updateOne(
+              { _id: activeTrip._id },
+              { lastDriverLocation: [lng, lat], lastDriverLocationAt: new Date() }
+            );
+          }
         }
       } catch (_) {}
     });

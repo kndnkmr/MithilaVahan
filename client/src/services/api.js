@@ -18,6 +18,7 @@ export const authAPI = {
   register: (data) => api.post('/auth/register', data),
   login: (data) => api.post('/auth/login', data),
   me: () => api.get('/auth/me'),
+  setEmergencyContact: (data) => api.put('/auth/emergency-contact', data),
 };
 
 export const cityAPI = {
@@ -41,6 +42,8 @@ export const tripAPI = {
   rate: (id, data) => api.put(`/trips/${id}/rate`, data),
   claimPaid: (id) => api.put(`/trips/${id}/claim-paid`),
   confirmPayment: (id) => api.put(`/trips/${id}/confirm-payment`),
+  sos: (id, coords) => api.put(`/trips/${id}/sos`, coords),
+  shared: (token) => api.get(`/trips/share/${token}`),
 };
 
 export const settingsAPI = {

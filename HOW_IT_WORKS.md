@@ -317,6 +317,37 @@ Rider rates a completed trip (1–5)
 ```
 One rating per trip (guarded), and only the rider on that trip can rate it.
 
+### Safety — SOS + shareable trip link (Phase 2)
+
+The biggest trust gap vs Ola/Uber that we *can* close with code. Three free pieces:
+
+**Emergency contact** — the rider saves a trusted name + phone (`PUT /api/auth/emergency-contact`,
+stored on `User`). This is who the SOS button alerts.
+
+**Share my trip** — when a driver accepts, the server mints an unguessable `shareToken` on the
+trip. The rider can WhatsApp a `/t/:token` link to family. That page hits a **public** endpoint:
+```
+GET /api/trips/share/:token   (no auth)
+  → returns ONLY: status, vehicle type/model/plate, driver FIRST name + rating,
+    pickup, destination, live driver location (only while active), sosActive
+  → deliberately excludes ALL phone numbers, rider identity, and payment info
+```
+The `SharedTrip` page polls this every 8s (no socket auth on a public page) and reuses the same
+`LiveTripMap`. Live location comes from `lastDriverLocation`, which the `driver:location` socket
+handler caches onto the trip (throttled to ~once/10s so it doesn't hammer the DB).
+
+**SOS** — on an active trip the rider taps SOS (`PUT /api/trips/:id/sos`):
+```
+  → records sosRaisedAt (+ location) on the trip
+  → alerts EVERY admin in real time (Socket.io 'trip:sos') + Web Push
+  → the frontend then opens a pre-filled WhatsApp message to the rider's
+    emergency contact with the live /t/:token link and a Google Maps location pin
+```
+The public share page also shows a red "SOS raised" banner so anyone tracking sees it.
+
+**Privacy is the crux** (verified in the test): the public payload leaks no phone numbers and
+only the driver's first name. SOS is rider-only (driver gets 403).
+
 ### Payments — direct UPI + admin commission control
 
 Money is **direct rider → driver** (UPI or cash); the platform never holds it — same model as
@@ -411,6 +442,8 @@ routes/middleware/sockets without error.
 | Admin actions | `server/controllers/adminController.js` |
 | Payment flow (UPI) | `tripController` claimPaid/confirmPayment + `TripCard.jsx` payment section |
 | Commission / platform settings | `server/models/Settings.js` + Admin → Settings tab (`AdminDashboard.jsx`) |
+| Safety: SOS + emergency contact | `tripController` raiseSos + `authController` setEmergencyContact + `EmergencyContact.jsx` |
+| Safety: public share link | `tripController.sharedTrip` (`GET /trips/share/:token`) + `SharedTrip.jsx` (`/t/:token`) |
 | Launch cities / fare slabs | `server/utils/seedCities.js` (initial) or `/api/admin/cities` (live) |
 | The booking screen | `client/src/pages/RiderBook.jsx` |
 | The driver screen | `client/src/pages/DriverDashboard.jsx` |
