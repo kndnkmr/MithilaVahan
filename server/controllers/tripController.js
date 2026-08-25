@@ -20,13 +20,23 @@ const POPULATE = [
 async function requestTrip(req, res) {
   try {
     const {
-      city, mode, vehicleType, pickup, drop,
+      city, mode, vehicleType, pickup, drop, destination, tripType,
       scheduledAt, days, distanceKm, paymentMode, notes, vehicleId,
     } = req.body;
 
     if (!city || !vehicleType || !pickup?.address) {
       return res.status(400).json({ message: 'City, vehicle type, and pickup address are required' });
     }
+
+    // Normalize the mode to one the schema allows.
+    const safeMode = ['hire', 'outstation'].includes(mode) ? mode : 'trip';
+
+    // Outstation trips need a destination.
+    if (safeMode === 'outstation' && !destination) {
+      return res.status(400).json({ message: 'Destination is required for an outstation trip' });
+    }
+
+    const safeTripType = tripType === 'round-trip' ? 'round-trip' : 'one-way';
 
     // Optional: rider requested a specific vehicle. Estimate fare from it if given.
     let vehicle = null;
@@ -35,17 +45,19 @@ async function requestTrip(req, res) {
     }
 
     const estimatedFare = vehicle
-      ? estimateFare({ mode: mode || 'trip', vehicle, distanceKm, days })
+      ? estimateFare({ mode: safeMode, vehicle, distanceKm, days, tripType: safeTripType })
       : 0;
 
     const trip = await Trip.create({
       rider: req.user._id,
       city,
-      mode: mode === 'hire' ? 'hire' : 'trip',
+      mode: safeMode,
       vehicleType,
       vehicle: vehicle ? vehicle._id : null,
       pickup: { address: pickup.address, coordinates: pickup.coordinates || [0, 0] },
       drop: drop ? { address: drop.address || '', coordinates: drop.coordinates || [0, 0] } : undefined,
+      destination: safeMode === 'outstation' ? destination : '',
+      tripType: safeMode === 'outstation' ? safeTripType : 'one-way',
       scheduledAt: scheduledAt || Date.now(),
       days: days || 1,
       distanceKm: distanceKm || 0,

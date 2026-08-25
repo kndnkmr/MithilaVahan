@@ -88,7 +88,9 @@ and lookups simple (same pattern as ProMedicoz's doctor/patient/admin model).
   "driver": "<userId|null>",       // set when a driver accepts
   "vehicle": "<vehicleId|null>",
   "city": "Darbhanga",
-  "mode": "trip",                  // trip (point-to-point) | hire (per-day)
+  "mode": "trip",                  // trip (in-city) | hire (per-day) | outstation (inter-city)
+  "destination": "",               // outstation only, e.g. "Patna"
+  "tripType": "one-way",           // outstation only: one-way | round-trip
   "vehicleType": "car",
   "pickup": { "address": "Tower Chowk", "coordinates": [0,0] },
   "drop":   { "address": "Junction",    "coordinates": [0,0] },
@@ -238,8 +240,12 @@ who cancelled are recorded, and the other party is notified.
 ## Fare Logic (MVP)
 
 `server/utils/fare.js` is deliberately simple and dependency-free:
-- **trip (point-to-point):** `baseFare + perKmRate × distanceKm`
+- **trip (in-city point-to-point):** `baseFare + perKmRate × distanceKm`
 - **hire (per day):** `perDayRate × days`
+- **outstation (inter-city):** `baseFare + perKmRate × distanceKm`, with `distanceKm`
+  doubled for a **round-trip** (the vehicle covers the route there and back). Outstation
+  trips are usually scheduled (`scheduledAt`) for a future date/time and carry a free-text
+  `destination` (e.g. "Patna", "Kathmandu") plus `tripType` (one-way / round-trip).
 
 There is **no maps/distance API yet** — this keeps the MVP free and simple, and city fare
 slabs give riders a realistic expectation up front. `estimateFare()` takes distance as an

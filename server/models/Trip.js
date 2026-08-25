@@ -1,7 +1,12 @@
 // Trip model — a ride/rental booking between a rider and a driver.
-// Supports two modes: point-to-point "trip" and duration-based "hire".
+// Supports three modes:
+//   'trip'       = in-city point-to-point (per-km)
+//   'hire'       = book for a duration / per day
+//   'outstation' = long inter-city journey (per-km, one-way or round-trip)
 
 const mongoose = require('mongoose');
+
+const TRIP_MODES = ['trip', 'hire', 'outstation'];
 
 const TRIP_STATUSES = [
   'requested', // rider created it, waiting for a driver to accept
@@ -21,8 +26,7 @@ const tripSchema = new mongoose.Schema(
 
     city: { type: String, required: true, trim: true, index: true },
 
-    // 'trip' = point-to-point (per-km), 'hire' = book for a duration (per-day)
-    mode: { type: String, enum: ['trip', 'hire'], default: 'trip' },
+    mode: { type: String, enum: TRIP_MODES, default: 'trip' },
 
     vehicleType: { type: String, required: true }, // requested type (car/tempo/bus/...)
 
@@ -35,7 +39,14 @@ const tripSchema = new mongoose.Schema(
       coordinates: { type: [Number], default: [0, 0] },
     },
 
-    // When the rider wants the vehicle (now, or a scheduled time)
+    // For outstation: the destination town/place (free text, e.g. "Patna").
+    destination: { type: String, trim: true, default: '' },
+
+    // For outstation: one-way vs round-trip (driver waits & returns).
+    tripType: { type: String, enum: ['one-way', 'round-trip'], default: 'one-way' },
+
+    // When the rider wants the vehicle (now, or a scheduled time).
+    // Outstation trips are almost always scheduled for a future date/time.
     scheduledAt: { type: Date, default: Date.now },
 
     // For hire mode
@@ -69,3 +80,4 @@ const tripSchema = new mongoose.Schema(
 
 module.exports = mongoose.model('Trip', tripSchema);
 module.exports.TRIP_STATUSES = TRIP_STATUSES;
+module.exports.TRIP_MODES = TRIP_MODES;

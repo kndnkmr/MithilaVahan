@@ -39,8 +39,10 @@ Three roles: **Rider**, **Driver/Owner**, **Admin**.
 - **Driver + vehicle** — driver adds vehicles (type, model, reg. no, capacity, city,
   per-km / per-day / base fare), goes online/offline. Admin approves both the driver
   and each vehicle before they go live.
-- **Rider booking** — pick city, vehicle type, pickup/drop (or hire days), payment mode.
-  City fare-slab hints shown. Trip is broadcast to online drivers in that city.
+- **Rider booking (three modes)** — **In-city** point-to-point (pickup/drop),
+  **Hire** (per day), and **Outstation** (long inter-city trip: destination,
+  one-way/round-trip, scheduled pickup, per-km estimate). City fare-slab hints shown for
+  in-city. Trip is broadcast to online drivers in that city (nearest first when GPS is on).
 - **Trip lifecycle** — `requested → accepted → started → completed` (or `cancelled`),
   with an atomic "first driver to accept wins" claim.
 - **Real-time** — Socket.io pushes new requests to a city's online drivers and status
@@ -294,9 +296,14 @@ Rider rates the driver
    → driver's ratingAvg / ratingCount updated
 ```
 
-Fare (MVP): `trip` = baseFare + perKm × km; `hire` = perDay × days. No maps/distance API
-yet — this is intentionally simple and can be swapped for a real distance API later
-without changing any callers (see `utils/fare.js`).
+Fare (MVP), by mode (`server/utils/fare.js`):
+- `trip` (in-city) = `baseFare + perKm × km`
+- `hire` = `perDay × days`
+- `outstation` = `baseFare + perKm × km`, with `km` doubled for a **round-trip** (there and back)
+
+No maps/distance API yet — intentionally simple. The rider gives an approximate distance
+and the driver confirms the final fare. This can be swapped for a real distance API later
+without changing any callers.
 
 ---
 

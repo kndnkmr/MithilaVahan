@@ -21,7 +21,12 @@ export default function TripCard({ trip, role, onAction }) {
     <div className="bg-white border rounded-lg p-4">
       <div className="flex items-center justify-between mb-2">
         <div className="font-medium capitalize">
-          {trip.vehicleType} · {trip.mode === 'hire' ? `Hire (${trip.days}d)` : 'Trip'}
+          {trip.vehicleType} ·{' '}
+          {trip.mode === 'hire'
+            ? `Hire (${trip.days}d)`
+            : trip.mode === 'outstation'
+            ? 'Outstation'
+            : 'Trip'}
         </div>
         <span className={`text-xs px-2 py-0.5 rounded-full ${STATUS_STYLES[trip.status]}`}>
           {trip.status}
@@ -31,7 +36,21 @@ export default function TripCard({ trip, role, onAction }) {
       <div className="text-sm text-gray-600 space-y-0.5">
         <div>Pickup: {trip.pickup?.address}</div>
         {trip.mode === 'trip' && trip.drop?.address && <div>Drop: {trip.drop.address}</div>}
+        {trip.mode === 'outstation' && (
+          <>
+            <div>
+              To: <b>{trip.destination}</b>{' '}
+              <span className="text-gray-400">
+                ({trip.tripType === 'round-trip' ? 'round trip' : 'one way'})
+              </span>
+            </div>
+            {trip.distanceKm > 0 && <div>Approx distance: {trip.distanceKm} km</div>}
+          </>
+        )}
         <div>City: {trip.city}</div>
+        {(trip.mode === 'outstation' || trip.mode === 'hire') && trip.scheduledAt && (
+          <div>When: {new Date(trip.scheduledAt).toLocaleString('en-IN')}</div>
+        )}
         {trip.estimatedFare > 0 && <div>Estimate: ₹{trip.estimatedFare}</div>}
         {trip.status === 'completed' && trip.finalFare > 0 && (
           <div className="font-medium text-gray-800">Fare paid: ₹{trip.finalFare}</div>
