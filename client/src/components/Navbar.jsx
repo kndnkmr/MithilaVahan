@@ -1,5 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import InstallButton from './InstallButton';
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -18,6 +19,7 @@ export default function Navbar() {
         </Link>
 
         <div className="flex items-center gap-4 text-sm">
+          <InstallButton />
           {!user && (
             <>
               <Link to="/login" className="text-gray-600 hover:text-brand-600">

@@ -322,6 +322,9 @@ Push to GitHub → Render + Vercel auto-redeploy.
 ## Roadmap (Phase 2+)
 
 **Done in Phase 2:**
+- **PWA install** ✅ — installable on phones (web manifest + icons + a conservative
+  network-first service worker). An "Install" button appears in the navbar on Android/Chrome;
+  iOS users get "Add to Home Screen" guidance. Fully free, no third-party services.
 - **Live GPS tracking** ✅ — while a trip is `accepted`/`started`, the driver streams
   location and the rider watches the vehicle move on a **free OpenStreetMap (Leaflet)** map
   (no maps API key / billing). Relayed rider-only via Socket.io (`trip:driver-location`).

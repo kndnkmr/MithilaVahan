@@ -201,6 +201,25 @@ are returned nearest-first; a driver beyond 15 km, an offline driver, a pending 
 driver, and an other-city driver are all correctly excluded; and a `[0,0]` pickup returns
 an empty list (broadcast-only fallback).
 
+### PWA / installable app (Phase 2)
+
+MithilaVahan is installable on a phone home screen (no app store), via a standard web
+manifest + service worker.
+- `manifest.webmanifest` — name, `display: standalone`, theme color, and 192/512 icons
+  (plus a `maskable` icon so Android doesn't clip it). Linked from `index.html` along with
+  the `apple-touch-icon` and iOS meta tags.
+- `sw.js` — **deliberately conservative** so it never serves stale trip/API data:
+  `/api` and `/socket.io` are never cached; page navigations are **network-first** (cached
+  shell only as an offline fallback); static assets are cache-first for speed. Registered in
+  `main.jsx` **production-only** (skipped in dev to avoid fighting Vite's HMR).
+- `InstallButton.jsx` — captures `beforeinstallprompt` (Android/Chrome) to trigger the native
+  install; on iOS/Safari (no such event) it shows an "Add to Home Screen" hint; renders
+  nothing once already installed (`display-mode: standalone`).
+
+**If you change caching:** keep API/socket traffic uncached and navigations network-first —
+a ride app must not show a stale trip. Bump the `CACHE` version string in `sw.js` when you
+change cached assets so old caches are cleared.
+
 ### Live GPS tracking (Phase 2)
 
 Once a trip is `accepted` or `started`, the rider can watch the driver's vehicle move on a
@@ -321,6 +340,7 @@ routes/middleware/sockets without error.
 | Browser geolocation | `client/src/services/location.js` (used by RiderBook + DriverDashboard) |
 | Live tracking (relay) | `server/socket.js` `driver:location` handler → `trip:driver-location` |
 | Live tracking (map) | `client/src/components/LiveTripMap.jsx` (Leaflet/OSM) + `MyTrips.jsx` |
+| PWA (installable) | `client/public/manifest.webmanifest` + `client/public/sw.js` + `InstallButton.jsx` |
 | Vehicle rules | `server/controllers/vehicleController.js` + `models/Vehicle.js` |
 | Admin actions | `server/controllers/adminController.js` |
 | Launch cities / fare slabs | `server/utils/seedCities.js` (initial) or `/api/admin/cities` (live) |
