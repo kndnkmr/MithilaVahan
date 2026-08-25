@@ -54,6 +54,10 @@ export default function MyTrips() {
         if (!rating || rating < 1 || rating > 5) return toast.error('Enter 1-5');
         const review = window.prompt('Any comment? (optional)') || '';
         await tripAPI.rate(trip._id, { rating, review });
+      } else if (action === 'claim-paid') {
+        await tripAPI.claimPaid(trip._id);
+      } else if (action === 'confirm-payment') {
+        await tripAPI.confirmPayment(trip._id);
       }
       toast.success('Done');
       load();

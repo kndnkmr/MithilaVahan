@@ -98,6 +98,9 @@ and lookups simple (same pattern as ProMedicoz's doctor/patient/admin model).
   "status": "requested",           // requested→accepted→started→completed | cancelled
   "estimatedFare": 150, "finalFare": 0, "distanceKm": 0,
   "paymentMode": "cash",           // cash | upi
+  "paymentStatus": "pending",      // pending | claimed | paid
+  "commissionPercent": 0,          // snapshot at completion (0 = free)
+  "platformFee": 0,                // finalFare * commissionPercent / 100
   "rating": null, "review": ""
 }
 ```
@@ -314,6 +317,34 @@ Rider rates a completed trip (1–5)
 ```
 One rating per trip (guarded), and only the rider on that trip can rate it.
 
+### Payments — direct UPI + admin commission control
+
+Money is **direct rider → driver** (UPI or cash); the platform never holds it — same model as
+ProMedicoz. For a UPI trip, once it's completed:
+
+```
+Rider sees the driver's UPI id / QR on the trip
+   → pays directly in their own UPI app
+   → PUT /trips/:id/claim-paid   → paymentStatus 'claimed' (driver notified)
+Driver receives the money, verifies in their bank/UPI app
+   → PUT /trips/:id/confirm-payment → paymentStatus 'paid' (rider notified)
+```
+
+`paymentStatus` moves `pending → claimed → paid`. Cash trips can be confirmed the same way or
+just left (money changed hands in person).
+
+**Admin commission (the free-now, monetize-later switch):**
+- `Settings` is a singleton with `commissionPercent` (default **0 = free**). Admin edits it in
+  the Admin → Settings tab (`PUT /api/admin/settings`); clients read it via `GET /api/settings`.
+- On **completion**, the trip snapshots the *current* `commissionPercent` and computes
+  `platformFee = finalFare × percent / 100` onto the Trip. Snapshotting means changing the
+  platform rate later **never rewrites historical trips** — each keeps the rate that applied
+  when it completed (verified in the test).
+- While payments are direct UPI, the fee is **informational + recorded** (shown to the driver
+  as "you keep ₹X"). Actually *collecting* a commission automatically needs an online payment
+  gateway (e.g. Razorpay Route) — deliberately deferred until there's volume and a registered
+  business. The data model is already ready for it.
+
 ### Journey 6: Cancellation
 Either party (or admin) can cancel while a trip is `requested` or `accepted`. The reason and
 who cancelled are recorded, and the other party is notified.
@@ -378,6 +409,8 @@ routes/middleware/sockets without error.
 | Web Push (send) | `server/utils/push.js` + `sendPushToUser(...)` calls in `tripController.js` |
 | Vehicle rules | `server/controllers/vehicleController.js` + `models/Vehicle.js` |
 | Admin actions | `server/controllers/adminController.js` |
+| Payment flow (UPI) | `tripController` claimPaid/confirmPayment + `TripCard.jsx` payment section |
+| Commission / platform settings | `server/models/Settings.js` + Admin → Settings tab (`AdminDashboard.jsx`) |
 | Launch cities / fare slabs | `server/utils/seedCities.js` (initial) or `/api/admin/cities` (live) |
 | The booking screen | `client/src/pages/RiderBook.jsx` |
 | The driver screen | `client/src/pages/DriverDashboard.jsx` |

@@ -60,7 +60,17 @@ const tripSchema = new mongoose.Schema(
     distanceKm: { type: Number, default: 0 },
 
     paymentMode: { type: String, enum: ['cash', 'upi'], default: 'cash' },
-    paymentStatus: { type: String, enum: ['pending', 'paid'], default: 'pending' },
+    // pending  -> not paid yet
+    // claimed  -> rider says they've paid (UPI), awaiting driver confirmation
+    // paid     -> driver confirmed receipt
+    paymentStatus: { type: String, enum: ['pending', 'claimed', 'paid'], default: 'pending' },
+    paidAt: { type: Date },
+
+    // Commission snapshot, taken at completion from the platform Settings.
+    // Recorded per trip so historical trips keep the rate that applied then,
+    // even if the admin changes the platform commission later.
+    commissionPercent: { type: Number, default: 0 },
+    platformFee: { type: Number, default: 0 }, // computed = finalFare * commissionPercent / 100
 
     notes: { type: String, default: '' },
     cancellationReason: { type: String, default: '' },

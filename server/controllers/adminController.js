@@ -4,6 +4,7 @@ const User = require('../models/User');
 const Vehicle = require('../models/Vehicle');
 const Trip = require('../models/Trip');
 const City = require('../models/City');
+const Settings = require('../models/Settings');
 
 // GET /api/admin/stats
 async function stats(req, res) {
@@ -99,7 +100,26 @@ async function setSuspension(req, res) {
   res.json({ message: user.isSuspended ? 'User deactivated' : 'User reactivated', user });
 }
 
+// GET /api/admin/settings
+async function getSettings(req, res) {
+  const s = await Settings.getSingleton();
+  res.json({ settings: { commissionPercent: s.commissionPercent, updatedAt: s.updatedAt } });
+}
+
+// PUT /api/admin/settings  { commissionPercent }
+async function updateSettings(req, res) {
+  const { commissionPercent } = req.body;
+  if (commissionPercent == null || commissionPercent < 0 || commissionPercent > 100) {
+    return res.status(400).json({ message: 'commissionPercent must be between 0 and 100' });
+  }
+  const s = await Settings.getSingleton();
+  s.commissionPercent = commissionPercent;
+  s.updatedBy = req.user._id;
+  await s.save();
+  res.json({ message: 'Settings updated', settings: { commissionPercent: s.commissionPercent } });
+}
+
 module.exports = {
   stats, listDrivers, setDriverStatus, listVehicles, setVehicleStatus,
-  addCity, updateCity, setSuspension,
+  addCity, updateCity, setSuspension, getSettings, updateSettings,
 };

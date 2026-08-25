@@ -15,16 +15,22 @@ async function setOnline(req, res) {
 
 // PUT /api/drivers/documents  (submit verification doc URLs)
 async function submitDocuments(req, res) {
-  const { drivingLicense, rcBook, insurance, whatsappNumber, upiId, city } = req.body;
+  const { drivingLicense, rcBook, insurance, whatsappNumber, upiId, qrImage, city } = req.body;
   const u = req.user;
   if (drivingLicense !== undefined) u.documents.drivingLicense = drivingLicense;
   if (rcBook !== undefined) u.documents.rcBook = rcBook;
   if (insurance !== undefined) u.documents.insurance = insurance;
   if (whatsappNumber !== undefined) u.whatsappNumber = whatsappNumber;
   if (upiId !== undefined) u.upiId = upiId;
+  if (qrImage !== undefined) u.qrImage = qrImage;
   if (city !== undefined) u.city = city;
   await u.save();
-  res.json({ message: 'Details saved', documents: u.documents });
+  res.json({
+    message: 'Details saved',
+    documents: u.documents,
+    upiId: u.upiId,
+    qrImage: u.qrImage,
+  });
 }
 
 module.exports = { setOnline, submitDocuments };

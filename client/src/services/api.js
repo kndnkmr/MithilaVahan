@@ -39,6 +39,12 @@ export const tripAPI = {
   updateStatus: (id, data) => api.put(`/trips/${id}/status`, data),
   cancel: (id, data) => api.put(`/trips/${id}/cancel`, data),
   rate: (id, data) => api.put(`/trips/${id}/rate`, data),
+  claimPaid: (id) => api.put(`/trips/${id}/claim-paid`),
+  confirmPayment: (id) => api.put(`/trips/${id}/confirm-payment`),
+};
+
+export const settingsAPI = {
+  get: () => api.get('/settings'),
 };
 
 export const driverAPI = {
@@ -58,6 +64,8 @@ export const adminAPI = {
   setDriverStatus: (id, status) => api.put(`/admin/drivers/${id}/status`, { status }),
   vehicles: (status) => api.get('/admin/vehicles', { params: { status } }),
   setVehicleStatus: (id, status) => api.put(`/admin/vehicles/${id}/status`, { status }),
+  getSettings: () => api.get('/admin/settings'),
+  updateSettings: (commissionPercent) => api.put('/admin/settings', { commissionPercent }),
 };
 
 export default api;

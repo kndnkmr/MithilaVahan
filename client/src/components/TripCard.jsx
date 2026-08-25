@@ -53,9 +53,62 @@ export default function TripCard({ trip, role, onAction }) {
         )}
         {trip.estimatedFare > 0 && <div>Estimate: ₹{trip.estimatedFare}</div>}
         {trip.status === 'completed' && trip.finalFare > 0 && (
-          <div className="font-medium text-gray-800">Fare paid: ₹{trip.finalFare}</div>
+          <div className="font-medium text-gray-800">Fare: ₹{trip.finalFare}</div>
+        )}
+        {/* Platform fee only shown when a commission is actually in effect (> 0) */}
+        {trip.status === 'completed' && trip.commissionPercent > 0 && (
+          <div className="text-gray-500 text-xs">
+            Platform fee ({trip.commissionPercent}%): ₹{trip.platformFee}
+            {role === 'driver' && trip.finalFare > 0 && (
+              <> · you keep ₹{trip.finalFare - trip.platformFee}</>
+            )}
+          </div>
         )}
       </div>
+
+      {/* Payment (direct UPI) — shown once the trip is completed and paid by UPI */}
+      {trip.status === 'completed' && trip.paymentMode === 'upi' && (
+        <div className="mt-2 border-t pt-2 text-sm">
+          {role === 'rider' && trip.paymentStatus !== 'paid' && (
+            <div className="space-y-1">
+              <div className="text-gray-600">
+                Pay ₹{trip.finalFare} directly to your driver by UPI:
+              </div>
+              {trip.driver?.upiId && (
+                <div className="font-medium">UPI: {trip.driver.upiId}</div>
+              )}
+              {trip.driver?.qrImage && (
+                <img src={trip.driver.qrImage} alt="Driver UPI QR"
+                  className="w-32 h-32 object-contain border rounded-md" />
+              )}
+              {!trip.driver?.upiId && !trip.driver?.qrImage && (
+                <div className="text-gray-400 text-xs">
+                  Driver hasn't added UPI details — pay by cash or ask on WhatsApp.
+                </div>
+              )}
+            </div>
+          )}
+          <div className="mt-1">
+            {trip.paymentStatus === 'pending' && role === 'rider' && (
+              <button onClick={() => onAction?.('claim-paid', trip)}
+                className="bg-brand-500 text-white text-sm px-3 py-1.5 rounded-md">I've paid</button>
+            )}
+            {trip.paymentStatus === 'claimed' && role === 'rider' && (
+              <span className="text-yellow-700 text-xs">Waiting for the driver to confirm your payment…</span>
+            )}
+            {trip.paymentStatus === 'claimed' && role === 'driver' && (
+              <button onClick={() => onAction?.('confirm-payment', trip)}
+                className="bg-green-600 text-white text-sm px-3 py-1.5 rounded-md">Payment received</button>
+            )}
+            {trip.paymentStatus === 'pending' && role === 'driver' && (
+              <span className="text-gray-400 text-xs">Awaiting payment from rider.</span>
+            )}
+            {trip.paymentStatus === 'paid' && (
+              <span className="text-green-700 text-xs">✓ Payment confirmed</span>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* The other party's contact once assigned */}
       {other && (

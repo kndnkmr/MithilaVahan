@@ -4,15 +4,17 @@
 const Trip = require('../models/Trip');
 const Vehicle = require('../models/Vehicle');
 const User = require('../models/User');
+const Settings = require('../models/Settings');
 const { estimateFare } = require('../utils/fare');
 const { emitNewTripToCity, emitToUser } = require('../socket');
 const { sendPushToUser } = require('../utils/push');
 const { findNearestDrivers } = require('../utils/dispatch');
 
 // Populate helper so both parties always get readable data.
+// The driver's upiId/qrImage are included so a UPI rider can see how to pay.
 const POPULATE = [
   { path: 'rider', select: 'name phone whatsappNumber' },
-  { path: 'driver', select: 'name phone whatsappNumber ratingAvg ratingCount' },
+  { path: 'driver', select: 'name phone whatsappNumber ratingAvg ratingCount upiId qrImage' },
   { path: 'vehicle', select: 'type model registrationNumber capacity photos' },
 ];
 
@@ -195,6 +197,12 @@ async function updateStatus(req, res) {
     if (status === 'completed') {
       trip.completedAt = new Date();
       trip.finalFare = finalFare != null ? finalFare : trip.estimatedFare;
+
+      // Snapshot the platform commission that applies right now, so this trip
+      // keeps its rate even if the admin changes it later. Default 0 = free.
+      const settings = await Settings.getSingleton();
+      trip.commissionPercent = settings.commissionPercent;
+      trip.platformFee = Math.round((trip.finalFare * settings.commissionPercent) / 100);
     }
     await trip.save();
 
@@ -290,6 +298,69 @@ async function rateTrip(req, res) {
   }
 }
 
+// PUT /api/trips/:id/claim-paid  (rider marks that they've paid via UPI)
+// Money is direct rider->driver; this just records the rider's claim and
+// pings the driver to confirm receipt.
+async function claimPaid(req, res) {
+  try {
+    const trip = await Trip.findById(req.params.id).populate(POPULATE);
+    if (!trip) return res.status(404).json({ message: 'Trip not found' });
+    if (String(trip.rider._id) !== String(req.user._id)) {
+      return res.status(403).json({ message: 'Not your trip' });
+    }
+    if (trip.status !== 'completed') {
+      return res.status(400).json({ message: 'You can confirm payment once the trip is completed' });
+    }
+    if (trip.paymentStatus === 'paid') {
+      return res.status(400).json({ message: 'Payment already confirmed' });
+    }
+
+    trip.paymentStatus = 'claimed';
+    await trip.save();
+
+    if (trip.driver) {
+      emitToUser(String(trip.driver._id), 'trip:updated', trip);
+      sendPushToUser(trip.driver._id, {
+        title: 'Payment marked as sent',
+        body: `${trip.rider.name} says they paid ₹${trip.finalFare}. Confirm when received.`,
+      });
+    }
+
+    res.json({ message: 'Marked as paid — waiting for driver to confirm', trip });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to update payment', error: err.message });
+  }
+}
+
+// PUT /api/trips/:id/confirm-payment  (driver confirms they received the money)
+async function confirmPayment(req, res) {
+  try {
+    const trip = await Trip.findById(req.params.id).populate(POPULATE);
+    if (!trip) return res.status(404).json({ message: 'Trip not found' });
+    if (!trip.driver || String(trip.driver._id) !== String(req.user._id)) {
+      return res.status(403).json({ message: 'Not your trip' });
+    }
+    if (trip.status !== 'completed') {
+      return res.status(400).json({ message: 'Trip is not completed yet' });
+    }
+
+    trip.paymentStatus = 'paid';
+    trip.paidAt = new Date();
+    await trip.save();
+
+    emitToUser(String(trip.rider._id), 'trip:updated', trip);
+    sendPushToUser(trip.rider._id, {
+      title: 'Payment confirmed',
+      body: `Your driver confirmed receiving ₹${trip.finalFare}. Thank you!`,
+    });
+
+    res.json({ message: 'Payment confirmed', trip });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to confirm payment', error: err.message });
+  }
+}
+
 module.exports = {
   requestTrip, availableTrips, myTrips, acceptTrip, updateStatus, cancelTrip, rateTrip,
+  claimPaid, confirmPayment,
 };

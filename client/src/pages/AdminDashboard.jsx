@@ -7,16 +7,34 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState(null);
   const [drivers, setDrivers] = useState([]);
   const [vehicles, setVehicles] = useState([]);
+  const [commission, setCommission] = useState(0);
+  const [savingCommission, setSavingCommission] = useState(false);
 
   const loadStats = () => adminAPI.stats().then((r) => setStats(r.data)).catch(() => {});
   const loadDrivers = () => adminAPI.drivers().then((r) => setDrivers(r.data.drivers)).catch(() => {});
   const loadVehicles = () => adminAPI.vehicles().then((r) => setVehicles(r.data.vehicles)).catch(() => {});
+  const loadSettings = () =>
+    adminAPI.getSettings().then((r) => setCommission(r.data.settings.commissionPercent)).catch(() => {});
 
   useEffect(() => {
     loadStats();
     loadDrivers();
     loadVehicles();
+    loadSettings();
   }, []);
+
+  const saveCommission = async () => {
+    setSavingCommission(true);
+    try {
+      const res = await adminAPI.updateSettings(Number(commission));
+      setCommission(res.data.settings.commissionPercent);
+      toast.success('Commission updated');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed');
+    } finally {
+      setSavingCommission(false);
+    }
+  };
 
   const setDriverStatus = async (id, status) => {
     try {
@@ -73,7 +91,7 @@ export default function AdminDashboard() {
 
       {/* Tabs */}
       <div className="flex gap-2 mb-4 text-sm">
-        {[['drivers', 'Drivers'], ['vehicles', 'Vehicles']].map(([key, label]) => (
+        {[['drivers', 'Drivers'], ['vehicles', 'Vehicles'], ['settings', 'Settings']].map(([key, label]) => (
           <button key={key} onClick={() => setTab(key)}
             className={`px-3 py-1.5 rounded-md ${tab === key ? 'bg-brand-500 text-white' : 'bg-white border'}`}>
             {label}
@@ -130,6 +148,40 @@ export default function AdminDashboard() {
             </div>
           ))}
           {vehicles.length === 0 && <p className="text-gray-500 text-sm">No vehicles yet.</p>}
+        </div>
+      )}
+
+      {tab === 'settings' && (
+        <div className="bg-white border rounded-lg p-4 max-w-md space-y-3">
+          <h3 className="font-medium">Platform commission</h3>
+          <p className="text-sm text-gray-500">
+            Percentage the platform charges per completed trip. Keep it at <b>0</b> to stay
+            fully free (riders pay drivers directly by UPI/cash). Raising it starts recording a
+            platform fee on new trips — historical trips keep the rate that applied when they
+            completed.
+          </p>
+          <div className="flex items-center gap-2">
+            <input
+              type="number"
+              min={0}
+              max={100}
+              value={commission}
+              onChange={(e) => setCommission(e.target.value)}
+              className="w-24 border rounded-md px-3 py-2"
+            />
+            <span className="text-gray-600">%</span>
+            <button
+              onClick={saveCommission}
+              disabled={savingCommission}
+              className="bg-brand-500 text-white px-4 py-2 rounded-md text-sm disabled:opacity-60"
+            >
+              {savingCommission ? 'Saving…' : 'Save'}
+            </button>
+          </div>
+          <p className="text-xs text-gray-400">
+            Note: while payments are direct UPI, this fee is informational and recorded per
+            trip. Actual automatic collection needs an online payment gateway (added later).
+          </p>
         </div>
       )}
     </div>

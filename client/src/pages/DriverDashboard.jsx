@@ -99,6 +99,8 @@ export default function DriverDashboard() {
         await tripAPI.updateStatus(trip._id, { status: 'completed', finalFare: Number(fare) || undefined });
       } else if (action === 'cancel') {
         await tripAPI.cancel(trip._id, { reason: window.prompt('Reason?') || '' });
+      } else if (action === 'confirm-payment') {
+        await tripAPI.confirmPayment(trip._id);
       }
       toast.success('Done');
       loadAll();
@@ -135,6 +137,7 @@ export default function DriverDashboard() {
           ['requests', 'Requests'],
           ['active', 'My trips'],
           ['vehicles', 'My vehicles'],
+          ['payment', 'Payment'],
         ].map(([key, label]) => (
           <button
             key={key}
@@ -175,7 +178,60 @@ export default function DriverDashboard() {
       {tab === 'vehicles' && (
         <VehiclesTab vehicles={vehicles} cities={cities} onChange={loadAll} defaultCity={user.city} />
       )}
+
+      {tab === 'payment' && <PaymentTab user={user} updateUser={updateUser} />}
     </div>
+  );
+}
+
+// --- Payment details sub-tab: driver's UPI ID + optional QR image ---
+function PaymentTab({ user, updateUser }) {
+  const [upiId, setUpiId] = useState(user.upiId || '');
+  const [qrImage, setQrImage] = useState(user.qrImage || '');
+  const [saving, setSaving] = useState(false);
+
+  const save = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      const res = await driverAPI.submitDocuments({ upiId, qrImage });
+      updateUser({ upiId: res.data.upiId, qrImage: res.data.qrImage });
+      toast.success('Payment details saved');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to save');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <form onSubmit={save} className="bg-white border rounded-lg p-4 space-y-3 max-w-md">
+      <h3 className="font-medium">Your payment details</h3>
+      <p className="text-sm text-gray-500">
+        Riders pay you directly by UPI — the platform never holds your money and takes no cut.
+      </p>
+      <div>
+        <label className="block text-sm font-medium mb-1">UPI ID</label>
+        <input value={upiId} onChange={(e) => setUpiId(e.target.value)}
+          placeholder="yourname@upi" className="w-full border rounded-md px-3 py-2" />
+      </div>
+      <div>
+        <label className="block text-sm font-medium mb-1">QR image URL (optional)</label>
+        <input value={qrImage} onChange={(e) => setQrImage(e.target.value)}
+          placeholder="https://… link to your UPI QR image"
+          className="w-full border rounded-md px-3 py-2" />
+        <p className="text-xs text-gray-400 mt-1">
+          Paste a link to your UPI QR image so riders can scan it. (Image upload comes later.)
+        </p>
+      </div>
+      {qrImage && (
+        <img src={qrImage} alt="Your UPI QR" className="w-32 h-32 object-contain border rounded-md" />
+      )}
+      <button disabled={saving}
+        className="bg-brand-500 text-white px-4 py-2 rounded-md text-sm disabled:opacity-60">
+        {saving ? 'Saving…' : 'Save'}
+      </button>
+    </form>
   );
 }
 

@@ -48,6 +48,7 @@ const userSchema = new mongoose.Schema(
     // WhatsApp number for click-to-chat (falls back to phone)
     whatsappNumber: { type: String, default: '' },
     upiId: { type: String, default: '' },
+    qrImage: { type: String, default: '' }, // URL of the driver's UPI QR image (optional)
 
     // Admin can deactivate without deleting (keeps trip history)
     isSuspended: { type: Boolean, default: false },

@@ -48,7 +48,12 @@ Three roles: **Rider**, **Driver/Owner**, **Admin**.
 - **Real-time** — Socket.io pushes new requests to a city's online drivers and status
   updates to the rider. Free **Web Push** (VAPID) for phone alerts. **Click-to-WhatsApp**
   (`wa.me`, no paid API) for rider↔driver contact.
-- **Payments** — direct to driver (cash/UPI), no commission, platform holds no money.
+- **Payments (direct UPI/cash)** — rider pays the driver directly. For UPI, the driver's
+  UPI ID / QR is shown on the completed trip; rider taps **"I've paid"** → driver taps
+  **"Payment received"** to close the loop. Platform never holds money. An **admin-controlled
+  commission** (`commissionPercent`, default **0 = free**) is recorded per completed trip
+  (snapshotted, so changing it never rewrites past trips) — so a commission can be turned on
+  later without re-architecting. Automatic collection would need a payment gateway (deferred).
 - **Ratings** — rider rates the driver after completion; driver's average updates.
 - **Admin panel** — stats, approve/reject drivers and vehicles, add cities + fare slabs,
   suspend users.
@@ -224,10 +229,11 @@ Quick test flow:
 | POST | `/api/auth/login` | Public | Login by phone |
 | GET | `/api/auth/me` | Protected | Current user |
 
-### Cities
+### Cities & Settings
 | Method | Endpoint | Access | Description |
 |--------|----------|--------|-------------|
 | GET | `/api/cities` | Public | Active cities + fare slabs |
+| GET | `/api/settings` | Public | Platform settings (commission percent) |
 
 ### Vehicles
 | Method | Endpoint | Access | Description |
@@ -247,6 +253,8 @@ Quick test flow:
 | PUT | `/api/trips/:id/status` | Driver | started / completed |
 | PUT | `/api/trips/:id/cancel` | Rider/Driver | Cancel |
 | PUT | `/api/trips/:id/rate` | Rider | Rate completed trip |
+| PUT | `/api/trips/:id/claim-paid` | Rider | Mark a UPI trip as paid (→ awaiting driver confirm) |
+| PUT | `/api/trips/:id/confirm-payment` | Driver | Confirm payment received |
 
 ### Driver
 | Method | Endpoint | Access | Description |
@@ -265,6 +273,8 @@ Quick test flow:
 | POST | `/api/admin/cities` | Admin | Add a city |
 | PUT | `/api/admin/cities/:id` | Admin | Edit fare slabs / toggle active |
 | PUT | `/api/admin/users/:id/suspension` | Admin | Deactivate/reactivate |
+| GET | `/api/admin/settings` | Admin | Get platform settings (commission) |
+| PUT | `/api/admin/settings` | Admin | Set commission percent (0 = free) |
 
 ### Push
 | Method | Endpoint | Access | Description |

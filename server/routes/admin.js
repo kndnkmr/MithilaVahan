@@ -2,7 +2,7 @@ const express = require('express');
 const { protect, authorize } = require('../middleware/auth');
 const {
   stats, listDrivers, setDriverStatus, listVehicles, setVehicleStatus,
-  addCity, updateCity, setSuspension,
+  addCity, updateCity, setSuspension, getSettings, updateSettings,
 } = require('../controllers/adminController');
 
 const router = express.Router();
@@ -22,5 +22,8 @@ router.post('/cities', addCity);
 router.put('/cities/:id', updateCity);
 
 router.put('/users/:id/suspension', setSuspension);
+
+router.get('/settings', getSettings);
+router.put('/settings', updateSettings);
 
 module.exports = router;
