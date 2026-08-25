@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import { adminAPI } from '../services/api';
+import { adminAPI, complaintAPI } from '../services/api';
 import { getSocket } from '../services/socket';
 
 export default function AdminDashboard() {
@@ -8,12 +8,14 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState(null);
   const [drivers, setDrivers] = useState([]);
   const [vehicles, setVehicles] = useState([]);
+  const [complaints, setComplaints] = useState([]);
   const [commission, setCommission] = useState(0);
   const [savingCommission, setSavingCommission] = useState(false);
 
   const loadStats = () => adminAPI.stats().then((r) => setStats(r.data)).catch(() => {});
   const loadDrivers = () => adminAPI.drivers().then((r) => setDrivers(r.data.drivers)).catch(() => {});
   const loadVehicles = () => adminAPI.vehicles().then((r) => setVehicles(r.data.vehicles)).catch(() => {});
+  const loadComplaints = () => complaintAPI.all().then((r) => setComplaints(r.data.complaints)).catch(() => {});
   const loadSettings = () =>
     adminAPI.getSettings().then((r) => setCommission(r.data.settings.commissionPercent)).catch(() => {});
 
@@ -21,6 +23,7 @@ export default function AdminDashboard() {
     loadStats();
     loadDrivers();
     loadVehicles();
+    loadComplaints();
     loadSettings();
 
     // Live SOS alerts — a raised SOS is the one thing an admin must not miss.
@@ -44,6 +47,28 @@ export default function AdminDashboard() {
       toast.error(err.response?.data?.message || 'Failed');
     } finally {
       setSavingCommission(false);
+    }
+  };
+
+  const respondComplaint = async (id) => {
+    const adminResponse = window.prompt('Your response to the user:');
+    if (adminResponse == null) return;
+    try {
+      await complaintAPI.update(id, { adminResponse, status: 'resolved' });
+      toast.success('Response sent');
+      loadComplaints();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed');
+    }
+  };
+
+  const setComplaintStatus = async (id, status) => {
+    try {
+      await complaintAPI.update(id, { status });
+      toast.success(`Marked ${status}`);
+      loadComplaints();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed');
     }
   };
 
@@ -102,7 +127,7 @@ export default function AdminDashboard() {
 
       {/* Tabs — scrollable on small screens */}
       <div className="flex gap-2 mb-4 text-sm overflow-x-auto pb-1 -mx-1 px-1">
-        {[['drivers', 'Drivers'], ['vehicles', 'Vehicles'], ['settings', 'Settings']].map(([key, label]) => (
+        {[['drivers', 'Drivers'], ['vehicles', 'Vehicles'], ['complaints', 'Complaints'], ['settings', 'Settings']].map(([key, label]) => (
           <button key={key} onClick={() => setTab(key)}
             className={`px-4 py-2 rounded-full whitespace-nowrap shrink-0 transition ${
               tab === key ? 'bg-brand-500 text-white' : 'bg-white border text-gray-600 hover:border-brand-400'
@@ -161,6 +186,45 @@ export default function AdminDashboard() {
             </div>
           ))}
           {vehicles.length === 0 && <p className="text-gray-500 text-sm">No vehicles yet.</p>}
+        </div>
+      )}
+
+      {tab === 'complaints' && (
+        <div className="space-y-2">
+          {complaints.length === 0 && <p className="text-gray-500 text-sm">No complaints yet.</p>}
+          {complaints.map((c) => (
+            <div key={c._id} className="bg-white border rounded-lg p-3">
+              <div className="flex items-center justify-between">
+                <div className="font-medium">{c.subject}</div>
+                <span className={`text-xs px-2 py-0.5 rounded-full ${
+                  c.status === 'resolved' ? 'bg-green-100 text-green-700'
+                    : c.status === 'in-progress' ? 'bg-blue-100 text-blue-700'
+                    : 'bg-yellow-100 text-yellow-700'
+                }`}>{c.status}</span>
+              </div>
+              <div className="text-sm text-gray-500">
+                {c.user?.name} ({c.role}) · {c.user?.phone}
+              </div>
+              <p className="text-sm text-gray-700 mt-1">{c.message}</p>
+              {c.adminResponse && (
+                <div className="mt-2 bg-brand-50 border border-brand-100 rounded-md p-2 text-sm">
+                  <span className="font-medium text-brand-700">Your response: </span>{c.adminResponse}
+                </div>
+              )}
+              <div className="mt-2 flex flex-wrap gap-2">
+                <button onClick={() => respondComplaint(c._id)}
+                  className="bg-brand-500 text-white text-xs px-3 py-1 rounded">Respond & resolve</button>
+                {c.status !== 'in-progress' && (
+                  <button onClick={() => setComplaintStatus(c._id, 'in-progress')}
+                    className="border text-xs px-3 py-1 rounded">Mark in-progress</button>
+                )}
+                {c.status !== 'resolved' && (
+                  <button onClick={() => setComplaintStatus(c._id, 'resolved')}
+                    className="border text-xs px-3 py-1 rounded">Mark resolved</button>
+                )}
+              </div>
+            </div>
+          ))}
         </div>
       )}
 

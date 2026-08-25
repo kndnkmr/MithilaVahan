@@ -20,6 +20,7 @@ import Terms from './pages/legal/Terms';
 import Privacy from './pages/legal/Privacy';
 import CancellationRefund from './pages/legal/CancellationRefund';
 import AboutUs from './pages/legal/AboutUs';
+import Support from './pages/Support';
 
 // Guards a route by auth + optional role list.
 function Protected({ children, roles }) {
@@ -54,6 +55,14 @@ export default function App() {
             element={
               <Protected>
                 <Refer />
+              </Protected>
+            }
+          />
+          <Route
+            path="/support"
+            element={
+              <Protected>
+                <Support />
               </Protected>
             }
           />

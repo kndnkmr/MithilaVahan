@@ -26,4 +26,8 @@ router.put('/users/:id/suspension', setSuspension);
 router.get('/settings', getSettings);
 router.put('/settings', updateSettings);
 
+const { listComplaints, updateComplaint } = require('../controllers/complaintController');
+router.get('/complaints', listComplaints);
+router.put('/complaints/:id', updateComplaint);
+
 module.exports = router;

@@ -15,6 +15,7 @@ const COLS = [
       ['About us', '/about'],
       ['Become a driver', '/register'],
       ['Refer & earn', '/refer'],
+      ['Support & Grievance', '/support'],
     ],
   },
   {
@@ -38,6 +39,9 @@ export default function Footer() {
             <p className="text-sm text-gray-400 mt-2 leading-relaxed">
               Local rides & vehicle rentals for Mithilanchal. Darbhanga · Muzaffarpur.
             </p>
+            <a href="mailto:support@mithilavahan.in" className="text-sm text-gray-400 hover:text-white mt-2 inline-block">
+              support@mithilavahan.in
+            </a>
           </div>
 
           {COLS.map((col) => (

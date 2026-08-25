@@ -51,6 +51,14 @@ export const settingsAPI = {
   get: () => api.get('/settings'),
 };
 
+export const complaintAPI = {
+  file: (data) => api.post('/complaints', data),
+  mine: () => api.get('/complaints/mine'),
+  // admin
+  all: (status) => api.get('/admin/complaints', { params: { status } }),
+  update: (id, data) => api.put(`/admin/complaints/${id}`, data),
+};
+
 export const uploadAPI = {
   // file: a File object from an <input type="file">
   image: (file) => {
