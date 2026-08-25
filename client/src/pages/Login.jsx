@@ -1,0 +1,77 @@
+import { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import toast from 'react-hot-toast';
+import { authAPI } from '../services/api';
+import { useAuth } from '../context/AuthContext';
+
+// Where each role lands after login.
+const HOME_BY_ROLE = { rider: '/book', driver: '/driver', admin: '/admin' };
+
+export default function Login() {
+  const [phone, setPhone] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const { login } = useAuth();
+  const navigate = useNavigate();
+
+  const submit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const res = await authAPI.login({ phone, password });
+      login(res.data.token, res.data.user);
+      toast.success('Welcome back!');
+      navigate(HOME_BY_ROLE[res.data.user.role] || '/');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Login failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="max-w-sm mx-auto px-4 py-12">
+      <h1 className="text-2xl font-bold mb-1">Welcome back</h1>
+      <p className="text-gray-500 text-sm mb-6">Login with your phone number.</p>
+
+      <form onSubmit={submit} className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium mb-1">Phone number</label>
+          <input
+            type="tel"
+            inputMode="numeric"
+            maxLength={10}
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder="10-digit mobile"
+            className="w-full border rounded-md px-3 py-2"
+            required
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-1">Password</label>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full border rounded-md px-3 py-2"
+            required
+          />
+        </div>
+        <button
+          disabled={loading}
+          className="w-full bg-brand-500 text-white py-2.5 rounded-md hover:bg-brand-600 disabled:opacity-60"
+        >
+          {loading ? 'Logging in…' : 'Login'}
+        </button>
+      </form>
+
+      <p className="text-sm text-gray-500 mt-4 text-center">
+        New here?{' '}
+        <Link to="/register" className="text-brand-600 font-medium">
+          Create an account
+        </Link>
+      </p>
+    </div>
+  );
+}

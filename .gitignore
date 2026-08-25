@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+
+# Environment / secrets
+.env
+*.env
+!.env.example
+
+# Build output
+dist/
+build/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Uploads (local disk fallback)
+server/uploads/*
+!server/uploads/.gitkeep
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
