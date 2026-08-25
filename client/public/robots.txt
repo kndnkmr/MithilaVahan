@@ -8,4 +8,4 @@ Disallow: /trips
 Disallow: /refer
 Disallow: /t/
 
-Sitemap: https://mithila-vahan.vercel.app/sitemap.xml
+Sitemap: https://mithilavahan.in/sitemap.xml
