@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+
+# Keep private/app pages out of search results
+Disallow: /admin
+Disallow: /driver
+Disallow: /trips
+Disallow: /refer
+Disallow: /t/
+
+Sitemap: https://mithila-vahan.vercel.app/sitemap.xml

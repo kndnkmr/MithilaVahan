@@ -1,13 +1,18 @@
 // "Places to Explore" — popular destinations from Darbhanga/Muzaffarpur.
 // Each card prefills an outstation booking. Public page (also good for SEO).
 
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { DESTINATIONS, CATEGORIES } from '../data/destinations';
+import { useSeo } from '../services/seo';
 
 export default function Destinations() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  useSeo(
+    'Places to Explore from Darbhanga & Muzaffarpur | MithilaVahan',
+    'Book outstation taxis from Darbhanga and Muzaffarpur to Patna, Bodh Gaya, Kathmandu, Janakpur and more — with a driver, one-way or round-trip.'
+  );
 
   const book = (name) => {
     const path = `/book?mode=outstation&to=${encodeURIComponent(name)}`;
@@ -37,17 +42,27 @@ export default function Destinations() {
               <h2 className="text-xl font-bold mb-4">{cat}</h2>
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {items.map((d) => (
-                  <div key={d.name} className="bg-white border rounded-xl p-5 flex flex-col">
+                  <div key={d.slug} className="bg-white border rounded-xl p-5 flex flex-col">
                     <div className="text-3xl mb-2">{d.emoji}</div>
-                    <div className="font-semibold text-lg">Darbhanga → {d.name}</div>
+                    <Link to={`/destinations/${d.slug}`} className="font-semibold text-lg hover:text-brand-600">
+                      Darbhanga → {d.name}
+                    </Link>
                     <div className="text-gray-400 text-sm mb-2">{d.km} km · {d.time}</div>
                     <p className="text-gray-600 text-sm flex-1">{d.desc}</p>
-                    <button
-                      onClick={() => book(d.name)}
-                      className="mt-4 bg-brand-500 text-white text-sm py-2 rounded-md hover:bg-brand-600 transition"
-                    >
-                      Book this trip
-                    </button>
+                    <div className="mt-4 flex gap-2">
+                      <button
+                        onClick={() => book(d.name)}
+                        className="flex-1 bg-brand-500 text-white text-sm py-2 rounded-md hover:bg-brand-600 transition"
+                      >
+                        Book this trip
+                      </button>
+                      <Link
+                        to={`/destinations/${d.slug}`}
+                        className="px-3 py-2 border rounded-md text-sm text-gray-600 hover:border-brand-400"
+                      >
+                        Details
+                      </Link>
+                    </div>
                   </div>
                 ))}
               </div>

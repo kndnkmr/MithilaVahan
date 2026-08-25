@@ -13,6 +13,7 @@ import SharedTrip from './pages/SharedTrip';
 import InstallApp from './pages/InstallApp';
 import Destinations from './pages/Destinations';
 import Refer from './pages/Refer';
+import DestinationDetail from './pages/DestinationDetail';
 
 // Guards a route by auth + optional role list.
 function Protected({ children, roles }) {
@@ -37,6 +38,7 @@ export default function App() {
           <Route path="/t/:token" element={<SharedTrip />} />
           <Route path="/install" element={<InstallApp />} />
           <Route path="/destinations" element={<Destinations />} />
+          <Route path="/destinations/:slug" element={<DestinationDetail />} />
           <Route
             path="/refer"
             element={
