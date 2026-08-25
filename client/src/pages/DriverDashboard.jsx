@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { getSocket } from '../services/socket';
 import { watchCoordinates } from '../services/location';
 import TripCard from '../components/TripCard';
+import OnboardingChecklist from '../components/OnboardingChecklist';
 
 const VEHICLE_TYPES = ['car', 'auto', 'tempo', 'bus', 'truck', 'bike'];
 
@@ -124,12 +125,8 @@ export default function DriverDashboard() {
         </button>
       </div>
 
-      {!approved && (
-        <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 rounded-md p-3 text-sm mb-6">
-          Your driver account is <b>{user.driverStatus}</b>. Add your vehicle and documents; an admin
-          will approve you before you can accept trips.
-        </div>
-      )}
+      {/* Guided onboarding — shows until the driver is fully set up + approved */}
+      <OnboardingChecklist user={user} vehicles={vehicles} onGoToTab={setTab} />
 
       {/* Tabs — horizontally scrollable so they never clip on small phones */}
       <div className="flex gap-2 mb-4 text-sm overflow-x-auto pb-1 -mx-1 px-1">

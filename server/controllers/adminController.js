@@ -5,6 +5,7 @@ const Vehicle = require('../models/Vehicle');
 const Trip = require('../models/Trip');
 const City = require('../models/City');
 const Settings = require('../models/Settings');
+const { getDriverSetup } = require('../utils/driverSetup');
 
 // GET /api/admin/stats
 async function stats(req, res) {
@@ -23,8 +24,19 @@ async function stats(req, res) {
 async function listDrivers(req, res) {
   const filter = { role: 'driver' };
   if (req.query.status) filter.driverStatus = req.query.status;
-  const drivers = await User.find(filter).sort({ createdAt: -1 });
-  res.json({ drivers });
+  const drivers = await User.find(filter).sort({ createdAt: -1 }).lean();
+
+  // Which drivers have at least one vehicle (for setup completeness).
+  const ids = drivers.map((d) => d._id);
+  const withVehicles = await Vehicle.distinct('owner', { owner: { $in: ids } });
+  const vehicleOwners = new Set(withVehicles.map((id) => String(id)));
+
+  const enriched = drivers.map((d) => {
+    const setup = getDriverSetup(d, vehicleOwners.has(String(d._id)));
+    return { ...d, setup };
+  });
+
+  res.json({ drivers: enriched });
 }
 
 // PUT /api/admin/drivers/:id/status  { status: 'approved'|'rejected' }

@@ -140,12 +140,22 @@ export default function AdminDashboard() {
       {tab === 'drivers' && (
         <div className="space-y-2">
           {drivers.map((d) => (
-            <div key={d._id} className="bg-white border rounded-lg p-3 flex items-center justify-between">
-              <div>
+            <div key={d._id} className="bg-white border rounded-lg p-3 flex items-center justify-between gap-3">
+              <div className="min-w-0">
                 <div className="font-medium">{d.name} <span className="text-gray-400 text-sm">· {d.city || 'no city'}</span></div>
                 <div className="text-sm text-gray-500">{d.phone}</div>
+                {/* Setup completeness (from the shared server rule) */}
+                {d.setup && (
+                  d.setup.complete ? (
+                    <div className="text-xs text-green-600 mt-0.5">✓ Setup complete</div>
+                  ) : (
+                    <div className="text-xs text-amber-600 mt-0.5">
+                      Needs: {d.setup.missing.join(', ')}
+                    </div>
+                  )
+                )}
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 shrink-0">
                 <StatusBadge status={d.driverStatus} />
                 {d.driverStatus !== 'approved' && (
                   <button onClick={() => setDriverStatus(d._id, 'approved')}
