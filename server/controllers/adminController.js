@@ -24,16 +24,27 @@ async function stats(req, res) {
 async function listDrivers(req, res) {
   const filter = { role: 'driver' };
   if (req.query.status) filter.driverStatus = req.query.status;
-  const drivers = await User.find(filter).sort({ createdAt: -1 }).lean();
+  // Exclude sensitive fields (never expose password / reset tokens).
+  const drivers = await User.find(filter)
+    .select('-password -resetPasswordToken -resetPasswordExpire')
+    .sort({ createdAt: -1 })
+    .lean();
 
-  // Which drivers have at least one vehicle (for setup completeness).
+  // Attach each driver's vehicles so the admin can review everything at once.
   const ids = drivers.map((d) => d._id);
-  const withVehicles = await Vehicle.distinct('owner', { owner: { $in: ids } });
-  const vehicleOwners = new Set(withVehicles.map((id) => String(id)));
+  const allVehicles = await Vehicle.find({ owner: { $in: ids } })
+    .select('type model registrationNumber capacity city photos approvalStatus perKmRate perDayRate baseFare owner')
+    .lean();
+  const byOwner = {};
+  for (const v of allVehicles) {
+    const k = String(v.owner);
+    (byOwner[k] = byOwner[k] || []).push(v);
+  }
 
   const enriched = drivers.map((d) => {
-    const setup = getDriverSetup(d, vehicleOwners.has(String(d._id)));
-    return { ...d, setup };
+    const vehicles = byOwner[String(d._id)] || [];
+    const setup = getDriverSetup(d, vehicles.length > 0);
+    return { ...d, setup, vehicles };
   });
 
   res.json({ drivers: enriched });

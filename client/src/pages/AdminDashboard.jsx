@@ -13,6 +13,8 @@ export default function AdminDashboard() {
   const [savingCommission, setSavingCommission] = useState(false);
   const [fareGuide, setFareGuide] = useState([]);
   const [savingFares, setSavingFares] = useState(false);
+  const [expandedDriver, setExpandedDriver] = useState(null); // driver id whose details are open
+  const [driverFilter, setDriverFilter] = useState('all'); // all | pending (from clicking a stat)
 
   const loadStats = () => adminAPI.stats().then((r) => setStats(r.data)).catch(() => {});
   const loadDrivers = () => adminAPI.drivers().then((r) => setDrivers(r.data.drivers)).catch(() => {});
@@ -135,21 +137,26 @@ export default function AdminDashboard() {
     <div className="max-w-4xl mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-6">Admin panel</h1>
 
-      {/* Stats */}
+      {/* Stats — clickable: jump to the relevant tab (and filter) */}
       {stats && (
         <div className="grid grid-cols-3 sm:grid-cols-6 gap-3 mb-6">
           {[
-            ['Riders', stats.riders],
-            ['Drivers', stats.drivers],
-            ['Pending drivers', stats.pendingDrivers],
-            ['Vehicles', stats.vehicles],
-            ['Pending vehicles', stats.pendingVehicles],
-            ['Trips', stats.trips],
-          ].map(([label, val]) => (
-            <div key={label} className="card p-3 text-center">
+            ['Riders', stats.riders, null],
+            ['Drivers', stats.drivers, () => { setTab('drivers'); setDriverFilter('all'); }],
+            ['Pending drivers', stats.pendingDrivers, () => { setTab('drivers'); setDriverFilter('pending'); }],
+            ['Vehicles', stats.vehicles, () => setTab('vehicles')],
+            ['Pending vehicles', stats.pendingVehicles, () => setTab('vehicles')],
+            ['Trips', stats.trips, null],
+          ].map(([label, val, onClick]) => (
+            <button
+              key={label}
+              type="button"
+              onClick={onClick || undefined}
+              className={`card p-3 text-center transition ${onClick ? 'hover:border-brand-400 hover:shadow cursor-pointer' : 'cursor-default'}`}
+            >
               <div className="text-xl font-bold text-brand-600">{val}</div>
               <div className="text-xs text-gray-500">{label}</div>
-            </div>
+            </button>
           ))}
         </div>
       )}
@@ -168,35 +175,141 @@ export default function AdminDashboard() {
 
       {tab === 'drivers' && (
         <div className="space-y-2">
-          {drivers.map((d) => (
-            <div key={d._id} className="card p-3 flex items-center justify-between gap-3">
-              <div className="min-w-0">
-                <div className="font-medium">{d.name} <span className="text-gray-400 text-sm">· {d.city || 'no city'}</span></div>
-                <div className="text-sm text-gray-500">{d.phone}</div>
-                {/* Setup completeness (from the shared server rule) */}
-                {d.setup && (
-                  d.setup.complete ? (
-                    <div className="text-xs text-green-600 mt-0.5">✓ Setup complete</div>
-                  ) : (
-                    <div className="text-xs text-amber-600 mt-0.5">
-                      Needs: {d.setup.missing.join(', ')}
+          {/* Filter chips */}
+          <div className="flex gap-2 mb-2 text-sm">
+            {[['all', 'All'], ['pending', 'Pending'], ['approved', 'Approved']].map(([k, label]) => (
+              <button key={k} onClick={() => setDriverFilter(k)}
+                className={`px-3 py-1 rounded-full ${driverFilter === k ? 'bg-brand-500 text-white' : 'bg-white border text-gray-600'}`}>
+                {label}
+              </button>
+            ))}
+          </div>
+
+          {drivers
+            .filter((d) => driverFilter === 'all' || d.driverStatus === driverFilter)
+            .map((d) => {
+              const open = expandedDriver === d._id;
+              return (
+                <div key={d._id} className="card p-3">
+                  {/* Summary row */}
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="font-medium">
+                        {d.name} <span className="text-gray-400 text-sm">· {d.city || 'no city'}</span>
+                      </div>
+                      <a href={`tel:${d.phone}`} className="text-sm text-brand-600 hover:underline">{d.phone}</a>
+                      {d.setup && (
+                        d.setup.complete ? (
+                          <div className="text-xs text-green-600 mt-0.5">✓ Setup complete</div>
+                        ) : (
+                          <div className="text-xs text-amber-600 mt-0.5">Needs: {d.setup.missing.join(', ')}</div>
+                        )
+                      )}
                     </div>
-                  )
-                )}
-              </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <StatusBadge status={d.driverStatus} />
-                {d.driverStatus !== 'approved' && (
-                  <button onClick={() => setDriverStatus(d._id, 'approved')}
-                    className="bg-green-600 text-white text-xs px-2 py-1 rounded">Approve</button>
-                )}
-                {d.driverStatus !== 'rejected' && (
-                  <button onClick={() => setDriverStatus(d._id, 'rejected')}
-                    className="border text-red-600 text-xs px-2 py-1 rounded">Reject</button>
-                )}
-              </div>
-            </div>
-          ))}
+                    <div className="flex items-center gap-2 shrink-0">
+                      <StatusBadge status={d.driverStatus} />
+                    </div>
+                  </div>
+
+                  {/* View details toggle */}
+                  <button
+                    onClick={() => setExpandedDriver(open ? null : d._id)}
+                    className="text-brand-600 text-sm font-medium mt-2"
+                  >
+                    {open ? 'Hide details' : 'View details'}
+                  </button>
+
+                  {open && (
+                    <div className="mt-3 border-t pt-3 space-y-3 text-sm">
+                      {/* Contact & payment */}
+                      <div className="grid grid-cols-2 gap-2">
+                        <div><span className="text-gray-400">Phone:</span> <a href={`tel:${d.phone}`} className="text-brand-600">{d.phone}</a></div>
+                        {d.whatsappNumber && (
+                          <div><span className="text-gray-400">WhatsApp:</span>{' '}
+                            <a href={`https://wa.me/91${String(d.whatsappNumber).replace(/\D/g,'').slice(-10)}`} target="_blank" rel="noreferrer" className="text-green-600">{d.whatsappNumber}</a>
+                          </div>
+                        )}
+                        {d.upiNumber && <div><span className="text-gray-400">UPI no:</span> {d.upiNumber}</div>}
+                        {d.upiId && <div><span className="text-gray-400">UPI ID:</span> {d.upiId}</div>}
+                      </div>
+
+                      {/* Documents */}
+                      <div>
+                        <div className="font-medium mb-1">Documents</div>
+                        {(() => {
+                          const docs = d.documents || {};
+                          const items = [
+                            ['Driving licence', docs.drivingLicense],
+                            ['RC book', docs.rcBook],
+                            ['Insurance', docs.insurance],
+                          ];
+                          return (
+                            <div className="flex flex-wrap gap-3">
+                              {items.map(([label, url]) => (
+                                <div key={label} className="text-center">
+                                  {url ? (
+                                    <a href={url} target="_blank" rel="noreferrer">
+                                      <img src={url} alt={label} className="w-24 h-24 object-cover rounded-md border" />
+                                    </a>
+                                  ) : (
+                                    <div className="w-24 h-24 rounded-md border-2 border-dashed flex items-center justify-center text-gray-300 text-xs text-center px-1">Not uploaded</div>
+                                  )}
+                                  <div className="text-xs text-gray-500 mt-1">{label}</div>
+                                </div>
+                              ))}
+                            </div>
+                          );
+                        })()}
+                      </div>
+
+                      {/* Vehicles */}
+                      <div>
+                        <div className="font-medium mb-1">Vehicles ({d.vehicles?.length || 0})</div>
+                        {(d.vehicles || []).length === 0 ? (
+                          <div className="text-gray-400 text-xs">No vehicle added yet.</div>
+                        ) : (
+                          <div className="space-y-2">
+                            {d.vehicles.map((v) => (
+                              <div key={v._id} className="flex items-center gap-3 border rounded-md p-2">
+                                {v.photos?.[0] && (
+                                  <img src={v.photos[0]} alt="" className="w-14 h-14 object-cover rounded-md border" />
+                                )}
+                                <div className="flex-1 min-w-0">
+                                  <div className="font-medium capitalize">{v.type} · {v.model}</div>
+                                  <div className="text-xs text-gray-500">{v.registrationNumber} · {v.city} · {v.capacity} seats</div>
+                                  <div className="text-xs text-gray-500">
+                                    {v.baseFare ? `Base ₹${v.baseFare} · ` : ''}{v.perKmRate ? `₹${v.perKmRate}/km · ` : ''}{v.perDayRate ? `₹${v.perDayRate}/day` : ''}
+                                  </div>
+                                </div>
+                                <div className="flex flex-col items-end gap-1 shrink-0">
+                                  <StatusBadge status={v.approvalStatus} />
+                                  {v.approvalStatus !== 'approved' && (
+                                    <button onClick={() => setVehicleStatus(v._id, 'approved')}
+                                      className="bg-green-600 text-white text-xs px-2 py-1 rounded">Approve</button>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Approve / reject actions */}
+                  <div className="flex items-center gap-2 mt-3">
+                    {d.driverStatus !== 'approved' && (
+                      <button onClick={() => setDriverStatus(d._id, 'approved')}
+                        className="bg-green-600 text-white text-xs px-3 py-1.5 rounded-lg">Approve driver</button>
+                    )}
+                    {d.driverStatus !== 'rejected' && (
+                      <button onClick={() => setDriverStatus(d._id, 'rejected')}
+                        className="border border-red-200 text-red-600 text-xs px-3 py-1.5 rounded-lg">Reject</button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
           {drivers.length === 0 && <p className="text-gray-500 text-sm">No drivers yet.</p>}
         </div>
       )}
@@ -242,7 +355,8 @@ export default function AdminDashboard() {
                 }`}>{c.status}</span>
               </div>
               <div className="text-sm text-gray-500">
-                {c.user?.name} ({c.role}) · {c.user?.phone}
+                {c.user?.name} ({c.role}) ·{' '}
+                {c.user?.phone && <a href={`tel:${c.user.phone}`} className="text-brand-600">{c.user.phone}</a>}
               </div>
               <p className="text-sm text-gray-700 mt-1">{c.message}</p>
               {c.adminResponse && (
