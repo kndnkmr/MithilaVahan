@@ -39,12 +39,15 @@ export default function Navbar() {
 
           {!user && (
             <>
-              <Link to="/login" className="text-gray-600 hover:text-brand-600 shrink-0 whitespace-nowrap">
+              <Link
+                to="/login"
+                className="border border-brand-500 text-brand-600 px-3.5 py-1.5 rounded-lg font-medium hover:bg-brand-50 shrink-0 whitespace-nowrap transition"
+              >
                 {t('login')}
               </Link>
               <Link
                 to="/register"
-                className="bg-brand-500 text-white px-3 py-1.5 rounded-md hover:bg-brand-600 shrink-0 whitespace-nowrap"
+                className="bg-brand-500 text-white px-3.5 py-1.5 rounded-lg font-medium shadow-sm hover:bg-brand-600 active:scale-[0.98] shrink-0 whitespace-nowrap transition"
               >
                 {t('register')}
               </Link>
