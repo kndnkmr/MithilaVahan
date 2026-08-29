@@ -197,7 +197,13 @@ export default function DriverDashboard() {
       )}
 
       {tab === 'vehicles' && (
-        <VehiclesTab vehicles={vehicles} cities={cities} onChange={loadAll} defaultCity={user.city} />
+        <VehiclesTab
+          vehicles={vehicles}
+          cities={cities}
+          onChange={loadAll}
+          onAdded={(v) => setVehicles((prev) => [v, ...prev])}
+          defaultCity={user.city}
+        />
       )}
 
       {tab === 'profile' && <ProfileTab user={user} updateUser={updateUser} cities={cities} />}
@@ -414,7 +420,7 @@ function PaymentTab({ user, updateUser }) {
 }
 
 // --- Vehicles sub-tab: list + add form ---
-function VehiclesTab({ vehicles, cities, onChange, defaultCity }) {
+function VehiclesTab({ vehicles, cities, onChange, onAdded, defaultCity }) {
   const [form, setForm] = useState({
     type: 'car', model: '', registrationNumber: '', capacity: 4,
     city: defaultCity || '', perKmRate: '', perDayRate: '', baseFare: '',
@@ -447,7 +453,7 @@ function VehiclesTab({ vehicles, cities, onChange, defaultCity }) {
     e.preventDefault();
     setSaving(true);
     try {
-      await vehicleAPI.create({
+      const res = await vehicleAPI.create({
         ...form,
         photos,
         capacity: Number(form.capacity) || 1,
@@ -456,6 +462,9 @@ function VehiclesTab({ vehicles, cities, onChange, defaultCity }) {
         baseFare: Number(form.baseFare) || 0,
       });
       toast.success('Vehicle added — pending approval');
+      // Update the list immediately (so the onboarding checklist turns green
+      // right away, without waiting for the refetch round-trip).
+      if (res.data?.vehicle && onAdded) onAdded(res.data.vehicle);
       setForm((f) => ({ ...f, model: '', registrationNumber: '' }));
       setPhotos([]);
       onChange();
