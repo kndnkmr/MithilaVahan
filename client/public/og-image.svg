@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#e07a2f"/>
+      <stop offset="1" stop-color="#a54d14"/>
+    </linearGradient>
+    <linearGradient id="mvGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f9e2cc"/>
+      <stop offset="1" stop-color="#ffffff"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <circle cx="1050" cy="120" r="220" fill="#ffffff" opacity="0.06"/>
+  <circle cx="120" cy="560" r="180" fill="#ffffff" opacity="0.05"/>
+
+  <!-- Brand row: white rounded badge with the car mark, then the wordmark -->
+  <g transform="translate(100,140)">
+    <rect x="0" y="0" width="96" height="96" rx="24" fill="#ffffff"/>
+    <g transform="translate(16,16) scale(1.0)">
+      <g stroke="#c9611b" stroke-opacity="0.45" stroke-width="3.6" stroke-linecap="round">
+        <line x1="4" y1="24" x2="20" y2="24"/>
+        <line x1="1" y1="34" x2="14" y2="34"/>
+      </g>
+      <path d="M12 46 L12 43 C12 40 14 39 17 39 L58 39 L61 43 L61 46 C61 47 60 48 58 48 L15 48 C13 48 12 47 12 46 Z" fill="#c9611b"/>
+      <path d="M15 45 L20 31 C21 27 24 26 28 26 L44 26 C48 26 51 27 54 31 L59 40 C60 41 60 42 60 43 L60 46 C60 47 59 48 58 48 L55 48" fill="#c9611b"/>
+      <path d="M25 31 L31 31 L31 37 L22 37 Z" fill="#ffffff"/>
+      <path d="M34 31 L43 31 C46 31 47 32 50 37 L34 37 Z" fill="#ffffff"/>
+      <circle cx="24" cy="50" r="6" fill="#3a1e0a"/>
+      <circle cx="24" cy="50" r="2.4" fill="#ffffff"/>
+      <circle cx="52" cy="50" r="6" fill="#3a1e0a"/>
+      <circle cx="52" cy="50" r="2.4" fill="#ffffff"/>
+    </g>
+    <text x="120" y="70" font-family="Arial, Helvetica, sans-serif" font-size="76" font-weight="bold" fill="#ffffff">MithilaVahan</text>
+  </g>
+
+  <!-- Headline -->
+  <text x="100" y="360" font-family="Arial, Helvetica, sans-serif" font-size="52" font-weight="bold" fill="#ffffff">Book a car, auto, tempo or truck</text>
+  <text x="100" y="422" font-family="Arial, Helvetica, sans-serif" font-size="38" fill="#f9e2cc">Rides &amp; vehicle rental — with a driver, across Mithilanchal</text>
+
+  <!-- Trust line / CTA -->
+  <text x="100" y="522" font-family="Arial, Helvetica, sans-serif" font-size="32" fill="#ffffff">Transparent fares  •  No commission  •  mithilavahan.in</text>
+</svg>

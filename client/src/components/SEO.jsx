@@ -24,7 +24,7 @@ export default function SEO({ title, description, path = '/', type = 'website', 
     description ||
     'Book cars, autos, tempos, buses and trucks with a driver in Darbhanga and Muzaffarpur. Local vehicle owners rent out; locals ride.';
   const url = `${baseUrl}${path}`;
-  const img = image || `${baseUrl}/icon-512.png`;
+  const img = image || `${baseUrl}/og-image.png`;
 
   return (
     <Helmet>
