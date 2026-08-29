@@ -133,6 +133,7 @@ export default function DriverDashboard() {
         {[
           ['requests', 'Requests'],
           ['active', 'My trips'],
+          ['profile', 'Profile & Docs'],
           ['vehicles', 'My vehicles'],
           ['payment', 'Payment'],
         ].map(([key, label]) => (
@@ -178,8 +179,121 @@ export default function DriverDashboard() {
         <VehiclesTab vehicles={vehicles} cities={cities} onChange={loadAll} defaultCity={user.city} />
       )}
 
+      {tab === 'profile' && <ProfileTab user={user} updateUser={updateUser} cities={cities} />}
+
       {tab === 'payment' && <PaymentTab user={user} updateUser={updateUser} />}
     </div>
+  );
+}
+
+// --- Profile & Documents sub-tab: city, WhatsApp, and verification documents ---
+function ProfileTab({ user, updateUser, cities }) {
+  const [city, setCity] = useState(user.city || '');
+  const [whatsappNumber, setWhatsappNumber] = useState(user.whatsappNumber || '');
+  const [docs, setDocs] = useState({
+    drivingLicense: user.documents?.drivingLicense || '',
+    rcBook: user.documents?.rcBook || '',
+    insurance: user.documents?.insurance || '',
+  });
+  const [uploading, setUploading] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  const uploadDoc = async (key, file) => {
+    if (!file) return;
+    setUploading(key);
+    try {
+      const res = await uploadAPI.image(file);
+      setDocs((d) => ({ ...d, [key]: res.data.url }));
+      toast.success('Uploaded');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Upload failed');
+    } finally {
+      setUploading('');
+    }
+  };
+
+  const save = async (e) => {
+    e.preventDefault();
+    if (!city) return toast.error('Please select your city');
+    setSaving(true);
+    try {
+      const res = await driverAPI.submitDocuments({
+        city,
+        whatsappNumber,
+        drivingLicense: docs.drivingLicense,
+        rcBook: docs.rcBook,
+        insurance: docs.insurance,
+      });
+      // Update the cached user so the onboarding checklist ticks these off.
+      updateUser({
+        city,
+        whatsappNumber,
+        documents: res.data.documents,
+      });
+      toast.success('Profile & documents saved');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to save');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const DOC_FIELDS = [
+    ['drivingLicense', 'Driving licence'],
+    ['rcBook', 'RC book (vehicle registration)'],
+    ['insurance', 'Insurance'],
+  ];
+
+  return (
+    <form onSubmit={save} className="bg-white border rounded-lg p-4 space-y-4 max-w-md">
+      <div>
+        <h3 className="font-medium">Your details</h3>
+        <p className="text-sm text-gray-500 mb-3">Riders and our team use these to reach and verify you.</p>
+        <label className="block text-sm font-medium mb-1">City</label>
+        <select value={city} onChange={(e) => setCity(e.target.value)} className="w-full border rounded-md px-3 py-2 mb-3" required>
+          <option value="">Select your city</option>
+          {cities.map((c) => <option key={c._id} value={c.name}>{c.name}</option>)}
+        </select>
+        <label className="block text-sm font-medium mb-1">WhatsApp number</label>
+        <input
+          type="tel" inputMode="numeric" maxLength={10}
+          value={whatsappNumber}
+          onChange={(e) => setWhatsappNumber(e.target.value)}
+          placeholder="10-digit WhatsApp number"
+          className="w-full border rounded-md px-3 py-2"
+        />
+      </div>
+
+      <div>
+        <h3 className="font-medium">Documents</h3>
+        <p className="text-sm text-gray-500 mb-3">Upload clear photos. Required before your account is approved.</p>
+        <div className="space-y-3">
+          {DOC_FIELDS.map(([key, label]) => (
+            <div key={key} className="flex items-center gap-3">
+              {docs[key] ? (
+                <img src={docs[key]} alt="" className="w-14 h-14 object-cover rounded-md border" />
+              ) : (
+                <div className="w-14 h-14 rounded-md border-2 border-dashed flex items-center justify-center text-gray-300 text-xl">📄</div>
+              )}
+              <div className="flex-1">
+                <div className="text-sm font-medium">{label}</div>
+                <label className="text-brand-600 text-sm cursor-pointer">
+                  {uploading === key ? 'Uploading…' : docs[key] ? 'Replace' : 'Upload'}
+                  <input type="file" accept="image/*" className="hidden"
+                    onChange={(e) => uploadDoc(key, e.target.files?.[0])} disabled={uploading === key} />
+                </label>
+              </div>
+              {docs[key] && <span className="text-green-600 text-sm">✓</span>}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <button disabled={saving || uploading}
+        className="bg-brand-500 text-white px-4 py-2 rounded-md text-sm disabled:opacity-60">
+        {saving ? 'Saving…' : 'Save details'}
+      </button>
+    </form>
   );
 }
 

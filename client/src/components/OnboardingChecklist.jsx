@@ -7,9 +7,9 @@ function computeSteps(user, vehicles) {
   const docs = user?.documents || {};
   const hasVehicle = Array.isArray(vehicles) && vehicles.length > 0;
   return [
-    { key: 'details', label: 'Add your details', hint: 'City & WhatsApp number', tab: 'payment',
+    { key: 'details', label: 'Add your details', hint: 'City & WhatsApp number', tab: 'profile',
       done: !!(user?.city && user?.whatsappNumber) },
-    { key: 'documents', label: 'Submit documents', hint: 'Licence, RC, insurance', tab: 'payment',
+    { key: 'documents', label: 'Submit documents', hint: 'Licence, RC, insurance', tab: 'profile',
       done: !!(docs.drivingLicense && docs.rcBook && docs.insurance) },
     { key: 'vehicle', label: 'Add a vehicle', hint: 'Type, model, photos, rates', tab: 'vehicles',
       done: hasVehicle },
