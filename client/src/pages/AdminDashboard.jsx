@@ -3,7 +3,7 @@ import toast from 'react-hot-toast';
 import { adminAPI, complaintAPI } from '../services/api';
 import { getSocket } from '../services/socket';
 import ImageViewer from '../components/ImageViewer';
-import { PromptModal } from '../components/Modal';
+import { PromptModal, ConfirmModal } from '../components/Modal';
 
 export default function AdminDashboard() {
   const [tab, setTab] = useState('drivers');
@@ -19,6 +19,7 @@ export default function AdminDashboard() {
   const [driverFilter, setDriverFilter] = useState('all'); // all | pending (from clicking a stat)
   const [viewer, setViewer] = useState(null); // { url, title } for the in-app image viewer
   const [respondTo, setRespondTo] = useState(null); // complaint being responded to
+  const [suspendTarget, setSuspendTarget] = useState(null); // driver being (de)activated
 
   const loadStats = () => adminAPI.stats().then((r) => setStats(r.data)).catch(() => {});
   const loadDrivers = () => adminAPI.drivers().then((r) => setDrivers(r.data.drivers)).catch(() => {});
@@ -111,6 +112,20 @@ export default function AdminDashboard() {
     try {
       await adminAPI.setDriverStatus(id, status);
       toast.success(`Driver ${status}`);
+      loadDrivers();
+      loadStats();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed');
+    }
+  };
+
+  const doSuspension = async () => {
+    const target = suspendTarget;
+    setSuspendTarget(null);
+    if (!target) return;
+    try {
+      await adminAPI.setSuspension(target._id, !target.isSuspended);
+      toast.success(target.isSuspended ? 'Driver reactivated' : 'Driver deactivated');
       loadDrivers();
       loadStats();
     } catch (err) {
@@ -302,8 +317,13 @@ export default function AdminDashboard() {
                     </div>
                   )}
 
-                  {/* Approve / reject actions */}
-                  <div className="flex items-center gap-2 mt-3">
+                  {/* Approve / reject / deactivate actions */}
+                  <div className="flex flex-wrap items-center gap-2 mt-3">
+                    {d.isSuspended && (
+                      <span className="text-xs font-medium text-red-700 bg-red-50 border border-red-200 px-2 py-1 rounded-full">
+                        Deactivated
+                      </span>
+                    )}
                     {d.driverStatus !== 'approved' && (
                       <button onClick={() => setDriverStatus(d._id, 'approved')}
                         className="bg-green-600 text-white text-xs px-3 py-1.5 rounded-lg">Approve driver</button>
@@ -312,6 +332,18 @@ export default function AdminDashboard() {
                       <button onClick={() => setDriverStatus(d._id, 'rejected')}
                         className="border border-red-200 text-red-600 text-xs px-3 py-1.5 rounded-lg">Reject</button>
                     )}
+                    {/* Deactivate blocks the driver from logging in / receiving trips
+                        without deleting them (keeps trip history). */}
+                    <button
+                      onClick={() => setSuspendTarget(d)}
+                      className={`text-xs px-3 py-1.5 rounded-lg ${
+                        d.isSuspended
+                          ? 'bg-brand-500 text-white hover:bg-brand-600'
+                          : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
+                      }`}
+                    >
+                      {d.isSuspended ? 'Reactivate' : 'Deactivate'}
+                    </button>
                   </div>
                 </div>
               );
@@ -479,6 +511,21 @@ export default function AdminDashboard() {
         submitText="Send & resolve"
         onCancel={() => setRespondTo(null)}
         onSubmit={doRespond}
+      />
+
+      {/* Deactivate / reactivate a driver */}
+      <ConfirmModal
+        open={!!suspendTarget}
+        title={suspendTarget?.isSuspended ? 'Reactivate driver?' : 'Deactivate driver?'}
+        message={
+          suspendTarget?.isSuspended
+            ? `${suspendTarget?.name || 'This driver'} will be able to log in and receive trips again.`
+            : `${suspendTarget?.name || 'This driver'} will be logged out, blocked from signing in, taken offline, and will stop receiving trips. Their history is kept and you can reactivate anytime.`
+        }
+        confirmText={suspendTarget?.isSuspended ? 'Reactivate' : 'Deactivate'}
+        variant={suspendTarget?.isSuspended ? 'primary' : 'danger'}
+        onCancel={() => setSuspendTarget(null)}
+        onConfirm={doSuspension}
       />
     </div>
   );
