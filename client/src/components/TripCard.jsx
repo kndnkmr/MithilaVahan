@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { driverAPI } from '../services/api';
+import { navLink } from '../services/maps';
 
 // Render ★ rating compactly.
 function Stars({ value }) {
@@ -61,8 +62,22 @@ export default function TripCard({ trip, role, onAction }) {
       </div>
 
       <div className="text-sm text-gray-600 space-y-0.5">
-        <div>Pickup: {trip.pickup?.address}</div>
-        {trip.mode === 'trip' && trip.drop?.address && <div>Drop: {trip.drop.address}</div>}
+        <div className="flex items-center gap-2 flex-wrap">
+          <span>Pickup: {trip.pickup?.address}</span>
+          {navLink(trip.pickup || {}) && (
+            <a href={navLink(trip.pickup)} target="_blank" rel="noreferrer"
+              className="text-brand-600 font-medium text-xs whitespace-nowrap">🧭 Navigate</a>
+          )}
+        </div>
+        {trip.mode === 'trip' && trip.drop?.address && (
+          <div className="flex items-center gap-2 flex-wrap">
+            <span>Drop: {trip.drop.address}</span>
+            {navLink(trip.drop || {}) && (
+              <a href={navLink(trip.drop)} target="_blank" rel="noreferrer"
+                className="text-brand-600 font-medium text-xs whitespace-nowrap">🧭 Navigate</a>
+            )}
+          </div>
+        )}
         {trip.mode === 'outstation' && (
           <>
             <div>

@@ -57,8 +57,14 @@ async function requestTrip(req, res) {
       mode: safeMode,
       vehicleType,
       vehicle: vehicle ? vehicle._id : null,
-      pickup: { address: pickup.address, coordinates: pickup.coordinates || [0, 0] },
-      drop: drop ? { address: drop.address || '', coordinates: drop.coordinates || [0, 0] } : undefined,
+      pickup: {
+        address: pickup.address,
+        coordinates: pickup.coordinates || [0, 0],
+        mapLink: pickup.mapLink || '',
+      },
+      drop: drop
+        ? { address: drop.address || '', coordinates: drop.coordinates || [0, 0], mapLink: drop.mapLink || '' }
+        : undefined,
       destination: safeMode === 'outstation' ? destination : '',
       tripType: safeMode === 'outstation' ? safeTripType : 'one-way',
       scheduledAt: scheduledAt || Date.now(),

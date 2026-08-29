@@ -33,10 +33,12 @@ const tripSchema = new mongoose.Schema(
     pickup: {
       address: { type: String, required: true, trim: true },
       coordinates: { type: [Number], default: [0, 0] }, // [lng, lat]
+      mapLink: { type: String, default: '' }, // optional Google Maps link the rider pasted
     },
     drop: {
       address: { type: String, trim: true, default: '' },
       coordinates: { type: [Number], default: [0, 0] },
+      mapLink: { type: String, default: '' },
     },
 
     // For outstation: the destination town/place (free text, e.g. "Patna").

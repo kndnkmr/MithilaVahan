@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { cityAPI, tripAPI, vehicleAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { getCoordinates } from '../services/location';
+import { coordsFromMapLink, haversineKm } from '../services/maps';
 import { useT } from '../services/i18n';
 
 const TYPE_EMOJI = { car: '🚗', auto: '🛺', tempo: '🚐', bus: '🚌', truck: '🚚', bike: '🏍️' };
@@ -40,7 +41,9 @@ export default function RiderBook() {
     mode: preMode,
     vehicleType: preType,
     pickup: '',
+    pickupMapLink: '',
     drop: '',
+    dropMapLink: '',
     days: 1,
     // Outstation fields
     destination: preTo,
@@ -50,8 +53,9 @@ export default function RiderBook() {
     paymentMode: 'cash',
     notes: '',
   });
-  // Pickup GPS coords [lng, lat] — powers nearest-driver dispatch. Optional.
+  // Pickup/drop GPS coords [lng, lat] — power dispatch + approx distance. Optional.
   const [pickupCoords, setPickupCoords] = useState(null);
+  const [dropCoords, setDropCoords] = useState(null);
   const [locating, setLocating] = useState(false);
   const [loading, setLoading] = useState(false);
   // Live fare estimate range { low, high }
@@ -119,6 +123,35 @@ export default function RiderBook() {
 
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
 
+  // If the rider pastes a Maps link, try to pull coordinates out of it.
+  const onPickupLink = (e) => {
+    const v = e.target.value;
+    setForm((f) => ({ ...f, pickupMapLink: v }));
+    const c = coordsFromMapLink(v);
+    if (c) setPickupCoords(c);
+  };
+  const onDropLink = (e) => {
+    const v = e.target.value;
+    setForm((f) => ({ ...f, dropMapLink: v }));
+    const c = coordsFromMapLink(v);
+    if (c) setDropCoords(c);
+  };
+
+  // Auto-fill an approximate distance when we have both pickup + drop coords
+  // (straight-line; the driver confirms the final fare). Rider can override.
+  useEffect(() => {
+    if (form.mode === 'hire') return;
+    if (pickupCoords && dropCoords) {
+      const km = haversineKm(pickupCoords, dropCoords);
+      if (km > 0) {
+        // Bump straight-line up ~25% as a rough road-distance approximation.
+        const approx = Math.max(1, Math.round(km * 1.25));
+        setForm((f) => ({ ...f, distanceKm: String(approx) }));
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pickupCoords, dropCoords, form.mode]);
+
   const submit = async (e) => {
     e.preventDefault();
     if (!form.city || !form.pickup) {
@@ -135,8 +168,14 @@ export default function RiderBook() {
         city: form.city,
         mode: form.mode,
         vehicleType: form.vehicleType,
-        pickup: { address: form.pickup, coordinates: pickupCoords || undefined },
-        drop: form.mode === 'trip' ? { address: form.drop } : undefined,
+        pickup: {
+          address: form.pickup,
+          coordinates: pickupCoords || undefined,
+          mapLink: form.pickupMapLink || undefined,
+        },
+        drop: form.mode === 'trip'
+          ? { address: form.drop, coordinates: dropCoords || undefined, mapLink: form.dropMapLink || undefined }
+          : undefined,
         destination: form.mode === 'outstation' ? form.destination : undefined,
         tripType: form.mode === 'outstation' ? form.tripType : undefined,
         distanceKm: form.distanceKm ? Number(form.distanceKm) : undefined,
@@ -253,26 +292,45 @@ export default function RiderBook() {
           </div>
           <input value={form.pickup} onChange={set('pickup')} placeholder="e.g. Tower Chowk, Darbhanga"
             className="input" required />
-          {pickupCoords && (
-            <p className="text-xs text-gray-400 mt-1">
-              Nearest available drivers will be notified first.
-            </p>
-          )}
+          <input value={form.pickupMapLink} onChange={onPickupLink}
+            placeholder="Paste Google Maps link (optional)" className="input mt-2" />
+          <p className="text-xs text-gray-400 mt-1">
+            {pickupCoords
+              ? '📍 Location set — nearest drivers notified first, distance auto-estimated.'
+              : 'Paste a Maps link so the driver reaches your exact spot. / सटीक जगह के लिए मैप लिंक डालें।'}
+          </p>
         </div>
 
         {/* In-city point-to-point: drop location + approx distance */}
         {form.mode === 'trip' && (
           <>
             <div>
-              <label className="block text-sm font-medium mb-1">Drop location</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-sm font-medium">Drop location</label>
+                <button type="button"
+                  onClick={async () => {
+                    const c = await getCoordinates();
+                    if (c) { setDropCoords(c); toast.success('Drop location set'); }
+                    else toast.error('Could not get location');
+                  }}
+                  className="text-xs text-brand-600 font-medium">
+                  {dropCoords ? '📍 Drop set' : '📍 Use my location'}
+                </button>
+              </div>
               <input value={form.drop} onChange={set('drop')} placeholder="e.g. Darbhanga Junction"
                 className="input" />
+              <input value={form.dropMapLink} onChange={onDropLink}
+                placeholder="Paste Google Maps link (optional)" className="input mt-2" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Approx. distance (km, optional)</label>
+              <label className="block text-sm font-medium mb-1">Approx. distance (km)</label>
               <input type="number" min={0} value={form.distanceKm} onChange={set('distanceKm')}
                 placeholder="e.g. 6" className="input" />
-              <p className="text-xs text-gray-400 mt-1">Add distance to see an instant fare estimate.</p>
+              <p className="text-xs text-gray-400 mt-1">
+                {pickupCoords && dropCoords
+                  ? 'Auto-estimated from your locations — you can adjust. Final fare confirmed by driver.'
+                  : 'Add distance (or Maps links above) to see an instant fare estimate.'}
+              </p>
             </div>
           </>
         )}
