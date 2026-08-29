@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { driverAPI } from '../services/api';
 import { navLink } from '../services/maps';
+import { useLang } from '../services/i18n';
 import TripStatusGuide from './TripStatusGuide';
 
 // Render ★ rating compactly.
@@ -31,9 +32,39 @@ function waLink(phone, text) {
 
 // Compose an intuitive, role-aware WhatsApp opener so each side sends a message
 // that makes sense for who they are and what they need — instead of one bland
-// "regarding our trip" line for everyone.
-function waMessage(trip, role) {
+// Compose an intuitive, role-aware WhatsApp opener — in the user's chosen
+// language (English / हिंदी) so it's natural for the person sending it.
+// Vehicle model / names / addresses are never translated (shown as typed).
+function waMessage(trip, role, lang = 'en') {
   const senderName = (role === 'rider' ? trip.rider?.name : trip.driver?.name) || '';
+  const vt = trip.vehicleType;
+  const pickupAddr = trip.pickup?.address || '';
+
+  if (lang === 'hi') {
+    const iAm = senderName ? ` मैं ${senderName} हूँ।` : '';
+    const where =
+      trip.mode === 'outstation' && trip.destination
+        ? ` ${trip.destination} के लिए`
+        : trip.mode === 'hire'
+        ? ' (पूरे दिन के लिए)'
+        : '';
+    const pickup = pickupAddr ? ` मेरा पिकअप: ${pickupAddr}।` : '';
+    if (role === 'rider') {
+      if (trip.status === 'accepted')
+        return `नमस्ते, आपने मेरी MithilaVahan ${vt} यात्रा${where} स्वीकार की है।${iAm}${pickup} कृपया बताएँ कितनी देर में पहुँचेंगे।`;
+      if (trip.status === 'started')
+        return `नमस्ते, मेरी चल रही MithilaVahan ${vt} यात्रा${where} के बारे में।${iAm}`;
+      return `नमस्ते, मेरी MithilaVahan ${vt} यात्रा${where} के बारे में।${iAm}${pickup}`;
+    }
+    // driver -> rider
+    if (trip.status === 'accepted')
+      return `नमस्ते, मैं आपकी MithilaVahan ${vt} यात्रा${where} का ड्राइवर हूँ।${iAm} मैं आपके पिकअप${pickupAddr ? ` (${pickupAddr})` : ''} की ओर आ रहा हूँ। कृपया अपनी सटीक जगह भेजें।`;
+    if (trip.status === 'started')
+      return `नमस्ते, मैं आपका MithilaVahan ड्राइवर हूँ।${iAm} आपकी यात्रा${where} शुरू हो गई है — मैं आपको अपडेट देता रहूँगा।`;
+    return `नमस्ते, आपकी MithilaVahan ${vt} यात्रा${where} के बारे में।${iAm}`;
+  }
+
+  // --- English (default) ---
   const iAm = senderName ? ` This is ${senderName}.` : '';
   const where =
     trip.mode === 'outstation' && trip.destination
@@ -41,31 +72,25 @@ function waMessage(trip, role) {
       : trip.mode === 'hire'
       ? ' (full-day hire)'
       : '';
-  const pickup = trip.pickup?.address ? ` My pickup is: ${trip.pickup.address}.` : '';
+  const pickup = pickupAddr ? ` My pickup is: ${pickupAddr}.` : '';
 
   if (role === 'rider') {
-    // Rider messaging the driver — help the driver find them.
-    if (trip.status === 'accepted') {
-      return `Hi, you accepted my MithilaVahan ${trip.vehicleType} trip${where}.${iAm}${pickup} Please let me know your ETA.`;
-    }
-    if (trip.status === 'started') {
-      return `Hi, regarding my ongoing MithilaVahan ${trip.vehicleType} trip${where}.${iAm}`;
-    }
-    return `Hi, about my MithilaVahan ${trip.vehicleType} trip${where}.${iAm}${pickup}`;
+    if (trip.status === 'accepted')
+      return `Hi, you accepted my MithilaVahan ${vt} trip${where}.${iAm}${pickup} Please let me know your ETA.`;
+    if (trip.status === 'started')
+      return `Hi, regarding my ongoing MithilaVahan ${vt} trip${where}.${iAm}`;
+    return `Hi, about my MithilaVahan ${vt} trip${where}.${iAm}${pickup}`;
   }
-
-  // Driver messaging the rider — identify themselves and reassure.
-  if (trip.status === 'accepted') {
-    return `Hi, I'm your MithilaVahan driver for the ${trip.vehicleType} trip${where}.${iAm} I'm heading to your pickup${trip.pickup?.address ? ` at ${trip.pickup.address}` : ''}. Please share your exact location.`;
-  }
-  if (trip.status === 'started') {
+  if (trip.status === 'accepted')
+    return `Hi, I'm your MithilaVahan driver for the ${vt} trip${where}.${iAm} I'm heading to your pickup${pickupAddr ? ` at ${pickupAddr}` : ''}. Please share your exact location.`;
+  if (trip.status === 'started')
     return `Hi, this is your MithilaVahan driver.${iAm} Your trip${where} is on the way — I'll keep you updated.`;
-  }
-  return `Hi, regarding your MithilaVahan ${trip.vehicleType} trip${where}.${iAm}`;
+  return `Hi, regarding your MithilaVahan ${vt} trip${where}.${iAm}`;
 }
 
 export default function TripCard({ trip, role, onAction }) {
   const other = role === 'rider' ? trip.driver : trip.rider;
+  const lang = useLang();
   const [reviews, setReviews] = useState(null);
   const [showReviews, setShowReviews] = useState(false);
 
@@ -232,7 +257,7 @@ export default function TripCard({ trip, role, onAction }) {
                   📞 Call {role === 'rider' ? 'driver' : 'rider'}
                 </a>
                 <a
-                  href={waLink(other.phone, waMessage(trip, role))}
+                  href={waLink(other.phone, waMessage(trip, role, lang))}
                   target="_blank"
                   rel="noreferrer"
                   className="inline-flex items-center gap-1 bg-green-600 text-white font-medium rounded-full px-3 py-1 text-xs hover:bg-green-700 transition whitespace-nowrap"
