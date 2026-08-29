@@ -1,18 +1,13 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import InstallButton from './InstallButton';
+import AccountMenu from './AccountMenu';
 import { useT, useLang, setLang } from '../services/i18n';
 
 export default function Navbar() {
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
+  const { user } = useAuth();
   const t = useT();
   const lang = useLang();
-
-  const handleLogout = () => {
-    logout();
-    navigate('/');
-  };
 
   return (
     <header className="bg-white border-b sticky top-0 z-40">
@@ -73,14 +68,7 @@ export default function Navbar() {
             <Link to="/admin" className="text-gray-600 hover:text-brand-600 shrink-0">Admin</Link>
           )}
 
-          {user && (
-            <>
-              <span className="text-gray-400 hidden lg:inline shrink-0">Hi, {user.name.split(' ')[0]}</span>
-              <button onClick={handleLogout} className="text-gray-600 hover:text-red-600 shrink-0 whitespace-nowrap">
-                {t('logout')}
-              </button>
-            </>
-          )}
+          {user && <AccountMenu />}
         </div>
       </nav>
     </header>

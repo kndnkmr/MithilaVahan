@@ -47,14 +47,14 @@ export default function Register() {
 
       <form onSubmit={submit} className="space-y-4">
         {/* Role toggle */}
-        <div className="flex rounded-md border overflow-hidden">
+        <div className="flex rounded-lg border overflow-hidden">
           {['rider', 'driver'].map((r) => (
             <button
               key={r}
               type="button"
               onClick={() => setForm((f) => ({ ...f, role: r }))}
-              className={`flex-1 py-2 text-sm capitalize ${
-                form.role === r ? 'bg-brand-500 text-white' : 'bg-white text-gray-600'
+              className={`flex-1 py-2.5 text-sm capitalize transition ${
+                form.role === r ? 'bg-brand-500 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'
               }`}
             >
               {r === 'rider' ? 'I want to ride' : 'I have a vehicle'}
@@ -62,20 +62,16 @@ export default function Register() {
           ))}
         </div>
 
-        <input
-          value={form.name} onChange={set('name')} placeholder="Full name"
-          className="w-full border rounded-md px-3 py-2" required
-        />
+        <input value={form.name} onChange={set('name')} placeholder="Full name" className="input" required />
         <input
           type="tel" inputMode="numeric" maxLength={10}
-          value={form.phone} onChange={set('phone')} placeholder="10-digit mobile"
-          className="w-full border rounded-md px-3 py-2" required
+          value={form.phone} onChange={set('phone')} placeholder="10-digit mobile" className="input" required
         />
         <input
           type="email" value={form.email} onChange={set('email')}
-          placeholder="Email (optional)" className="w-full border rounded-md px-3 py-2"
+          placeholder="Email (optional)" className="input"
         />
-        <select value={form.city} onChange={set('city')} className="w-full border rounded-md px-3 py-2" required>
+        <select value={form.city} onChange={set('city')} className="input" required>
           <option value="">Select your city</option>
           {cities.map((c) => (
             <option key={c._id} value={c.name}>{c.name}</option>
@@ -84,7 +80,7 @@ export default function Register() {
         <div className="relative">
           <input
             type={showPassword ? 'text' : 'password'} value={form.password} onChange={set('password')}
-            placeholder="Password (min 6 chars)" className="w-full border rounded-md px-3 py-2 pr-11" required
+            placeholder="Password (min 6 chars)" className="input pr-11" required
           />
           <button
             type="button"
@@ -100,7 +96,7 @@ export default function Register() {
         <input
           value={form.referralCode} onChange={set('referralCode')}
           placeholder="Referral code (optional)"
-          className="w-full border rounded-md px-3 py-2 uppercase"
+          className="input uppercase"
         />
         {refFromUrl && (
           <p className="text-xs text-green-600">🎉 You were invited with code {refFromUrl}</p>
@@ -112,10 +108,7 @@ export default function Register() {
           </p>
         )}
 
-        <button
-          disabled={loading}
-          className="w-full bg-brand-500 text-white py-2.5 rounded-md hover:bg-brand-600 disabled:opacity-60"
-        >
+        <button disabled={loading} className="btn-primary w-full">
           {loading ? 'Creating…' : 'Create account'}
         </button>
       </form>

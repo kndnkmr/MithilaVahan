@@ -117,8 +117,8 @@ export default function DriverDashboard() {
         <button
           onClick={toggleOnline}
           disabled={!approved}
-          className={`px-4 py-2 rounded-md text-sm font-medium ${
-            online ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-700'
+          className={`px-4 py-2 rounded-full text-sm font-medium transition ${
+            online ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
           } disabled:opacity-50`}
         >
           {online ? '● Online' : 'Go online'}
@@ -245,12 +245,12 @@ function ProfileTab({ user, updateUser, cities }) {
   ];
 
   return (
-    <form onSubmit={save} className="bg-white border rounded-lg p-4 space-y-4 max-w-md">
+    <form onSubmit={save} className="card p-4 space-y-4 max-w-md">
       <div>
         <h3 className="font-medium">Your details</h3>
         <p className="text-sm text-gray-500 mb-3">Riders and our team use these to reach and verify you.</p>
         <label className="block text-sm font-medium mb-1">City</label>
-        <select value={city} onChange={(e) => setCity(e.target.value)} className="w-full border rounded-md px-3 py-2 mb-3" required>
+        <select value={city} onChange={(e) => setCity(e.target.value)} className="input mb-3" required>
           <option value="">Select your city</option>
           {cities.map((c) => <option key={c._id} value={c.name}>{c.name}</option>)}
         </select>
@@ -260,7 +260,7 @@ function ProfileTab({ user, updateUser, cities }) {
           value={whatsappNumber}
           onChange={(e) => setWhatsappNumber(e.target.value)}
           placeholder="10-digit WhatsApp number"
-          className="w-full border rounded-md px-3 py-2"
+          className="input"
         />
       </div>
 
@@ -290,7 +290,7 @@ function ProfileTab({ user, updateUser, cities }) {
       </div>
 
       <button disabled={saving || uploading}
-        className="bg-brand-500 text-white px-4 py-2 rounded-md text-sm disabled:opacity-60">
+        className="btn-primary text-sm">
         {saving ? 'Saving…' : 'Save details'}
       </button>
     </form>
@@ -335,7 +335,7 @@ function PaymentTab({ user, updateUser }) {
   };
 
   return (
-    <form onSubmit={save} className="bg-white border rounded-lg p-4 space-y-3 max-w-md">
+    <form onSubmit={save} className="card p-4 space-y-3 max-w-md">
       <h3 className="font-medium">Your payment details</h3>
       <p className="text-sm text-gray-500">
         Riders pay you directly by UPI — the platform never holds your money and takes no cut.
@@ -343,7 +343,7 @@ function PaymentTab({ user, updateUser }) {
       <div>
         <label className="block text-sm font-medium mb-1">UPI ID</label>
         <input value={upiId} onChange={(e) => setUpiId(e.target.value)}
-          placeholder="yourname@upi" className="w-full border rounded-md px-3 py-2" />
+          placeholder="yourname@upi" className="input" />
       </div>
       <div>
         <label className="block text-sm font-medium mb-1">UPI QR image (optional)</label>
@@ -356,8 +356,7 @@ function PaymentTab({ user, updateUser }) {
         </label>
         <p className="text-xs text-gray-400 mt-1">Riders scan this to pay you.</p>
       </div>
-      <button disabled={saving || uploading}
-        className="bg-brand-500 text-white px-4 py-2 rounded-md text-sm disabled:opacity-60">
+      <button disabled={saving || uploading} className="btn-primary text-sm">
         {saving ? 'Saving…' : 'Save'}
       </button>
     </form>
@@ -424,7 +423,7 @@ function VehiclesTab({ vehicles, cities, onChange, defaultCity }) {
           <p className="text-gray-500 text-sm">No vehicles yet. Add one below.</p>
         ) : (
           vehicles.map((v) => (
-            <div key={v._id} className="bg-white border rounded-lg p-3 flex justify-between items-center">
+            <div key={v._id} className="card p-3 flex justify-between items-center">
               <div className="flex items-center gap-3">
                 {v.photos?.[0] && (
                   <img src={v.photos[0]} alt="" className="w-12 h-12 object-cover rounded-md border" />
@@ -446,28 +445,28 @@ function VehiclesTab({ vehicles, cities, onChange, defaultCity }) {
         )}
       </div>
 
-      <form onSubmit={addVehicle} className="bg-white border rounded-lg p-4 space-y-3">
+      <form onSubmit={addVehicle} className="card p-4 space-y-3">
         <h3 className="font-medium">Add a vehicle</h3>
         <div className="grid grid-cols-2 gap-3">
-          <select value={form.type} onChange={set('type')} className="border rounded-md px-3 py-2 capitalize">
+          <select value={form.type} onChange={set('type')} className="input capitalize">
             {VEHICLE_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
           </select>
-          <select value={form.city} onChange={set('city')} className="border rounded-md px-3 py-2" required>
+          <select value={form.city} onChange={set('city')} className="input" required>
             <option value="">City</option>
             {cities.map((c) => <option key={c._id} value={c.name}>{c.name}</option>)}
           </select>
           <input value={form.model} onChange={set('model')} placeholder="Model (e.g. Bolero)"
-            className="border rounded-md px-3 py-2" required />
+            className="input" required />
           <input value={form.registrationNumber} onChange={set('registrationNumber')} placeholder="Reg. no (BR06 ...)"
-            className="border rounded-md px-3 py-2" required />
+            className="input" required />
           <input type="number" value={form.capacity} onChange={set('capacity')} placeholder="Capacity"
-            className="border rounded-md px-3 py-2" />
+            className="input" />
           <input type="number" value={form.baseFare} onChange={set('baseFare')} placeholder="Base fare ₹"
-            className="border rounded-md px-3 py-2" />
+            className="input" />
           <input type="number" value={form.perKmRate} onChange={set('perKmRate')} placeholder="Per km ₹"
-            className="border rounded-md px-3 py-2" />
+            className="input" />
           <input type="number" value={form.perDayRate} onChange={set('perDayRate')} placeholder="Per day ₹"
-            className="border rounded-md px-3 py-2" />
+            className="input" />
         </div>
 
         {/* Vehicle photos */}
@@ -494,7 +493,7 @@ function VehiclesTab({ vehicles, cities, onChange, defaultCity }) {
           <p className="text-xs text-gray-400">Add up to 4 photos so riders can see your vehicle.</p>
         </div>
 
-        <button disabled={saving || uploading} className="bg-brand-500 text-white px-4 py-2 rounded-md text-sm disabled:opacity-60">
+        <button disabled={saving || uploading} className="btn-primary text-sm">
           {saving ? 'Adding…' : 'Add vehicle'}
         </button>
       </form>

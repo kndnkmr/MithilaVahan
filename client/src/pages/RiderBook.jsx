@@ -190,11 +190,11 @@ export default function RiderBook() {
         </div>
       )}
 
-      <form onSubmit={submit} className="space-y-4 bg-white border rounded-lg p-5">
+      <form onSubmit={submit} className="space-y-4 card p-5">
         {/* City */}
         <div>
           <label className="block text-sm font-medium mb-1">City</label>
-          <select value={form.city} onChange={set('city')} className="w-full border rounded-md px-3 py-2" required>
+          <select value={form.city} onChange={set('city')} className="input" required>
             <option value="">Select city</option>
             {cities.map((c) => (
               <option key={c._id} value={c.name}>{c.name}</option>
@@ -231,7 +231,7 @@ export default function RiderBook() {
         {/* Vehicle type */}
         <div>
           <label className="block text-sm font-medium mb-1">Vehicle type</label>
-          <select value={form.vehicleType} onChange={set('vehicleType')} className="w-full border rounded-md px-3 py-2">
+          <select value={form.vehicleType} onChange={set('vehicleType')} className="input">
             {VEHICLE_TYPES.map((t) => (
               <option key={t} value={t} className="capitalize">{t}</option>
             ))}
@@ -252,7 +252,7 @@ export default function RiderBook() {
             </button>
           </div>
           <input value={form.pickup} onChange={set('pickup')} placeholder="e.g. Tower Chowk, Darbhanga"
-            className="w-full border rounded-md px-3 py-2" required />
+            className="input" required />
           {pickupCoords && (
             <p className="text-xs text-gray-400 mt-1">
               Nearest available drivers will be notified first.
@@ -266,12 +266,12 @@ export default function RiderBook() {
             <div>
               <label className="block text-sm font-medium mb-1">Drop location</label>
               <input value={form.drop} onChange={set('drop')} placeholder="e.g. Darbhanga Junction"
-                className="w-full border rounded-md px-3 py-2" />
+                className="input" />
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Approx. distance (km, optional)</label>
               <input type="number" min={0} value={form.distanceKm} onChange={set('distanceKm')}
-                placeholder="e.g. 6" className="w-full border rounded-md px-3 py-2" />
+                placeholder="e.g. 6" className="input" />
               <p className="text-xs text-gray-400 mt-1">Add distance to see an instant fare estimate.</p>
             </div>
           </>
@@ -282,7 +282,7 @@ export default function RiderBook() {
           <div>
             <label className="block text-sm font-medium mb-1">Number of days</label>
             <input type="number" min={1} value={form.days} onChange={set('days')}
-              className="w-full border rounded-md px-3 py-2" />
+              className="input" />
           </div>
         )}
 
@@ -293,7 +293,7 @@ export default function RiderBook() {
               <label className="block text-sm font-medium mb-1">Destination (where to?)</label>
               <input value={form.destination} onChange={set('destination')}
                 placeholder="e.g. Patna, Kathmandu, Sitamarhi"
-                className="w-full border rounded-md px-3 py-2" required />
+                className="input" required />
             </div>
 
             <div>
@@ -326,7 +326,7 @@ export default function RiderBook() {
               <label className="block text-sm font-medium mb-1">Approx. distance (km, optional)</label>
               <input type="number" min={0} value={form.distanceKm} onChange={set('distanceKm')}
                 placeholder="e.g. 130"
-                className="w-full border rounded-md px-3 py-2" />
+                className="input" />
               <p className="text-xs text-gray-400 mt-1">
                 Add distance for an instant estimate — the driver confirms the final fare.
               </p>
@@ -365,7 +365,7 @@ export default function RiderBook() {
           </div>
           {form.scheduledAt && (
             <input type="datetime-local" value={form.scheduledAt} onChange={set('scheduledAt')}
-              className="w-full border rounded-md px-3 py-2" />
+              className="input" />
           )}
         </div>
 
@@ -412,10 +412,9 @@ export default function RiderBook() {
 
         <textarea value={form.notes} onChange={set('notes')} rows={2}
           placeholder="Notes for the driver (optional)"
-          className="w-full border rounded-md px-3 py-2" />
+          className="input" />
 
-        <button disabled={loading}
-          className="w-full bg-brand-500 text-white py-2.5 rounded-md hover:bg-brand-600 disabled:opacity-60">
+        <button disabled={loading} className="btn-primary w-full">
           {loading ? t('requesting') : t('requestTrip')}
         </button>
       </form>

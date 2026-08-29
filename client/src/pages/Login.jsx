@@ -46,7 +46,7 @@ export default function Login() {
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
             placeholder="10-digit mobile"
-            className="w-full border rounded-md px-3 py-2"
+            className="input"
             required
           />
         </div>
@@ -57,7 +57,7 @@ export default function Login() {
               type={showPassword ? 'text' : 'password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full border rounded-md px-3 py-2 pr-11"
+              className="input pr-11"
               required
             />
             <button
@@ -70,10 +70,7 @@ export default function Login() {
             </button>
           </div>
         </div>
-        <button
-          disabled={loading}
-          className="w-full bg-brand-500 text-white py-2.5 rounded-md hover:bg-brand-600 disabled:opacity-60"
-        >
+        <button disabled={loading} className="btn-primary w-full">
           {loading ? 'Logging in…' : 'Login'}
         </button>
       </form>

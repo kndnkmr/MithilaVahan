@@ -45,7 +45,7 @@ export default function TripCard({ trip, role, onAction }) {
   };
 
   return (
-    <div className="bg-white border rounded-lg p-4">
+    <div className="card p-4">
       <div className="flex items-center justify-between mb-2">
         <div className="font-medium capitalize">
           {trip.vehicleType} ·{' '}
@@ -118,14 +118,14 @@ export default function TripCard({ trip, role, onAction }) {
           <div className="mt-1">
             {trip.paymentStatus === 'pending' && role === 'rider' && (
               <button onClick={() => onAction?.('claim-paid', trip)}
-                className="bg-brand-500 text-white text-sm px-3 py-1.5 rounded-md">I've paid</button>
+                className="bg-brand-500 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-brand-600 transition">I've paid</button>
             )}
             {trip.paymentStatus === 'claimed' && role === 'rider' && (
               <span className="text-yellow-700 text-xs">Waiting for the driver to confirm your payment…</span>
             )}
             {trip.paymentStatus === 'claimed' && role === 'driver' && (
               <button onClick={() => onAction?.('confirm-payment', trip)}
-                className="bg-green-600 text-white text-sm px-3 py-1.5 rounded-md">Payment received</button>
+                className="bg-green-600 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-green-700 transition">Payment received</button>
             )}
             {trip.paymentStatus === 'pending' && role === 'driver' && (
               <span className="text-gray-400 text-xs">Awaiting payment from rider.</span>
@@ -199,28 +199,28 @@ export default function TripCard({ trip, role, onAction }) {
         </div>
       )}
 
-      {/* Actions */}
+      {/* Actions — consistent rounded-lg shape; semantic colors kept */}
       {onAction && (
         <div className="mt-3 flex flex-wrap gap-2">
           {role === 'driver' && trip.status === 'requested' && (
             <button onClick={() => onAction('accept', trip)}
-              className="bg-brand-500 text-white text-sm px-3 py-1.5 rounded-md">Accept</button>
+              className="bg-brand-500 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-brand-600 transition">Accept</button>
           )}
           {role === 'driver' && trip.status === 'accepted' && (
             <button onClick={() => onAction('start', trip)}
-              className="bg-indigo-600 text-white text-sm px-3 py-1.5 rounded-md">Start trip</button>
+              className="bg-indigo-600 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-indigo-700 transition">Start trip</button>
           )}
           {role === 'driver' && trip.status === 'started' && (
             <button onClick={() => onAction('complete', trip)}
-              className="bg-green-600 text-white text-sm px-3 py-1.5 rounded-md">Complete</button>
+              className="bg-green-600 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-green-700 transition">Complete</button>
           )}
           {['requested', 'accepted'].includes(trip.status) && (
             <button onClick={() => onAction('cancel', trip)}
-              className="border text-gray-600 text-sm px-3 py-1.5 rounded-md">Cancel</button>
+              className="border border-gray-300 text-gray-600 text-sm px-4 py-2 rounded-lg hover:border-red-300 hover:text-red-600 transition">Cancel</button>
           )}
           {role === 'rider' && trip.status === 'completed' && !trip.rating && (
             <button onClick={() => onAction('rate', trip)}
-              className="border text-brand-600 text-sm px-3 py-1.5 rounded-md">Rate driver</button>
+              className="border border-brand-500 text-brand-600 text-sm font-medium px-4 py-2 rounded-lg hover:bg-brand-50 transition">Rate driver</button>
           )}
           {role === 'rider' && trip.rating && (
             <span className="text-sm text-gray-400">You rated ★ {trip.rating}</span>

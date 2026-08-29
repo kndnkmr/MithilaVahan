@@ -130,13 +130,13 @@ export default function MyTrips() {
                   <div className="flex gap-2">
                     <button
                       onClick={() => shareTrip(t)}
-                      className="flex-1 border border-brand-500 text-brand-600 text-sm py-2 rounded-md font-medium"
+                      className="flex-1 border border-brand-500 text-brand-600 text-sm py-2 rounded-lg font-medium hover:bg-brand-50 transition"
                     >
                       🔗 Share trip
                     </button>
                     <button
                       onClick={() => raiseSos(t)}
-                      className="flex-1 bg-red-600 text-white text-sm py-2 rounded-md font-medium"
+                      className="flex-1 bg-red-600 text-white text-sm py-2 rounded-lg font-medium hover:bg-red-700 transition"
                     >
                       🚨 SOS
                     </button>

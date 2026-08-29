@@ -146,7 +146,7 @@ export default function AdminDashboard() {
             ['Pending vehicles', stats.pendingVehicles],
             ['Trips', stats.trips],
           ].map(([label, val]) => (
-            <div key={label} className="bg-white border rounded-lg p-3 text-center">
+            <div key={label} className="card p-3 text-center">
               <div className="text-xl font-bold text-brand-600">{val}</div>
               <div className="text-xs text-gray-500">{label}</div>
             </div>
@@ -169,7 +169,7 @@ export default function AdminDashboard() {
       {tab === 'drivers' && (
         <div className="space-y-2">
           {drivers.map((d) => (
-            <div key={d._id} className="bg-white border rounded-lg p-3 flex items-center justify-between gap-3">
+            <div key={d._id} className="card p-3 flex items-center justify-between gap-3">
               <div className="min-w-0">
                 <div className="font-medium">{d.name} <span className="text-gray-400 text-sm">· {d.city || 'no city'}</span></div>
                 <div className="text-sm text-gray-500">{d.phone}</div>
@@ -204,7 +204,7 @@ export default function AdminDashboard() {
       {tab === 'vehicles' && (
         <div className="space-y-2">
           {vehicles.map((v) => (
-            <div key={v._id} className="bg-white border rounded-lg p-3 flex items-center justify-between">
+            <div key={v._id} className="card p-3 flex items-center justify-between">
               <div>
                 <div className="font-medium capitalize">{v.type} · {v.model}</div>
                 <div className="text-sm text-gray-500">
@@ -232,7 +232,7 @@ export default function AdminDashboard() {
         <div className="space-y-2">
           {complaints.length === 0 && <p className="text-gray-500 text-sm">No complaints yet.</p>}
           {complaints.map((c) => (
-            <div key={c._id} className="bg-white border rounded-lg p-3">
+            <div key={c._id} className="card p-3">
               <div className="flex items-center justify-between">
                 <div className="font-medium">{c.subject}</div>
                 <span className={`text-xs px-2 py-0.5 rounded-full ${
@@ -270,7 +270,7 @@ export default function AdminDashboard() {
       {tab === 'settings' && (
         <div className="space-y-6">
           {/* Commission */}
-          <div className="bg-white border rounded-lg p-4 max-w-md space-y-3">
+          <div className="card p-4 max-w-md space-y-3">
             <h3 className="font-medium">Platform commission</h3>
             <p className="text-sm text-gray-500">
               Percentage the platform charges per completed trip. Keep it at <b>0</b> to stay
@@ -286,15 +286,14 @@ export default function AdminDashboard() {
                 className="w-24 border rounded-md px-3 py-2"
               />
               <span className="text-gray-600">%</span>
-              <button onClick={saveCommission} disabled={savingCommission}
-                className="bg-brand-500 text-white px-4 py-2 rounded-md text-sm disabled:opacity-60">
+              <button onClick={saveCommission} disabled={savingCommission} className="btn-primary text-sm">
                 {savingCommission ? 'Saving…' : 'Save'}
               </button>
             </div>
           </div>
 
           {/* Indicative fare guide */}
-          <div className="bg-white border rounded-lg p-4">
+          <div className="card p-4">
             <h3 className="font-medium">Indicative fare guide</h3>
             <p className="text-sm text-gray-500 mb-3">
               Shown to riders on the home page and used for instant fare estimates. Each owner
@@ -341,8 +340,7 @@ export default function AdminDashboard() {
                 </tbody>
               </table>
             </div>
-            <button onClick={saveFares} disabled={savingFares}
-              className="mt-3 bg-brand-500 text-white px-4 py-2 rounded-md text-sm disabled:opacity-60">
+            <button onClick={saveFares} disabled={savingFares} className="btn-primary text-sm mt-3">
               {savingFares ? 'Saving…' : 'Save fares'}
             </button>
           </div>
