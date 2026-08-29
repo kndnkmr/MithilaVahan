@@ -123,12 +123,14 @@ export default function DriverDashboard() {
         // Jump to "My trips" so the driver immediately sees Start/Complete for it.
         setTab('active');
         setTimeout(() => contentRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
+        toast.success('Trip accepted — head to the pickup point');
       } else if (action === 'start') {
         await tripAPI.updateStatus(trip._id, { status: 'started' });
+        toast.success('Trip started — drive to the drop, then tap Complete');
       } else if (action === 'confirm-payment') {
         await tripAPI.confirmPayment(trip._id);
+        toast.success('Payment confirmed');
       }
-      toast.success('Done');
       loadAll();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Action failed');
@@ -141,7 +143,7 @@ export default function DriverDashboard() {
     try {
       const finalFare = Number(values.finalFare) || undefined;
       await tripAPI.updateStatus(trip._id, { status: 'completed', finalFare });
-      toast.success('Trip completed');
+      toast.success('Trip completed — collect the fare, then confirm payment');
       loadAll();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed');
