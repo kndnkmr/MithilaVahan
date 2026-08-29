@@ -7,12 +7,20 @@
 //     only when offline.
 //   - Static assets are cached on first fetch (cache-first) for speed.
 
-const CACHE = 'mithilavahan-v1';
+// Bump this version string on each meaningful change so old caches are purged
+// and every device picks up the new build automatically.
+const CACHE = 'mithilavahan-v2';
 const SHELL = ['/', '/index.html', '/icon-192.png', '/icon-512.png'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)));
   self.skipWaiting();
+});
+
+// The page (main.jsx) posts this once a new SW has installed, so it activates
+// immediately instead of waiting for all tabs to close.
+self.addEventListener('message', (event) => {
+  if (event.data?.type === 'SKIP_WAITING') self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {

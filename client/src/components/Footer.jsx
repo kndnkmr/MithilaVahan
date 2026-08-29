@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { LogoMark } from './Logo';
 
 const COLS = [
   {
@@ -37,7 +38,12 @@ export default function Footer() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="col-span-2 md:col-span-1">
-            <div className="text-xl font-bold text-white">MithilaVahan</div>
+            <div className="flex items-center gap-2">
+              <LogoMark size={28} />
+              <span className="text-xl font-bold text-white">
+                Mithila<span className="text-brand-500">Vahan</span>
+              </span>
+            </div>
             <p className="text-sm text-gray-400 mt-2 leading-relaxed">
               Local rides & vehicle rentals for Mithilanchal. Darbhanga · Muzaffarpur.
             </p>

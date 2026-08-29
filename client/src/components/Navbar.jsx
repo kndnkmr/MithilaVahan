@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import InstallButton from './InstallButton';
 import AccountMenu from './AccountMenu';
+import Logo from './Logo';
 import { useT, useLang, setLang } from '../services/i18n';
 
 export default function Navbar() {
@@ -12,8 +13,8 @@ export default function Navbar() {
   return (
     <header className="bg-white border-b sticky top-0 z-40">
       <nav className="max-w-6xl mx-auto px-3 sm:px-4 h-14 flex items-center justify-between gap-2">
-        <Link to="/" className="font-bold text-base sm:text-lg text-brand-600 shrink-0">
-          MithilaVahan
+        <Link to="/" className="shrink-0" aria-label="MithilaVahan home">
+          <Logo size={30} />
         </Link>
 
         <div className="flex items-center gap-2 sm:gap-4 text-sm min-w-0">
