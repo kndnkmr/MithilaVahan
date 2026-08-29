@@ -329,8 +329,9 @@ function ProfileTab({ user, updateUser, cities }) {
   );
 }
 
-// --- Payment details sub-tab: driver's UPI ID + optional QR image ---
+// --- Payment details sub-tab: driver's UPI number/ID + optional QR image ---
 function PaymentTab({ user, updateUser }) {
+  const [upiNumber, setUpiNumber] = useState(user.upiNumber || '');
   const [upiId, setUpiId] = useState(user.upiId || '');
   const [qrImage, setQrImage] = useState(user.qrImage || '');
   const [uploading, setUploading] = useState(false);
@@ -356,8 +357,8 @@ function PaymentTab({ user, updateUser }) {
     e.preventDefault();
     setSaving(true);
     try {
-      const res = await driverAPI.submitDocuments({ upiId, qrImage });
-      updateUser({ upiId: res.data.upiId, qrImage: res.data.qrImage });
+      const res = await driverAPI.submitDocuments({ upiNumber, upiId, qrImage });
+      updateUser({ upiNumber: res.data.upiNumber, upiId: res.data.upiId, qrImage: res.data.qrImage });
       toast.success('Payment details saved');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to save');
@@ -372,12 +373,25 @@ function PaymentTab({ user, updateUser }) {
       <p className="text-sm text-gray-500">
         Riders pay you directly by UPI — the platform never holds your money and takes no cut.
       </p>
+
       <div>
-        <label className="block text-sm font-medium mb-1">UPI ID</label>
+        <label className="block text-sm font-medium mb-1">UPI number (mobile linked to UPI)</label>
+        <input
+          type="tel" inputMode="numeric" maxLength={10}
+          value={upiNumber} onChange={(e) => setUpiNumber(e.target.value)}
+          placeholder="98765 43210" className="input" />
+        <p className="text-xs text-gray-400 mt-1">
+          The mobile number where you receive UPI payments (PhonePe/GPay/Paytm).
+          <span className="block">आप जिस मोबाइल नंबर पर UPI पैसे लेते हैं।</span>
+        </p>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium mb-1">UPI ID (optional)</label>
         <input value={upiId} onChange={(e) => setUpiId(e.target.value)}
           placeholder="yourname@okhdfcbank" className="input" />
         <p className="text-xs text-gray-400 mt-1">
-          From your UPI app (PhonePe/GPay/Paytm). / अपने UPI ऐप से (PhonePe/GPay/Paytm)।
+          Only if you know it — otherwise the UPI number above is enough. / नहीं पता तो छोड़ दें।
         </p>
       </div>
       <div>

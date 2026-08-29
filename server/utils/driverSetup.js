@@ -24,7 +24,7 @@ function getDriverSetup(driver, hasVehicle) {
     {
       key: 'payment',
       label: 'Add payment details (UPI)',
-      done: !!driver.upiId,
+      done: !!(driver.upiNumber || driver.upiId),
     },
     {
       key: 'approval',

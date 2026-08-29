@@ -21,6 +21,7 @@ function publicUser(u) {
     driverStatus: u.driverStatus,
     whatsappNumber: u.whatsappNumber,
     upiId: u.upiId,
+    upiNumber: u.upiNumber,
     qrImage: u.qrImage,
     documents: u.documents,
     ratingAvg: u.ratingAvg,

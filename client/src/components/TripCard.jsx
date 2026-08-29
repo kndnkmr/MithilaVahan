@@ -101,14 +101,17 @@ export default function TripCard({ trip, role, onAction }) {
               <div className="text-gray-600">
                 Pay ₹{trip.finalFare} directly to your driver by UPI:
               </div>
+              {trip.driver?.upiNumber && (
+                <div className="font-medium">UPI number: {trip.driver.upiNumber}</div>
+              )}
               {trip.driver?.upiId && (
-                <div className="font-medium">UPI: {trip.driver.upiId}</div>
+                <div className="font-medium">UPI ID: {trip.driver.upiId}</div>
               )}
               {trip.driver?.qrImage && (
                 <img src={trip.driver.qrImage} alt="Driver UPI QR"
                   className="w-32 h-32 object-contain border rounded-md" />
               )}
-              {!trip.driver?.upiId && !trip.driver?.qrImage && (
+              {!trip.driver?.upiNumber && !trip.driver?.upiId && !trip.driver?.qrImage && (
                 <div className="text-gray-400 text-xs">
                   Driver hasn't added UPI details — pay by cash or ask on WhatsApp.
                 </div>

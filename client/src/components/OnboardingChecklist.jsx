@@ -13,8 +13,8 @@ function computeSteps(user, vehicles) {
       done: !!(docs.drivingLicense && docs.rcBook && docs.insurance) },
     { key: 'vehicle', label: 'Add a vehicle', hint: 'Type, model, photos, rates', tab: 'vehicles',
       done: hasVehicle },
-    { key: 'payment', label: 'Add payment details', hint: 'Your UPI ID / QR', tab: 'payment',
-      done: !!user?.upiId },
+    { key: 'payment', label: 'Add payment details', hint: 'UPI number or ID', tab: 'payment',
+      done: !!(user?.upiNumber || user?.upiId) },
     { key: 'approval', label: 'Get approved', hint: 'Our team reviews your details', tab: null,
       done: user?.driverStatus === 'approved' },
   ];

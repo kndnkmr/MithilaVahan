@@ -15,7 +15,7 @@ const { findNearestDrivers } = require('../utils/dispatch');
 // The driver's upiId/qrImage are included so a UPI rider can see how to pay.
 const POPULATE = [
   { path: 'rider', select: 'name phone whatsappNumber' },
-  { path: 'driver', select: 'name phone whatsappNumber ratingAvg ratingCount upiId qrImage' },
+  { path: 'driver', select: 'name phone whatsappNumber ratingAvg ratingCount upiId upiNumber qrImage' },
   { path: 'vehicle', select: 'type model registrationNumber capacity photos' },
 ];
 
