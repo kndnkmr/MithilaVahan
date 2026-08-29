@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { driverAPI, tripAPI, vehicleAPI, cityAPI, uploadAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -9,10 +9,30 @@ import OnboardingChecklist from '../components/OnboardingChecklist';
 
 const VEHICLE_TYPES = ['car', 'auto', 'tempo', 'bus', 'truck', 'bike'];
 
+// Tiny inline SVG shown if an uploaded image fails to load (so it degrades to a
+// neat "image" glyph instead of a broken-image icon). Data URI = always loads.
+const FALLBACK_DOC =
+  'data:image/svg+xml;utf8,' +
+  encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="56" height="56"><rect width="56" height="56" fill="%23f3f4f6"/><text x="28" y="34" font-size="22" text-anchor="middle" fill="%239ca3af">🖼️</text></svg>'
+  );
+
 export default function DriverDashboard() {
   const { user, updateUser } = useAuth();
   const [tab, setTab] = useState('requests');
   const [online, setOnline] = useState(user?.isOnline || false);
+  const contentRef = useRef(null);
+
+  // Switch tab AND scroll the content into view — so tapping a tab or an
+  // onboarding "Do this" button brings the relevant form onto the screen
+  // (important on mobile, where the form otherwise appears below the fold).
+  const goToTab = (key) => {
+    setTab(key);
+    // wait for the new tab content to render, then scroll to it
+    setTimeout(() => {
+      contentRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 50);
+  };
 
   const [available, setAvailable] = useState([]);
   const [myTrips, setMyTrips] = useState([]);
@@ -126,7 +146,7 @@ export default function DriverDashboard() {
       </div>
 
       {/* Guided onboarding — shows until the driver is fully set up + approved */}
-      <OnboardingChecklist user={user} vehicles={vehicles} onGoToTab={setTab} />
+      <OnboardingChecklist user={user} vehicles={vehicles} onGoToTab={goToTab} />
 
       {/* Tabs — horizontally scrollable so they never clip on small phones */}
       <div className="flex gap-2 mb-4 text-sm overflow-x-auto pb-1">
@@ -139,7 +159,7 @@ export default function DriverDashboard() {
         ].map(([key, label]) => (
           <button
             key={key}
-            onClick={() => setTab(key)}
+            onClick={() => goToTab(key)}
             className={`px-4 py-2 rounded-full whitespace-nowrap shrink-0 transition ${
               tab === key ? 'bg-brand-500 text-white' : 'bg-white border text-gray-600 hover:border-brand-400'
             }`}
@@ -149,6 +169,7 @@ export default function DriverDashboard() {
         ))}
       </div>
 
+      <div ref={contentRef} className="scroll-mt-16">
       {tab === 'requests' && (
         <div className="space-y-3">
           {!approved ? (
@@ -182,6 +203,7 @@ export default function DriverDashboard() {
       {tab === 'profile' && <ProfileTab user={user} updateUser={updateUser} cities={cities} />}
 
       {tab === 'payment' && <PaymentTab user={user} updateUser={updateUser} />}
+      </div>
     </div>
   );
 }
@@ -279,7 +301,8 @@ function ProfileTab({ user, updateUser, cities }) {
           {DOC_FIELDS.map(([key, label, hint]) => (
             <div key={key} className="flex items-center gap-3">
               {docs[key] ? (
-                <img src={docs[key]} alt="" className="w-14 h-14 object-cover rounded-md border" />
+                <img src={docs[key]} alt="" className="w-14 h-14 object-cover rounded-md border"
+                  onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = FALLBACK_DOC; }} />
               ) : (
                 <div className="w-14 h-14 rounded-md border-2 border-dashed flex items-center justify-center text-gray-300 text-xl">📄</div>
               )}
@@ -360,7 +383,8 @@ function PaymentTab({ user, updateUser }) {
       <div>
         <label className="block text-sm font-medium mb-1">UPI QR image (optional)</label>
         {qrImage && (
-          <img src={qrImage} alt="Your UPI QR" className="w-32 h-32 object-contain border rounded-md mb-2" />
+          <img src={qrImage} alt="Your UPI QR" className="w-32 h-32 object-contain border rounded-md mb-2"
+            onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = FALLBACK_DOC; }} />
         )}
         <label className="inline-block border-2 border-dashed rounded-md px-4 py-2 text-sm text-gray-500 cursor-pointer hover:border-brand-400">
           {uploading ? 'Uploading…' : qrImage ? 'Replace QR image' : 'Upload your UPI QR'}
@@ -438,7 +462,8 @@ function VehiclesTab({ vehicles, cities, onChange, defaultCity }) {
             <div key={v._id} className="card p-3 flex justify-between items-center">
               <div className="flex items-center gap-3">
                 {v.photos?.[0] && (
-                  <img src={v.photos[0]} alt="" className="w-12 h-12 object-cover rounded-md border" />
+                  <img src={v.photos[0]} alt="" className="w-12 h-12 object-cover rounded-md border"
+                    onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = FALLBACK_DOC; }} />
                 )}
                 <div>
                   <div className="font-medium capitalize">{v.type} · {v.model}</div>
@@ -531,7 +556,8 @@ function VehiclesTab({ vehicles, cities, onChange, defaultCity }) {
           <div className="flex flex-wrap gap-2 mb-2">
             {photos.map((url, i) => (
               <div key={i} className="relative">
-                <img src={url} alt="" className="w-20 h-20 object-cover rounded-md border" />
+                <img src={url} alt="" className="w-20 h-20 object-cover rounded-md border"
+                  onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = FALLBACK_DOC; }} />
                 <button
                   type="button"
                   onClick={() => setPhotos((p) => p.filter((_, idx) => idx !== i))}
