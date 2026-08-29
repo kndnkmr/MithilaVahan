@@ -239,9 +239,9 @@ function ProfileTab({ user, updateUser, cities }) {
   };
 
   const DOC_FIELDS = [
-    ['drivingLicense', 'Driving licence'],
-    ['rcBook', 'RC book (vehicle registration)'],
-    ['insurance', 'Insurance'],
+    ['drivingLicense', 'Driving licence', 'Your DL card (front). / आपका ड्राइविंग लाइसेंस।'],
+    ['rcBook', 'RC book (vehicle registration)', 'Vehicle registration paper. / गाड़ी का RC (रजिस्ट्रेशन)।'],
+    ['insurance', 'Insurance', 'Valid insurance paper. / बीमा (इंश्योरेंस) कागज़।'],
   ];
 
   return (
@@ -250,25 +250,33 @@ function ProfileTab({ user, updateUser, cities }) {
         <h3 className="font-medium">Your details</h3>
         <p className="text-sm text-gray-500 mb-3">Riders and our team use these to reach and verify you.</p>
         <label className="block text-sm font-medium mb-1">City</label>
-        <select value={city} onChange={(e) => setCity(e.target.value)} className="input mb-3" required>
+        <select value={city} onChange={(e) => setCity(e.target.value)} className="input mb-1" required>
           <option value="">Select your city</option>
           {cities.map((c) => <option key={c._id} value={c.name}>{c.name}</option>)}
         </select>
+        <p className="text-xs text-gray-400 mb-3">Where you drive. / आप कहाँ चलाते हैं।</p>
         <label className="block text-sm font-medium mb-1">WhatsApp number</label>
         <input
           type="tel" inputMode="numeric" maxLength={10}
           value={whatsappNumber}
           onChange={(e) => setWhatsappNumber(e.target.value)}
-          placeholder="10-digit WhatsApp number"
+          placeholder="98765 43210"
           className="input"
         />
+        <p className="text-xs text-gray-400 mt-1">Riders reach you here on WhatsApp. / यात्री यहाँ WhatsApp पर संपर्क करेंगे।</p>
       </div>
 
       <div>
         <h3 className="font-medium">Documents</h3>
-        <p className="text-sm text-gray-500 mb-3">Upload clear photos. Required before your account is approved.</p>
+        <p className="text-sm text-gray-500 mb-1">
+          Take a clear photo of each paper with your phone and upload it. Required before your
+          account is approved.
+        </p>
+        <p className="text-xs text-gray-400 mb-3">
+          हर कागज़ की साफ़ फ़ोटो खींचकर अपलोड करें। अप्रूवल के लिए ज़रूरी है।
+        </p>
         <div className="space-y-3">
-          {DOC_FIELDS.map(([key, label]) => (
+          {DOC_FIELDS.map(([key, label, hint]) => (
             <div key={key} className="flex items-center gap-3">
               {docs[key] ? (
                 <img src={docs[key]} alt="" className="w-14 h-14 object-cover rounded-md border" />
@@ -277,8 +285,9 @@ function ProfileTab({ user, updateUser, cities }) {
               )}
               <div className="flex-1">
                 <div className="text-sm font-medium">{label}</div>
-                <label className="text-brand-600 text-sm cursor-pointer">
-                  {uploading === key ? 'Uploading…' : docs[key] ? 'Replace' : 'Upload'}
+                <div className="text-xs text-gray-400">{hint}</div>
+                <label className="text-brand-600 text-sm font-medium cursor-pointer">
+                  {uploading === key ? 'Uploading…' : docs[key] ? 'Replace photo' : '📷 Upload photo'}
                   <input type="file" accept="image/*" className="hidden"
                     onChange={(e) => uploadDoc(key, e.target.files?.[0])} disabled={uploading === key} />
                 </label>
@@ -343,7 +352,10 @@ function PaymentTab({ user, updateUser }) {
       <div>
         <label className="block text-sm font-medium mb-1">UPI ID</label>
         <input value={upiId} onChange={(e) => setUpiId(e.target.value)}
-          placeholder="yourname@upi" className="input" />
+          placeholder="yourname@okhdfcbank" className="input" />
+        <p className="text-xs text-gray-400 mt-1">
+          From your UPI app (PhonePe/GPay/Paytm). / अपने UPI ऐप से (PhonePe/GPay/Paytm)।
+        </p>
       </div>
       <div>
         <label className="block text-sm font-medium mb-1">UPI QR image (optional)</label>
@@ -447,12 +459,23 @@ function VehiclesTab({ vehicles, cities, onChange, defaultCity }) {
 
       <form onSubmit={addVehicle} className="card p-4 space-y-3">
         <h3 className="font-medium">Add a vehicle</h3>
+
+        {/* Plain-language intro so first-time drivers know what this is */}
+        <div className="bg-brand-50 border border-brand-100 rounded-lg p-3 text-sm text-brand-800">
+          Add your vehicle so riders can find and book it. Fill the details below — most are on
+          your vehicle papers (RC book). Not sure about a rate? Leave it and set it later.
+          <span className="block text-brand-700 mt-1">
+            अपनी गाड़ी जोड़ें ताकि यात्री उसे बुक कर सकें। नीचे दी गई जानकारी भरें — ज़्यादातर आपके RC बुक पर है।
+          </span>
+        </div>
+
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="block text-sm font-medium mb-1">Vehicle type</label>
             <select value={form.type} onChange={set('type')} className="input capitalize">
               {VEHICLE_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
             </select>
+            <p className="text-xs text-gray-400 mt-1">What kind of vehicle is it? / गाड़ी किस प्रकार की है?</p>
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">City</label>
@@ -460,38 +483,45 @@ function VehiclesTab({ vehicles, cities, onChange, defaultCity }) {
               <option value="">Select city</option>
               {cities.map((c) => <option key={c._id} value={c.name}>{c.name}</option>)}
             </select>
+            <p className="text-xs text-gray-400 mt-1">Where you drive most. / आप कहाँ चलाते हैं।</p>
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Model</label>
-            <input value={form.model} onChange={set('model')} placeholder="e.g. Maruti Swift, Bolero"
+            <input value={form.model} onChange={set('model')} placeholder="Maruti Swift"
               className="input" required />
+            <p className="text-xs text-gray-400 mt-1">The vehicle’s name/model. / गाड़ी का नाम।</p>
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Registration no.</label>
-            <input value={form.registrationNumber} onChange={set('registrationNumber')} placeholder="e.g. BR06 AB 1234"
+            <input value={form.registrationNumber} onChange={set('registrationNumber')} placeholder="BR06 AB 1234"
               className="input" required />
+            <p className="text-xs text-gray-400 mt-1">Number plate — on your RC book. / नंबर प्लेट (RC बुक पर)।</p>
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">
               Seating capacity {(form.type === 'truck' || form.type === 'tempo') ? '/ load' : ''}
             </label>
-            <input type="number" min={1} value={form.capacity} onChange={set('capacity')} placeholder="e.g. 4"
+            <input type="number" min={1} value={form.capacity} onChange={set('capacity')}
               className="input" />
+            <p className="text-xs text-gray-400 mt-1">How many passengers can sit. / कितने यात्री बैठ सकते हैं।</p>
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Base fare (₹)</label>
-            <input type="number" min={0} value={form.baseFare} onChange={set('baseFare')} placeholder="e.g. 50"
+            <input type="number" min={0} value={form.baseFare} onChange={set('baseFare')}
               className="input" />
+            <p className="text-xs text-gray-400 mt-1">Minimum/pickup charge. / न्यूनतम शुल्क।</p>
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Per km (₹)</label>
-            <input type="number" min={0} value={form.perKmRate} onChange={set('perKmRate')} placeholder="e.g. 12"
+            <input type="number" min={0} value={form.perKmRate} onChange={set('perKmRate')}
               className="input" />
+            <p className="text-xs text-gray-400 mt-1">Rate for each km. / प्रति किलोमीटर दर।</p>
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Per day (₹)</label>
-            <input type="number" min={0} value={form.perDayRate} onChange={set('perDayRate')} placeholder="e.g. 2500"
+            <input type="number" min={0} value={form.perDayRate} onChange={set('perDayRate')}
               className="input" />
+            <p className="text-xs text-gray-400 mt-1">Full-day hire rate. / पूरे दिन का किराया।</p>
           </div>
         </div>
 
