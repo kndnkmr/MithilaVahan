@@ -448,25 +448,51 @@ function VehiclesTab({ vehicles, cities, onChange, defaultCity }) {
       <form onSubmit={addVehicle} className="card p-4 space-y-3">
         <h3 className="font-medium">Add a vehicle</h3>
         <div className="grid grid-cols-2 gap-3">
-          <select value={form.type} onChange={set('type')} className="input capitalize">
-            {VEHICLE_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
-          </select>
-          <select value={form.city} onChange={set('city')} className="input" required>
-            <option value="">City</option>
-            {cities.map((c) => <option key={c._id} value={c.name}>{c.name}</option>)}
-          </select>
-          <input value={form.model} onChange={set('model')} placeholder="Model (e.g. Bolero)"
-            className="input" required />
-          <input value={form.registrationNumber} onChange={set('registrationNumber')} placeholder="Reg. no (BR06 ...)"
-            className="input" required />
-          <input type="number" value={form.capacity} onChange={set('capacity')} placeholder="Capacity"
-            className="input" />
-          <input type="number" value={form.baseFare} onChange={set('baseFare')} placeholder="Base fare ₹"
-            className="input" />
-          <input type="number" value={form.perKmRate} onChange={set('perKmRate')} placeholder="Per km ₹"
-            className="input" />
-          <input type="number" value={form.perDayRate} onChange={set('perDayRate')} placeholder="Per day ₹"
-            className="input" />
+          <div>
+            <label className="block text-sm font-medium mb-1">Vehicle type</label>
+            <select value={form.type} onChange={set('type')} className="input capitalize">
+              {VEHICLE_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">City</label>
+            <select value={form.city} onChange={set('city')} className="input" required>
+              <option value="">Select city</option>
+              {cities.map((c) => <option key={c._id} value={c.name}>{c.name}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Model</label>
+            <input value={form.model} onChange={set('model')} placeholder="e.g. Maruti Swift, Bolero"
+              className="input" required />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Registration no.</label>
+            <input value={form.registrationNumber} onChange={set('registrationNumber')} placeholder="e.g. BR06 AB 1234"
+              className="input" required />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              Seating capacity {(form.type === 'truck' || form.type === 'tempo') ? '/ load' : ''}
+            </label>
+            <input type="number" min={1} value={form.capacity} onChange={set('capacity')} placeholder="e.g. 4"
+              className="input" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Base fare (₹)</label>
+            <input type="number" min={0} value={form.baseFare} onChange={set('baseFare')} placeholder="e.g. 50"
+              className="input" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Per km (₹)</label>
+            <input type="number" min={0} value={form.perKmRate} onChange={set('perKmRate')} placeholder="e.g. 12"
+              className="input" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Per day (₹)</label>
+            <input type="number" min={0} value={form.perDayRate} onChange={set('perDayRate')} placeholder="e.g. 2500"
+              className="input" />
+          </div>
         </div>
 
         {/* Vehicle photos */}
