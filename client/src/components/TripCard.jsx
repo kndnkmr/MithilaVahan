@@ -223,15 +223,24 @@ export default function TripCard({ trip, role, onAction }) {
               </div>
             </div>
             {other.phone && (
-              <a
-                href={waLink(other.phone, waMessage(trip, role))}
-                target="_blank"
-                rel="noreferrer"
-                className="text-green-600 font-medium shrink-0"
-                title={`Message the ${role === 'rider' ? 'driver' : 'rider'} on WhatsApp`}
-              >
-                WhatsApp {role === 'rider' ? 'driver' : 'rider'}
-              </a>
+              <div className="flex flex-col items-end gap-1.5 shrink-0">
+                <a
+                  href={`tel:${other.phone}`}
+                  className="inline-flex items-center gap-1 border border-brand-500 text-brand-600 font-medium rounded-full px-3 py-1 text-xs hover:bg-brand-50 transition whitespace-nowrap"
+                  title={`Call the ${role === 'rider' ? 'driver' : 'rider'}`}
+                >
+                  📞 Call {role === 'rider' ? 'driver' : 'rider'}
+                </a>
+                <a
+                  href={waLink(other.phone, waMessage(trip, role))}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1 bg-green-600 text-white font-medium rounded-full px-3 py-1 text-xs hover:bg-green-700 transition whitespace-nowrap"
+                  title={`Message the ${role === 'rider' ? 'driver' : 'rider'} on WhatsApp`}
+                >
+                  WhatsApp {role === 'rider' ? 'driver' : 'rider'}
+                </a>
+              </div>
             )}
           </div>
 
