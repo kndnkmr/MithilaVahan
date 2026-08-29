@@ -40,6 +40,7 @@ export default function MyTrips() {
   const [cancelTrip, setCancelTrip] = useState(null);
   const [rateTrip, setRateTrip] = useState(null);
   const [sosTrip, setSosTrip] = useState(null);
+  const [sosBusy, setSosBusy] = useState(false);
 
   const load = () => {
     tripAPI.mine()
@@ -79,10 +80,11 @@ export default function MyTrips() {
     try {
       if (action === 'claim-paid') {
         await tripAPI.claimPaid(trip._id);
+        toast.success('Marked as paid — the driver will confirm.');
       } else if (action === 'confirm-payment') {
         await tripAPI.confirmPayment(trip._id);
+        toast.success('Payment confirmed.');
       }
-      toast.success('Done');
       load();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Action failed');
@@ -128,8 +130,10 @@ export default function MyTrips() {
   // SOS: confirmed via modal, then flag the trip on the server (alerts admin)
   // and open a pre-filled WhatsApp alert to the rider's emergency contact.
   const doSos = async () => {
+    if (sosBusy) return; // guard against double-taps on a safety action
     const trip = sosTrip;
     setSosTrip(null);
+    setSosBusy(true);
     const coords = await getCoordinates();
     const [lng, lat] = coords || [];
     try {
@@ -145,6 +149,8 @@ export default function MyTrips() {
       }
     } catch (err) {
       toast.error(err.response?.data?.message || 'Could not raise SOS');
+    } finally {
+      setSosBusy(false);
     }
   };
 

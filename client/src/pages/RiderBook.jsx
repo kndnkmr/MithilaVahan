@@ -73,6 +73,10 @@ export default function RiderBook() {
           if (v) {
             setSelectedVehicle(v);
             setForm((f) => ({ ...f, vehicleType: v.type, city: v.city }));
+          } else {
+            // The linked vehicle is no longer listed/approved — let the rider
+            // know instead of silently showing a blank selection.
+            toast('That vehicle is no longer available — you can still book by type.', { icon: 'ℹ️' });
           }
         })
         .catch(() => {});
@@ -144,6 +148,10 @@ export default function RiderBook() {
     }
     if (form.mode === 'outstation' && !form.destination) {
       toast.error('Please enter your destination');
+      return;
+    }
+    if (form.mode === 'hire' && Number(form.days) < 1) {
+      toast.error('Enter at least 1 day for hire');
       return;
     }
     setLoading(true);
