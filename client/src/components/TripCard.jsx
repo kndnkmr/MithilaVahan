@@ -59,7 +59,7 @@ function waMessage(trip, role) {
     return `Hi, I'm your MithilaVahan driver for the ${trip.vehicleType} trip${where}.${iAm} I'm heading to your pickup${trip.pickup?.address ? ` at ${trip.pickup.address}` : ''}. Please share your exact location.`;
   }
   if (trip.status === 'started') {
-    return `Hi, this is your MithilaVahan driver.${iAm} We're on the way${where}.`;
+    return `Hi, this is your MithilaVahan driver.${iAm} Your trip${where} is on the way — I'll keep you updated.`;
   }
   return `Hi, regarding your MithilaVahan ${trip.vehicleType} trip${where}.${iAm}`;
 }
