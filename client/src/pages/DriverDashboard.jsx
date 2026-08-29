@@ -22,6 +22,7 @@ export default function DriverDashboard() {
   const { user, updateUser } = useAuth();
   const [tab, setTab] = useState('requests');
   const [online, setOnline] = useState(user?.isOnline || false);
+  const [togglingOnline, setTogglingOnline] = useState(false);
   const contentRef = useRef(null);
 
   // Switch tab AND scroll the content into view — so tapping a tab or an
@@ -100,13 +101,21 @@ export default function DriverDashboard() {
   }, [online, hasActiveTrip]);
 
   const toggleOnline = async () => {
+    if (togglingOnline) return; // guard against rapid double-clicks
+    setTogglingOnline(true);
     try {
       const res = await driverAPI.setOnline(!online);
       setOnline(res.data.isOnline);
       updateUser({ isOnline: res.data.isOnline });
       toast.success(res.data.message);
+      // Going online: pull open requests right away so the driver sees them
+      // without waiting for the next socket ping.
+      if (res.data.isOnline) loadAll();
+      else setAvailable([]); // going offline: clear the stale requests list
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed');
+    } finally {
+      setTogglingOnline(false);
     }
   };
 
@@ -164,16 +173,32 @@ export default function DriverDashboard() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Driver dashboard</h1>
+      <div className="flex items-start justify-between mb-6 gap-3">
+        <div>
+          <h1 className="text-2xl font-bold">Driver dashboard</h1>
+          {approved && (
+            <p className="text-sm text-gray-500 mt-0.5">
+              {online
+                ? 'You are online — you can receive trip requests.'
+                : 'You are offline — go online to receive trip requests.'}
+            </p>
+          )}
+        </div>
         <button
           onClick={toggleOnline}
-          disabled={!approved}
-          className={`px-4 py-2 rounded-full text-sm font-medium transition ${
-            online ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-          } disabled:opacity-50`}
+          disabled={!approved || togglingOnline}
+          title={!approved ? 'Available once your account is approved' : online ? 'Tap to go offline' : 'Tap to go online'}
+          className={`shrink-0 px-4 py-2 rounded-full text-sm font-semibold transition inline-flex items-center gap-2 ${
+            online
+              ? 'bg-green-600 text-white hover:bg-green-700'
+              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+          } disabled:opacity-50 disabled:cursor-not-allowed`}
         >
-          {online ? '● Online' : 'Go online'}
+          <span
+            className={`w-2 h-2 rounded-full ${online ? 'bg-white' : 'bg-gray-500'}`}
+            aria-hidden="true"
+          />
+          {togglingOnline ? 'Saving…' : online ? 'Online' : 'Go online'}
         </button>
       </div>
 
@@ -206,8 +231,19 @@ export default function DriverDashboard() {
         <div className="space-y-3">
           {!approved ? (
             <p className="text-gray-500 text-sm">Approval pending — no requests yet.</p>
+          ) : !online ? (
+            <div className="text-center py-8">
+              <p className="text-gray-500 text-sm mb-3">You're offline. Go online to start receiving trip requests.</p>
+              <button
+                onClick={toggleOnline}
+                disabled={togglingOnline}
+                className="bg-green-600 text-white px-5 py-2 rounded-full text-sm font-semibold hover:bg-green-700 disabled:opacity-50"
+              >
+                {togglingOnline ? 'Saving…' : 'Go online'}
+              </button>
+            </div>
           ) : available.length === 0 ? (
-            <p className="text-gray-500 text-sm">No open requests right now. Stay online.</p>
+            <p className="text-gray-500 text-sm">No open requests right now. Stay online — new requests appear here automatically.</p>
           ) : (
             available.map((t) => (
               <TripCard key={t._id} trip={t} role="driver" onAction={handleTripAction} />

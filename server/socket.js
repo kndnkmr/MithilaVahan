@@ -79,7 +79,16 @@ function initSocket(server) {
       } catch (_) {}
     });
 
-    socket.on('disconnect', () => {});
+    // When a driver's connection drops (app closed, phone locked for long,
+    // lost network), mark them offline so dispatch stops pinging a driver who
+    // isn't actually available (prevents "ghost" online drivers). They simply
+    // tap "Go online" again when they return.
+    socket.on('disconnect', async () => {
+      if (socket.role !== 'driver') return;
+      try {
+        await User.findByIdAndUpdate(socket.userId, { isOnline: false });
+      } catch (_) {}
+    });
   });
 
   console.log('Socket.io initialized.');

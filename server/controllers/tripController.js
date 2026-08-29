@@ -121,6 +121,11 @@ async function availableTrips(req, res) {
   if (req.user.driverStatus !== 'approved') {
     return res.status(403).json({ message: 'Your driver account is pending approval' });
   }
+  // Offline drivers don't receive requests — being offline should genuinely
+  // mean "off duty", so we return an empty list rather than stale requests.
+  if (!req.user.isOnline) {
+    return res.json({ trips: [] });
+  }
   const trips = await Trip.find({
     status: 'requested',
     city: req.user.city,
@@ -142,6 +147,11 @@ async function acceptTrip(req, res) {
   try {
     if (req.user.driverStatus !== 'approved') {
       return res.status(403).json({ message: 'Your driver account is pending approval' });
+    }
+    // Must be online to accept — prevents an off-duty driver grabbing a trip
+    // from a stale list.
+    if (!req.user.isOnline) {
+      return res.status(403).json({ message: 'Go online before accepting a trip' });
     }
 
     const { vehicleId } = req.body;
