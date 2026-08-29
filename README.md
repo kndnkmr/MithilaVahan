@@ -363,15 +363,34 @@ Push to GitHub → Render + Vercel auto-redeploy.
   booking form captures pickup GPS; the driver dashboard streams location while online.
   See [HOW_IT_WORKS.md](./HOW_IT_WORKS.md#nearest-driver-dispatch-phase-2).
 
+**Done in Phase 2 (continued — growth, polish & ops):**
+- **Cloudinary image hosting** ✅ — vehicle photos / QR / documents upload to Cloudinary
+  (hosted URLs) when `CLOUDINARY_*` env vars are set, with a base64 fallback otherwise.
+  Live in production (shared Cloudinary account, `mithilavahan/` folder). Drivers get a
+  re-upload hint if an old (pre-Cloudinary) photo fails to load.
+- **Document / photo upload UI** ✅ — drivers upload licence/RC/insurance + vehicle photos +
+  UPI QR from the dashboard; documents open in an in-app viewer (PWA-safe, no new tab).
+- **SEO** ✅ — per-page `<title>`/description/canonical + Open Graph/Twitter via
+  `react-helmet-async` on all public pages, a branded 1200×630 social share image, sitemap,
+  robots, and Google Search Console verification.
+- **Brand logo** ✅ — SVG mark + wordmark in navbar/footer and matching favicon/app icon.
+- **Auto-updating service worker** ✅ — the app checks for a new build on load / focus and
+  refreshes automatically, so users never get stuck on a stale cached version.
+- **Meaningful driver online/offline** ✅ — offline drivers receive no requests, can't accept,
+  and are auto-set offline on disconnect (no "ghost" online drivers); clearer toggle UX.
+- **Admin deactivate/reactivate** ✅ — admins can deactivate any driver **or rider** (blocks
+  login + dispatch, keeps history) from the dashboard, with a confirm dialog.
+- **Bilingual guidance** ✅ — per-status, per-role trip guide + driver onboarding checklist;
+  role-aware WhatsApp messages and tap-to-call on the trip card.
+
 Still deferred:
 - **Distance-based auto-fare** via a maps distance API (would make the outstation/trip
   fare estimate automatic instead of the rider-entered approximate distance). This is the
   one piece that needs a paid maps provider (Google/Mapbox) + billing.
 - **Native mobile apps** for smoother background location than a web tab allows.
-- **Online payments** (Razorpay/UPI collect) + optional commission.
-- **Document upload UI** for driver verification (schema + endpoints already exist).
-- **PWA install** + more Hindi localization (Home already has bilingual vehicle labels).
-- **SOS / trip sharing** for safety.
+- **Online payments** (Razorpay/UPI collect) + automatic commission collection.
+- **Always-on backend** — upgrade the Render service to a paid tier to remove the free-tier
+  cold-start delay (deferred until traffic justifies it).
 - Expansion to more Mithilanchal cities (just add a City row — everything is city-scoped).
 ```
 
@@ -383,6 +402,8 @@ Still deferred:
 |-----|---------------|
 | [README.md](./README.md) | Setup, environment, run instructions, and API reference (this file) |
 | [HOW_IT_WORKS.md](./HOW_IT_WORKS.md) | Architecture, database structure, security model, real-time rooms, and step-by-step user journeys (driver onboarding, booking, the race-safe accept, lifecycle, ratings) |
+| [DEPLOYMENT.md](./DEPLOYMENT.md) | Step-by-step deploy guide (Atlas → Render → Vercel) with env-var tables and a live smoke test |
+| [WORK_DONE.md](./WORK_DONE.md) | Running changelog of features shipped and operational state (live URLs, hosting, integrations) |
 
 If you're new to the codebase, read **HOW_IT_WORKS.md** first for the mental model, then
 use this README's [Local Setup](#local-setup) to run it. The "Where Things Live" table at
