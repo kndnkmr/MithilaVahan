@@ -50,6 +50,15 @@ async function listDrivers(req, res) {
   res.json({ drivers: enriched });
 }
 
+// GET /api/admin/riders  (list riders/customers for management)
+async function listRiders(req, res) {
+  const riders = await User.find({ role: 'rider' })
+    .select('name phone city isSuspended createdAt ratingAvg ratingCount')
+    .sort({ createdAt: -1 })
+    .lean();
+  res.json({ riders });
+}
+
 // PUT /api/admin/drivers/:id/status  { status: 'approved'|'rejected' }
 async function setDriverStatus(req, res) {
   const { status } = req.body;
@@ -163,6 +172,6 @@ async function updateSettings(req, res) {
 }
 
 module.exports = {
-  stats, listDrivers, setDriverStatus, listVehicles, setVehicleStatus,
+  stats, listDrivers, listRiders, setDriverStatus, listVehicles, setVehicleStatus,
   addCity, updateCity, setSuspension, getSettings, updateSettings,
 };

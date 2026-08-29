@@ -84,6 +84,7 @@ export const pushAPI = {
 export const adminAPI = {
   stats: () => api.get('/admin/stats'),
   drivers: (status) => api.get('/admin/drivers', { params: { status } }),
+  riders: () => api.get('/admin/riders'),
   setDriverStatus: (id, status) => api.put(`/admin/drivers/${id}/status`, { status }),
   setSuspension: (id, isSuspended) => api.put(`/admin/users/${id}/suspension`, { isSuspended }),
   vehicles: (status) => api.get('/admin/vehicles', { params: { status } }),

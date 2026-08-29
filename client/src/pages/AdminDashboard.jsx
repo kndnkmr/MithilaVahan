@@ -9,6 +9,7 @@ export default function AdminDashboard() {
   const [tab, setTab] = useState('drivers');
   const [stats, setStats] = useState(null);
   const [drivers, setDrivers] = useState([]);
+  const [riders, setRiders] = useState([]);
   const [vehicles, setVehicles] = useState([]);
   const [complaints, setComplaints] = useState([]);
   const [commission, setCommission] = useState(0);
@@ -23,6 +24,7 @@ export default function AdminDashboard() {
 
   const loadStats = () => adminAPI.stats().then((r) => setStats(r.data)).catch(() => {});
   const loadDrivers = () => adminAPI.drivers().then((r) => setDrivers(r.data.drivers)).catch(() => {});
+  const loadRiders = () => adminAPI.riders().then((r) => setRiders(r.data.riders)).catch(() => {});
   const loadVehicles = () => adminAPI.vehicles().then((r) => setVehicles(r.data.vehicles)).catch(() => {});
   const loadComplaints = () => complaintAPI.all().then((r) => setComplaints(r.data.complaints)).catch(() => {});
   const loadSettings = () =>
@@ -34,6 +36,7 @@ export default function AdminDashboard() {
   useEffect(() => {
     loadStats();
     loadDrivers();
+    loadRiders();
     loadVehicles();
     loadComplaints();
     loadSettings();
@@ -125,8 +128,9 @@ export default function AdminDashboard() {
     if (!target) return;
     try {
       await adminAPI.setSuspension(target._id, !target.isSuspended);
-      toast.success(target.isSuspended ? 'Driver reactivated' : 'Driver deactivated');
+      toast.success(target.isSuspended ? 'Account reactivated' : 'Account deactivated');
       loadDrivers();
+      loadRiders();
       loadStats();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed');
@@ -182,7 +186,7 @@ export default function AdminDashboard() {
 
       {/* Tabs — scrollable on small screens */}
       <div className="flex gap-2 mb-4 text-sm overflow-x-auto pb-1">
-        {[['drivers', 'Drivers'], ['vehicles', 'Vehicles'], ['complaints', 'Complaints'], ['settings', 'Settings']].map(([key, label]) => (
+        {[['drivers', 'Drivers'], ['riders', 'Riders'], ['vehicles', 'Vehicles'], ['complaints', 'Complaints'], ['settings', 'Settings']].map(([key, label]) => (
           <button key={key} onClick={() => setTab(key)}
             className={`px-4 py-2 rounded-full whitespace-nowrap shrink-0 transition ${
               tab === key ? 'bg-brand-500 text-white' : 'bg-white border text-gray-600 hover:border-brand-400'
@@ -352,6 +356,41 @@ export default function AdminDashboard() {
         </div>
       )}
 
+      {tab === 'riders' && (
+        <div className="space-y-2">
+          {riders.map((r) => (
+            <div key={r._id} className="card p-3 flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <div className="font-medium truncate">
+                  {r.name || 'Rider'}
+                  {r.isSuspended && (
+                    <span className="ml-2 text-xs font-medium text-red-700 bg-red-50 border border-red-200 px-2 py-0.5 rounded-full align-middle">
+                      Deactivated
+                    </span>
+                  )}
+                </div>
+                <div className="text-sm text-gray-500 truncate">
+                  <a href={`tel:${r.phone}`} className="text-brand-600 hover:underline">{r.phone}</a>
+                  {r.city ? ` · ${r.city}` : ''}
+                  {r.ratingCount > 0 ? ` · ★ ${r.ratingAvg?.toFixed(1)} (${r.ratingCount})` : ''}
+                </div>
+              </div>
+              <button
+                onClick={() => setSuspendTarget(r)}
+                className={`text-xs px-3 py-1.5 rounded-lg shrink-0 ${
+                  r.isSuspended
+                    ? 'bg-brand-500 text-white hover:bg-brand-600'
+                    : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                {r.isSuspended ? 'Reactivate' : 'Deactivate'}
+              </button>
+            </div>
+          ))}
+          {riders.length === 0 && <p className="text-gray-500 text-sm">No riders yet.</p>}
+        </div>
+      )}
+
       {tab === 'vehicles' && (
         <div className="space-y-2">
           {vehicles.map((v) => (
@@ -513,14 +552,16 @@ export default function AdminDashboard() {
         onSubmit={doRespond}
       />
 
-      {/* Deactivate / reactivate a driver */}
+      {/* Deactivate / reactivate a user (driver or rider) */}
       <ConfirmModal
         open={!!suspendTarget}
-        title={suspendTarget?.isSuspended ? 'Reactivate driver?' : 'Deactivate driver?'}
+        title={suspendTarget?.isSuspended ? 'Reactivate account?' : 'Deactivate account?'}
         message={
           suspendTarget?.isSuspended
-            ? `${suspendTarget?.name || 'This driver'} will be able to log in and receive trips again.`
-            : `${suspendTarget?.name || 'This driver'} will be logged out, blocked from signing in, taken offline, and will stop receiving trips. Their history is kept and you can reactivate anytime.`
+            ? `${suspendTarget?.name || 'This user'} will be able to sign in and use the app again.`
+            : `${suspendTarget?.name || 'This user'} will be logged out and blocked from signing in`
+              + (suspendTarget?.role === 'driver' ? ', taken offline, and will stop receiving trips' : '')
+              + `. Their history is kept and you can reactivate anytime.`
         }
         confirmText={suspendTarget?.isSuspended ? 'Reactivate' : 'Deactivate'}
         variant={suspendTarget?.isSuspended ? 'primary' : 'danger'}

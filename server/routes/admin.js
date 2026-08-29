@@ -1,7 +1,7 @@
 const express = require('express');
 const { protect, authorize } = require('../middleware/auth');
 const {
-  stats, listDrivers, setDriverStatus, listVehicles, setVehicleStatus,
+  stats, listDrivers, listRiders, setDriverStatus, listVehicles, setVehicleStatus,
   addCity, updateCity, setSuspension, getSettings, updateSettings,
 } = require('../controllers/adminController');
 
@@ -14,6 +14,8 @@ router.get('/stats', stats);
 
 router.get('/drivers', listDrivers);
 router.put('/drivers/:id/status', setDriverStatus);
+
+router.get('/riders', listRiders);
 
 router.get('/vehicles', listVehicles);
 router.put('/vehicles/:id/status', setVehicleStatus);
