@@ -4,7 +4,7 @@ import toast from 'react-hot-toast';
 import { cityAPI, tripAPI, vehicleAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { getCoordinates } from '../services/location';
-import { coordsFromMapLink, haversineKm } from '../services/maps';
+import { haversineKm } from '../services/maps';
 import { useT } from '../services/i18n';
 
 const TYPE_EMOJI = { car: '🚗', auto: '🛺', tempo: '🚐', bus: '🚌', truck: '🚚', bike: '🏍️' };
@@ -41,9 +41,7 @@ export default function RiderBook() {
     mode: preMode,
     vehicleType: preType,
     pickup: '',
-    pickupMapLink: '',
     drop: '',
-    dropMapLink: '',
     days: 1,
     // Outstation fields
     destination: preTo,
@@ -123,20 +121,6 @@ export default function RiderBook() {
 
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
 
-  // If the rider pastes a Maps link, try to pull coordinates out of it.
-  const onPickupLink = (e) => {
-    const v = e.target.value;
-    setForm((f) => ({ ...f, pickupMapLink: v }));
-    const c = coordsFromMapLink(v);
-    if (c) setPickupCoords(c);
-  };
-  const onDropLink = (e) => {
-    const v = e.target.value;
-    setForm((f) => ({ ...f, dropMapLink: v }));
-    const c = coordsFromMapLink(v);
-    if (c) setDropCoords(c);
-  };
-
   // Auto-fill an approximate distance when we have both pickup + drop coords
   // (straight-line; the driver confirms the final fare). Rider can override.
   useEffect(() => {
@@ -168,13 +152,9 @@ export default function RiderBook() {
         city: form.city,
         mode: form.mode,
         vehicleType: form.vehicleType,
-        pickup: {
-          address: form.pickup,
-          coordinates: pickupCoords || undefined,
-          mapLink: form.pickupMapLink || undefined,
-        },
+        pickup: { address: form.pickup, coordinates: pickupCoords || undefined },
         drop: form.mode === 'trip'
-          ? { address: form.drop, coordinates: dropCoords || undefined, mapLink: form.dropMapLink || undefined }
+          ? { address: form.drop, coordinates: dropCoords || undefined }
           : undefined,
         destination: form.mode === 'outstation' ? form.destination : undefined,
         tripType: form.mode === 'outstation' ? form.tripType : undefined,
@@ -292,13 +272,11 @@ export default function RiderBook() {
           </div>
           <input value={form.pickup} onChange={set('pickup')} placeholder="e.g. Tower Chowk, Darbhanga"
             className="input" required />
-          <input value={form.pickupMapLink} onChange={onPickupLink}
-            placeholder="Paste Google Maps link (optional)" className="input mt-2" />
-          <p className="text-xs text-gray-400 mt-1">
-            {pickupCoords
-              ? '📍 Location set — nearest drivers notified first, distance auto-estimated.'
-              : 'Paste a Maps link so the driver reaches your exact spot. / सटीक जगह के लिए मैप लिंक डालें।'}
-          </p>
+          {pickupCoords && (
+            <p className="text-xs text-gray-400 mt-1">
+              📍 Location set — nearest drivers notified first.
+            </p>
+          )}
         </div>
 
         {/* In-city point-to-point: drop location + approx distance */}
@@ -319,8 +297,6 @@ export default function RiderBook() {
               </div>
               <input value={form.drop} onChange={set('drop')} placeholder="e.g. Darbhanga Junction"
                 className="input" />
-              <input value={form.dropMapLink} onChange={onDropLink}
-                placeholder="Paste Google Maps link (optional)" className="input mt-2" />
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Approx. distance (km)</label>
