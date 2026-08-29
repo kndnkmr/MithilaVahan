@@ -6,6 +6,7 @@ import { getSocket } from '../services/socket';
 import { watchCoordinates } from '../services/location';
 import TripCard from '../components/TripCard';
 import OnboardingChecklist from '../components/OnboardingChecklist';
+import { PromptModal } from '../components/Modal';
 
 const VEHICLE_TYPES = ['car', 'auto', 'tempo', 'bus', 'truck', 'bike'];
 
@@ -38,6 +39,9 @@ export default function DriverDashboard() {
   const [myTrips, setMyTrips] = useState([]);
   const [vehicles, setVehicles] = useState([]);
   const [cities, setCities] = useState([]);
+  // Modal targets (null when closed)
+  const [completeTrip, setCompleteTrip] = useState(null);
+  const [cancelTrip, setCancelTrip] = useState(null);
 
   const approved = user?.driverStatus === 'approved';
 
@@ -107,6 +111,9 @@ export default function DriverDashboard() {
   };
 
   const handleTripAction = async (action, trip) => {
+    // Actions needing input open a modal.
+    if (action === 'complete') return setCompleteTrip(trip);
+    if (action === 'cancel') return setCancelTrip(trip);
     try {
       if (action === 'accept') {
         // Prefer a matching approved vehicle if the driver has one.
@@ -115,11 +122,6 @@ export default function DriverDashboard() {
         setAvailable((prev) => prev.filter((t) => t._id !== trip._id));
       } else if (action === 'start') {
         await tripAPI.updateStatus(trip._id, { status: 'started' });
-      } else if (action === 'complete') {
-        const fare = window.prompt('Final fare (₹):', trip.estimatedFare || '');
-        await tripAPI.updateStatus(trip._id, { status: 'completed', finalFare: Number(fare) || undefined });
-      } else if (action === 'cancel') {
-        await tripAPI.cancel(trip._id, { reason: window.prompt('Reason?') || '' });
       } else if (action === 'confirm-payment') {
         await tripAPI.confirmPayment(trip._id);
       }
@@ -127,6 +129,31 @@ export default function DriverDashboard() {
       loadAll();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Action failed');
+    }
+  };
+
+  const doComplete = async (values) => {
+    const trip = completeTrip;
+    setCompleteTrip(null);
+    try {
+      const finalFare = Number(values.finalFare) || undefined;
+      await tripAPI.updateStatus(trip._id, { status: 'completed', finalFare });
+      toast.success('Trip completed');
+      loadAll();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed');
+    }
+  };
+
+  const doCancel = async (values) => {
+    const trip = cancelTrip;
+    setCancelTrip(null);
+    try {
+      await tripAPI.cancel(trip._id, { reason: values.reason || '' });
+      toast.success('Trip cancelled');
+      loadAll();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed');
     }
   };
 
@@ -210,6 +237,31 @@ export default function DriverDashboard() {
 
       {tab === 'payment' && <PaymentTab user={user} updateUser={updateUser} />}
       </div>
+
+      {/* Modals */}
+      <PromptModal
+        open={!!completeTrip}
+        title="Complete trip"
+        description="Enter the final fare the rider will pay."
+        fields={[{
+          name: 'finalFare', label: 'Final fare (₹)', type: 'number', min: 0, required: true,
+          defaultValue: completeTrip?.estimatedFare || '',
+          placeholder: 'e.g. 150',
+        }]}
+        submitText="Complete trip"
+        onCancel={() => setCompleteTrip(null)}
+        onSubmit={doComplete}
+      />
+      <PromptModal
+        open={!!cancelTrip}
+        title="Cancel trip"
+        description="Optionally tell the rider why."
+        fields={[{ name: 'reason', label: 'Reason (optional)', type: 'textarea', placeholder: 'e.g. Vehicle issue' }]}
+        submitText="Cancel trip"
+        cancelText="Keep trip"
+        onCancel={() => setCancelTrip(null)}
+        onSubmit={doCancel}
+      />
     </div>
   );
 }

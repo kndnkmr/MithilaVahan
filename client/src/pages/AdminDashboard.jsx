@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 import { adminAPI, complaintAPI } from '../services/api';
 import { getSocket } from '../services/socket';
 import ImageViewer from '../components/ImageViewer';
+import { PromptModal } from '../components/Modal';
 
 export default function AdminDashboard() {
   const [tab, setTab] = useState('drivers');
@@ -17,6 +18,7 @@ export default function AdminDashboard() {
   const [expandedDriver, setExpandedDriver] = useState(null); // driver id whose details are open
   const [driverFilter, setDriverFilter] = useState('all'); // all | pending (from clicking a stat)
   const [viewer, setViewer] = useState(null); // { url, title } for the in-app image viewer
+  const [respondTo, setRespondTo] = useState(null); // complaint being responded to
 
   const loadStats = () => adminAPI.stats().then((r) => setStats(r.data)).catch(() => {});
   const loadDrivers = () => adminAPI.drivers().then((r) => setDrivers(r.data.drivers)).catch(() => {});
@@ -83,11 +85,11 @@ export default function AdminDashboard() {
     }
   };
 
-  const respondComplaint = async (id) => {
-    const adminResponse = window.prompt('Your response to the user:');
-    if (adminResponse == null) return;
+  const doRespond = async (values) => {
+    const c = respondTo;
+    setRespondTo(null);
     try {
-      await complaintAPI.update(id, { adminResponse, status: 'resolved' });
+      await complaintAPI.update(c._id, { adminResponse: values.response, status: 'resolved' });
       toast.success('Response sent');
       loadComplaints();
     } catch (err) {
@@ -369,7 +371,7 @@ export default function AdminDashboard() {
                 </div>
               )}
               <div className="mt-2 flex flex-wrap gap-2">
-                <button onClick={() => respondComplaint(c._id)}
+                <button onClick={() => setRespondTo(c)}
                   className="bg-brand-500 text-white text-xs px-3 py-1 rounded">Respond & resolve</button>
                 {c.status !== 'in-progress' && (
                   <button onClick={() => setComplaintStatus(c._id, 'in-progress')}
@@ -467,6 +469,17 @@ export default function AdminDashboard() {
 
       {/* In-app document/photo viewer (avoids new-tab issues in the PWA) */}
       <ImageViewer item={viewer} onClose={() => setViewer(null)} />
+
+      {/* Respond to a complaint */}
+      <PromptModal
+        open={!!respondTo}
+        title="Respond to complaint"
+        description={respondTo ? `Replying to: ${respondTo.subject}` : ''}
+        fields={[{ name: 'response', label: 'Your response', type: 'textarea', required: true, placeholder: 'Type your reply to the user…' }]}
+        submitText="Send & resolve"
+        onCancel={() => setRespondTo(null)}
+        onSubmit={doRespond}
+      />
     </div>
   );
 }

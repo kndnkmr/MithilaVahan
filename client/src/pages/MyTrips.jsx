@@ -7,6 +7,7 @@ import { getCoordinates } from '../services/location';
 import TripCard from '../components/TripCard';
 import LiveTripMap from '../components/LiveTripMap';
 import EmergencyContact from '../components/EmergencyContact';
+import { ConfirmModal, PromptModal } from '../components/Modal';
 
 // Build a wa.me link (free, no API).
 function waLink(phone, text) {
@@ -20,6 +21,10 @@ export default function MyTrips() {
   // Latest driver location per trip: { [tripId]: [lng, lat] }
   const [driverLocations, setDriverLocations] = useState({});
   const [loading, setLoading] = useState(true);
+  // Modal state — each holds the target trip (or null when closed).
+  const [cancelTrip, setCancelTrip] = useState(null);
+  const [rateTrip, setRateTrip] = useState(null);
+  const [sosTrip, setSosTrip] = useState(null);
 
   const load = () => {
     tripAPI.mine()
@@ -53,16 +58,11 @@ export default function MyTrips() {
   }, []);
 
   const handleAction = async (action, trip) => {
+    // Actions that need input/confirmation open a modal instead of blocking prompts.
+    if (action === 'cancel') return setCancelTrip(trip);
+    if (action === 'rate') return setRateTrip(trip);
     try {
-      if (action === 'cancel') {
-        const reason = window.prompt('Reason for cancelling? (optional)') || '';
-        await tripAPI.cancel(trip._id, { reason });
-      } else if (action === 'rate') {
-        const rating = Number(window.prompt('Rate the driver 1-5:'));
-        if (!rating || rating < 1 || rating > 5) return toast.error('Enter 1-5');
-        const review = window.prompt('Any comment? (optional)') || '';
-        await tripAPI.rate(trip._id, { rating, review });
-      } else if (action === 'claim-paid') {
+      if (action === 'claim-paid') {
         await tripAPI.claimPaid(trip._id);
       } else if (action === 'confirm-payment') {
         await tripAPI.confirmPayment(trip._id);
@@ -71,6 +71,33 @@ export default function MyTrips() {
       load();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Action failed');
+    }
+  };
+
+  // --- Modal confirm handlers ---
+  const doCancel = async (values) => {
+    const trip = cancelTrip;
+    setCancelTrip(null);
+    try {
+      await tripAPI.cancel(trip._id, { reason: values.reason || '' });
+      toast.success('Trip cancelled');
+      load();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to cancel');
+    }
+  };
+
+  const doRate = async (values) => {
+    const trip = rateTrip;
+    const rating = Number(values.rating);
+    if (!rating || rating < 1 || rating > 5) return toast.error('Enter a rating 1-5');
+    setRateTrip(null);
+    try {
+      await tripAPI.rate(trip._id, { rating, review: values.review || '' });
+      toast.success('Thanks for rating!');
+      load();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to rate');
     }
   };
 
@@ -83,10 +110,11 @@ export default function MyTrips() {
     window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
   };
 
-  // SOS: flag the trip on the server (alerts admin) and open a pre-filled
-  // WhatsApp alert to the rider's emergency contact with the live link.
-  const raiseSos = async (trip) => {
-    if (!window.confirm('Raise an SOS for this trip? This alerts the admin and your emergency contact.')) return;
+  // SOS: confirmed via modal, then flag the trip on the server (alerts admin)
+  // and open a pre-filled WhatsApp alert to the rider's emergency contact.
+  const doSos = async () => {
+    const trip = sosTrip;
+    setSosTrip(null);
     const coords = await getCoordinates();
     const [lng, lat] = coords || [];
     try {
@@ -135,7 +163,7 @@ export default function MyTrips() {
                       🔗 Share trip
                     </button>
                     <button
-                      onClick={() => raiseSos(t)}
+                      onClick={() => setSosTrip(t)}
                       className="flex-1 bg-red-600 text-white text-sm py-2 rounded-lg font-medium hover:bg-red-700 transition"
                     >
                       🚨 SOS
@@ -159,6 +187,42 @@ export default function MyTrips() {
           })}
         </div>
       )}
+
+      {/* Modals */}
+      <PromptModal
+        open={!!cancelTrip}
+        title="Cancel trip"
+        description="Optionally tell us why you’re cancelling."
+        fields={[{ name: 'reason', label: 'Reason (optional)', type: 'textarea', placeholder: 'e.g. Plan changed' }]}
+        submitText="Cancel trip"
+        cancelText="Keep trip"
+        onCancel={() => setCancelTrip(null)}
+        onSubmit={doCancel}
+      />
+
+      <PromptModal
+        open={!!rateTrip}
+        title="Rate your driver"
+        description="How was your trip?"
+        fields={[
+          { name: 'rating', label: 'Rating (1-5)', type: 'number', min: 1, max: 5, required: true, placeholder: '5' },
+          { name: 'review', label: 'Comment (optional)', type: 'textarea', placeholder: 'Anything to add?' },
+        ]}
+        submitText="Submit rating"
+        onCancel={() => setRateTrip(null)}
+        onSubmit={doRate}
+      />
+
+      <ConfirmModal
+        open={!!sosTrip}
+        title="Raise an SOS?"
+        message="This alerts the MithilaVahan team immediately and opens a WhatsApp alert to your emergency contact. Use only if you feel unsafe."
+        confirmText="Raise SOS"
+        cancelText="Cancel"
+        variant="danger"
+        onCancel={() => setSosTrip(null)}
+        onConfirm={doSos}
+      />
     </div>
   );
 }
