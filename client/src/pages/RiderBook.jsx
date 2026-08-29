@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { cityAPI, tripAPI } from '../services/api';
+import { cityAPI, tripAPI, vehicleAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { getCoordinates } from '../services/location';
 import { useT } from '../services/i18n';
+
+const TYPE_EMOJI = { car: '🚗', auto: '🛺', tempo: '🚐', bus: '🚌', truck: '🚚', bike: '🏍️' };
 
 const VEHICLE_TYPES = ['car', 'auto', 'tempo', 'bus', 'truck', 'bike'];
 
@@ -27,10 +29,14 @@ export default function RiderBook() {
     ? searchParams.get('mode')
     : 'trip';
   const preTo = searchParams.get('to') || '';
+  const preVehicleId = searchParams.get('vehicleId') || '';
+  const preCity = searchParams.get('city') || '';
 
   const [cities, setCities] = useState([]);
+  // The specific vehicle the rider picked from Browse (if any).
+  const [selectedVehicle, setSelectedVehicle] = useState(null);
   const [form, setForm] = useState({
-    city: user?.city || '',
+    city: preCity || user?.city || '',
     mode: preMode,
     vehicleType: preType,
     pickup: '',
@@ -55,6 +61,20 @@ export default function RiderBook() {
     cityAPI.list().then((res) => setCities(res.data.cities)).catch(() => {});
     // Try to grab location up front so the nearest driver is found automatically.
     getCoordinates().then((c) => c && setPickupCoords(c));
+
+    // If the rider picked a specific vehicle on the Browse page, load it to show
+    // a summary and lock the vehicle type to match.
+    if (preVehicleId) {
+      vehicleAPI.list(preCity ? { city: preCity } : {})
+        .then((res) => {
+          const v = (res.data.vehicles || []).find((x) => x._id === preVehicleId);
+          if (v) {
+            setSelectedVehicle(v);
+            setForm((f) => ({ ...f, vehicleType: v.type, city: v.city }));
+          }
+        })
+        .catch(() => {});
+    }
   }, []);
 
   // Recompute the instant estimate whenever the inputs that affect fare change.
@@ -124,6 +144,7 @@ export default function RiderBook() {
         days: form.mode === 'hire' ? Number(form.days) : 1,
         paymentMode: form.paymentMode,
         notes: form.notes,
+        vehicleId: selectedVehicle?._id || undefined,
       });
       toast.success(
         form.mode === 'outstation'
@@ -141,6 +162,33 @@ export default function RiderBook() {
   return (
     <div className="max-w-lg mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-6">{t('bookTitle')}</h1>
+
+      {/* Selected vehicle summary (when booking a specific vehicle from Browse) */}
+      {selectedVehicle && (
+        <div className="card p-3 mb-4 flex items-center gap-3">
+          {selectedVehicle.photos?.[0] ? (
+            <img src={selectedVehicle.photos[0]} alt="" className="w-16 h-16 object-cover rounded-lg" />
+          ) : (
+            <div className="w-16 h-16 rounded-lg bg-brand-100 flex items-center justify-center text-2xl">
+              {TYPE_EMOJI[selectedVehicle.type] || '🚗'}
+            </div>
+          )}
+          <div className="flex-1 min-w-0">
+            <div className="font-semibold capitalize">{selectedVehicle.type} · {selectedVehicle.model}</div>
+            <div className="text-sm text-gray-500">
+              {selectedVehicle.city}
+              {selectedVehicle.owner?.name ? ` · ${selectedVehicle.owner.name}` : ''}
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => { setSelectedVehicle(null); navigate('/book'); }}
+            className="text-gray-400 text-sm hover:text-red-600"
+          >
+            Change
+          </button>
+        </div>
+      )}
 
       <form onSubmit={submit} className="space-y-4 bg-white border rounded-lg p-5">
         {/* City */}

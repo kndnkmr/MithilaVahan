@@ -108,7 +108,12 @@ export default function Home() {
       {/* Vehicle types — tappable */}
       <section className="max-w-6xl mx-auto px-4 py-14">
         <h2 className="text-2xl font-bold mb-1 text-center">{t('whatNeed')}</h2>
-        <p className="text-gray-500 text-center mb-8">{t('tapVehicle')}</p>
+        <p className="text-gray-500 text-center mb-4">{t('tapVehicle')}</p>
+        <div className="text-center mb-8">
+          <Link to="/vehicles" className="text-brand-600 font-medium text-sm hover:underline">
+            Or browse all listed vehicles with photos →
+          </Link>
+        </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
           {VEHICLE_TYPES.map((v) => (
             <button

@@ -26,9 +26,9 @@ export default function BottomNav() {
       ]
     : [
         ['/', '🏠', 'Home'],
-        ['/destinations', '🗺️', 'Explore'],
+        ['/vehicles', '🚕', 'Vehicles'],
         ['/book', '➕', 'Book'],
-        ['/trips', '🚗', 'Trips'],
+        ['/trips', '🧾', 'Trips'],
       ];
 
   return (
