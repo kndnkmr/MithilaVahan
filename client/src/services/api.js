@@ -27,6 +27,7 @@ export const cityAPI = {
 
 export const vehicleAPI = {
   list: (params) => api.get('/vehicles', { params }),
+  get: (id) => api.get(`/vehicles/${id}`),
   mine: () => api.get('/vehicles/mine'),
   create: (data) => api.post('/vehicles', data),
   update: (id, data) => api.put(`/vehicles/${id}`, data),

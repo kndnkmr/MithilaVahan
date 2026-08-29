@@ -85,4 +85,18 @@ async function listVehicles(req, res) {
   res.json({ vehicles });
 }
 
-module.exports = { createVehicle, myVehicles, updateVehicle, listVehicles };
+// GET /api/vehicles/:id  (public — a single approved vehicle for the detail page)
+async function getVehicle(req, res) {
+  try {
+    const vehicle = await Vehicle.findById(req.params.id)
+      .populate('owner', 'name phone whatsappNumber ratingAvg ratingCount isOnline');
+    if (!vehicle || vehicle.approvalStatus !== 'approved' || !vehicle.isActive) {
+      return res.status(404).json({ message: 'Vehicle not found' });
+    }
+    res.json({ vehicle });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to load vehicle', error: err.message });
+  }
+}
+
+module.exports = { createVehicle, myVehicles, updateVehicle, listVehicles, getVehicle };

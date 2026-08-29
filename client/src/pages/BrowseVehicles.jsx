@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { vehicleAPI, cityAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useSeo } from '../services/seo';
+import { vehicleImage } from '../data/vehicleImages';
 
 const TYPE_EMOJI = { car: '🚗', auto: '🛺', tempo: '🚐', bus: '🚌', truck: '🚚', bike: '🏍️' };
 const VEHICLE_TYPES = ['car', 'auto', 'tempo', 'bus', 'truck', 'bike'];
@@ -83,15 +84,18 @@ export default function BrowseVehicles() {
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {vehicles.map((v) => (
               <div key={v._id} className="card overflow-hidden flex flex-col">
-                {/* Photo */}
-                <div className="relative h-44 bg-brand-100">
-                  {v.photos?.[0] ? (
-                    <img src={v.photos[0]} alt={v.model} loading="lazy" className="w-full h-full object-cover"
-                      onError={(e) => { e.currentTarget.style.display = 'none'; }} />
-                  ) : null}
+                {/* Photo — owner's photo, else a type placeholder */}
+                <div className="relative h-44 bg-brand-100 cursor-pointer" onClick={() => navigate(`/vehicles/${v._id}`)}>
+                  <img src={vehicleImage(v)} alt={v.model} loading="lazy" className="w-full h-full object-cover"
+                    onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                   <span className="absolute top-2 left-2 text-2xl bg-white/85 rounded-lg w-10 h-10 flex items-center justify-center">
                     {TYPE_EMOJI[v.type] || '🚗'}
                   </span>
+                  {(!v.photos || v.photos.length === 0) && (
+                    <span className="absolute bottom-2 left-2 text-[10px] bg-black/50 text-white px-1.5 py-0.5 rounded">
+                      Sample photo
+                    </span>
+                  )}
                   {v.owner?.isOnline && (
                     <span className="absolute top-2 right-2 text-xs bg-green-500 text-white px-2 py-0.5 rounded-full">
                       ● Online
@@ -100,7 +104,9 @@ export default function BrowseVehicles() {
                 </div>
 
                 <div className="p-4 flex flex-col flex-1">
-                  <div className="font-semibold capitalize">{v.type} · {v.model}</div>
+                  <button onClick={() => navigate(`/vehicles/${v._id}`)} className="text-left font-semibold capitalize hover:text-brand-600">
+                    {v.type} · {v.model}
+                  </button>
                   <div className="text-sm text-gray-500">
                     {v.city} · {v.capacity} {v.type === 'truck' || v.type === 'tempo' ? 'capacity' : 'seats'}
                   </div>
