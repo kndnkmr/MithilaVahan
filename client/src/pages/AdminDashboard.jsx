@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { adminAPI, complaintAPI } from '../services/api';
 import { getSocket } from '../services/socket';
+import ImageViewer from '../components/ImageViewer';
 
 export default function AdminDashboard() {
   const [tab, setTab] = useState('drivers');
@@ -15,6 +16,7 @@ export default function AdminDashboard() {
   const [savingFares, setSavingFares] = useState(false);
   const [expandedDriver, setExpandedDriver] = useState(null); // driver id whose details are open
   const [driverFilter, setDriverFilter] = useState('all'); // all | pending (from clicking a stat)
+  const [viewer, setViewer] = useState(null); // { url, title } for the in-app image viewer
 
   const loadStats = () => adminAPI.stats().then((r) => setStats(r.data)).catch(() => {});
   const loadDrivers = () => adminAPI.drivers().then((r) => setDrivers(r.data.drivers)).catch(() => {});
@@ -248,9 +250,9 @@ export default function AdminDashboard() {
                               {items.map(([label, url]) => (
                                 <div key={label} className="text-center">
                                   {url ? (
-                                    <a href={url} target="_blank" rel="noreferrer">
-                                      <img src={url} alt={label} className="w-24 h-24 object-cover rounded-md border" />
-                                    </a>
+                                    <button type="button" onClick={() => setViewer({ url, title: `${d.name} — ${label}` })}>
+                                      <img src={url} alt={label} className="w-24 h-24 object-cover rounded-md border hover:opacity-80 transition" />
+                                    </button>
                                   ) : (
                                     <div className="w-24 h-24 rounded-md border-2 border-dashed flex items-center justify-center text-gray-300 text-xs text-center px-1">Not uploaded</div>
                                   )}
@@ -272,7 +274,9 @@ export default function AdminDashboard() {
                             {d.vehicles.map((v) => (
                               <div key={v._id} className="flex items-center gap-3 border rounded-md p-2">
                                 {v.photos?.[0] && (
-                                  <img src={v.photos[0]} alt="" className="w-14 h-14 object-cover rounded-md border" />
+                                  <button type="button" onClick={() => setViewer({ url: v.photos[0], title: `${v.type} · ${v.model}` })}>
+                                    <img src={v.photos[0]} alt="" className="w-14 h-14 object-cover rounded-md border hover:opacity-80 transition" />
+                                  </button>
                                 )}
                                 <div className="flex-1 min-w-0">
                                   <div className="font-medium capitalize">{v.type} · {v.model}</div>
@@ -460,6 +464,9 @@ export default function AdminDashboard() {
           </div>
         </div>
       )}
+
+      {/* In-app document/photo viewer (avoids new-tab issues in the PWA) */}
+      <ImageViewer item={viewer} onClose={() => setViewer(null)} />
     </div>
   );
 }
