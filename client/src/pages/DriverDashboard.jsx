@@ -512,6 +512,48 @@ function PaymentTab({ user, updateUser }) {
   );
 }
 
+// A single vehicle row in the driver's list. Tracks whether its photo failed
+// to load so we can prompt the driver to re-upload — older photos were stored
+// inline (base64) before image hosting was set up and can look broken; a fresh
+// upload now goes to proper image hosting.
+function VehicleRow({ v }) {
+  const [photoBroken, setPhotoBroken] = useState(false);
+  return (
+    <div className="card p-3 flex justify-between items-center">
+      <div className="flex items-center gap-3">
+        {v.photos?.[0] && (
+          <img
+            src={v.photos[0]}
+            alt=""
+            className="w-12 h-12 object-cover rounded-md border"
+            onError={(e) => {
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = FALLBACK_DOC;
+              setPhotoBroken(true);
+            }}
+          />
+        )}
+        <div>
+          <div className="font-medium capitalize">{v.type} · {v.model}</div>
+          <div className="text-sm text-gray-500">{v.registrationNumber} · {v.city}</div>
+          {photoBroken && (
+            <div className="text-xs text-amber-600 mt-0.5">
+              Photo didn’t load — edit this vehicle and re-upload it. / फोटो लोड नहीं हुई — दोबारा अपलोड करें।
+            </div>
+          )}
+        </div>
+      </div>
+      <span className={`text-xs px-2 py-0.5 rounded-full shrink-0 ${
+        v.approvalStatus === 'approved' ? 'bg-green-100 text-green-700'
+          : v.approvalStatus === 'rejected' ? 'bg-red-100 text-red-700'
+          : 'bg-yellow-100 text-yellow-700'
+      }`}>
+        {v.approvalStatus}
+      </span>
+    </div>
+  );
+}
+
 // --- Vehicles sub-tab: list + add form ---
 function VehiclesTab({ vehicles, cities, onChange, onAdded, defaultCity }) {
   const [form, setForm] = useState({
@@ -574,27 +616,7 @@ function VehiclesTab({ vehicles, cities, onChange, onAdded, defaultCity }) {
         {vehicles.length === 0 ? (
           <p className="text-gray-500 text-sm">No vehicles yet. Add one below.</p>
         ) : (
-          vehicles.map((v) => (
-            <div key={v._id} className="card p-3 flex justify-between items-center">
-              <div className="flex items-center gap-3">
-                {v.photos?.[0] && (
-                  <img src={v.photos[0]} alt="" className="w-12 h-12 object-cover rounded-md border"
-                    onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = FALLBACK_DOC; }} />
-                )}
-                <div>
-                  <div className="font-medium capitalize">{v.type} · {v.model}</div>
-                  <div className="text-sm text-gray-500">{v.registrationNumber} · {v.city}</div>
-                </div>
-              </div>
-              <span className={`text-xs px-2 py-0.5 rounded-full ${
-                v.approvalStatus === 'approved' ? 'bg-green-100 text-green-700'
-                  : v.approvalStatus === 'rejected' ? 'bg-red-100 text-red-700'
-                  : 'bg-yellow-100 text-yellow-700'
-              }`}>
-                {v.approvalStatus}
-              </span>
-            </div>
-          ))
+          vehicles.map((v) => <VehicleRow key={v._id} v={v} />)
         )}
       </div>
 
