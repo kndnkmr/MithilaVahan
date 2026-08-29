@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { tripAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useT } from '../services/i18n';
 import { getSocket } from '../services/socket';
 import { getCoordinates } from '../services/location';
 import TripCard from '../components/TripCard';
@@ -32,6 +33,7 @@ function SlowHint() {
 
 export default function MyTrips() {
   const { user } = useAuth();
+  const t = useT();
   const [trips, setTrips] = useState([]);
   // Latest driver location per trip: { [tripId]: [lng, lat] }
   const [driverLocations, setDriverLocations] = useState({});
@@ -157,7 +159,7 @@ export default function MyTrips() {
   if (loading) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold mb-6">My trips</h1>
+        <h1 className="text-2xl font-bold mb-6">{t('myTripsTitle')}</h1>
         <div className="space-y-3">
           {[0, 1, 2].map((i) => (
             <div key={i} className="card p-4 animate-pulse">
@@ -174,47 +176,47 @@ export default function MyTrips() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">My trips</h1>
+      <h1 className="text-2xl font-bold mb-6">{t('myTripsTitle')}</h1>
 
       {/* Rider safety: emergency contact (used by the SOS button) */}
       {user.role === 'rider' && <EmergencyContact user={user} />}
 
       {trips.length === 0 ? (
-        <p className="text-gray-500">No trips yet.</p>
+        <p className="text-gray-500">{t('noTripsYet')}</p>
       ) : (
         <div className="space-y-3">
-          {trips.map((t) => {
-            const active = ['accepted', 'started'].includes(t.status);
+          {trips.map((tr) => {
+            const active = ['accepted', 'started'].includes(tr.status);
             const showMap = user.role === 'rider' && active;
             return (
-              <div key={t._id} className="space-y-2">
-                <TripCard trip={t} role={user.role} onAction={handleAction} />
+              <div key={tr._id} className="space-y-2">
+                <TripCard trip={tr} role={user.role} onAction={handleAction} />
 
                 {/* Safety controls: only for the rider, only on an active trip */}
                 {user.role === 'rider' && active && (
                   <div className="flex gap-2">
                     <button
-                      onClick={() => shareTrip(t)}
+                      onClick={() => shareTrip(tr)}
                       className="flex-1 border border-brand-500 text-brand-600 text-sm py-2 rounded-lg font-medium hover:bg-brand-50 transition"
                     >
-                      🔗 Share trip
+                      🔗 {t('shareTrip')}
                     </button>
                     <button
-                      onClick={() => setSosTrip(t)}
+                      onClick={() => setSosTrip(tr)}
                       className="flex-1 bg-red-600 text-white text-sm py-2 rounded-lg font-medium hover:bg-red-700 transition"
                     >
-                      🚨 SOS
+                      🚨 {t('sos')}
                     </button>
                   </div>
                 )}
 
                 {showMap && (
                   <LiveTripMap
-                    driver={driverLocations[t._id] || null}
+                    driver={driverLocations[tr._id] || null}
                     pickup={
-                      t.pickup?.coordinates &&
-                      !(t.pickup.coordinates[0] === 0 && t.pickup.coordinates[1] === 0)
-                        ? t.pickup.coordinates
+                      tr.pickup?.coordinates &&
+                      !(tr.pickup.coordinates[0] === 0 && tr.pickup.coordinates[1] === 0)
+                        ? tr.pickup.coordinates
                         : null
                     }
                   />
@@ -228,34 +230,34 @@ export default function MyTrips() {
       {/* Modals */}
       <PromptModal
         open={!!cancelTrip}
-        title="Cancel trip"
-        description="Optionally tell us why you’re cancelling."
-        fields={[{ name: 'reason', label: 'Reason (optional)', type: 'textarea', placeholder: 'e.g. Plan changed' }]}
-        submitText="Cancel trip"
-        cancelText="Keep trip"
+        title={t('cancelTripTitle')}
+        description={t('cancelTripDesc')}
+        fields={[{ name: 'reason', label: t('reasonOptional'), type: 'textarea', placeholder: 'e.g. Plan changed' }]}
+        submitText={t('cancelTripTitle')}
+        cancelText={t('keepTrip')}
         onCancel={() => setCancelTrip(null)}
         onSubmit={doCancel}
       />
 
       <PromptModal
         open={!!rateTrip}
-        title="Rate your driver"
-        description="How was your trip?"
+        title={t('rateYourDriver')}
+        description={t('howWasTrip')}
         fields={[
-          { name: 'rating', label: 'Rating (1-5)', type: 'number', min: 1, max: 5, required: true, placeholder: '5' },
-          { name: 'review', label: 'Comment (optional)', type: 'textarea', placeholder: 'Anything to add?' },
+          { name: 'rating', label: t('ratingField'), type: 'number', min: 1, max: 5, required: true, placeholder: '5' },
+          { name: 'review', label: t('commentOptional'), type: 'textarea', placeholder: 'Anything to add?' },
         ]}
-        submitText="Submit rating"
+        submitText={t('submitRating')}
         onCancel={() => setRateTrip(null)}
         onSubmit={doRate}
       />
 
       <ConfirmModal
         open={!!sosTrip}
-        title="Raise an SOS?"
-        message="This alerts the MithilaVahan team immediately and opens a WhatsApp alert to your emergency contact. Use only if you feel unsafe."
-        confirmText="Raise SOS"
-        cancelText="Cancel"
+        title={t('raiseSosTitle')}
+        message={t('sosWarning')}
+        confirmText={t('raiseSos')}
+        cancelText={t('cancel')}
         variant="danger"
         onCancel={() => setSosTrip(null)}
         onConfirm={doSos}

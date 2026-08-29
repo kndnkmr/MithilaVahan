@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { driverAPI } from '../services/api';
 import { navLink } from '../services/maps';
-import { useLang } from '../services/i18n';
+import { useLang, useT } from '../services/i18n';
 import TripStatusGuide from './TripStatusGuide';
 
 // Render ★ rating compactly.
@@ -91,6 +91,9 @@ function waMessage(trip, role, lang = 'en') {
 export default function TripCard({ trip, role, onAction }) {
   const other = role === 'rider' ? trip.driver : trip.rider;
   const lang = useLang();
+  const t = useT();
+  // status label localized (statuses map to stRequested/stAccepted/... keys)
+  const stKey = { requested: 'stRequested', accepted: 'stAccepted', started: 'stStarted', completed: 'stCompleted', cancelled: 'stCancelled' }[trip.status];
   const [reviews, setReviews] = useState(null);
   const [showReviews, setShowReviews] = useState(false);
 
@@ -112,13 +115,13 @@ export default function TripCard({ trip, role, onAction }) {
         <div className="font-medium capitalize">
           {trip.vehicleType} ·{' '}
           {trip.mode === 'hire'
-            ? `Hire (${trip.days}d)`
+            ? `${t('modeHire')} (${trip.days}d)`
             : trip.mode === 'outstation'
-            ? 'Outstation'
-            : 'Trip'}
+            ? t('modeOutstation')
+            : t('modeTrip')}
         </div>
         <span className={`text-xs px-2 py-0.5 rounded-full ${STATUS_STYLES[trip.status]}`}>
-          {trip.status}
+          {stKey ? t(stKey) : trip.status}
         </span>
       </div>
 
@@ -127,46 +130,46 @@ export default function TripCard({ trip, role, onAction }) {
 
       <div className="text-sm text-gray-600 space-y-0.5">
         <div className="flex items-center gap-2 flex-wrap">
-          <span>Pickup: {trip.pickup?.address}</span>
+          <span>{t('pickup')}: {trip.pickup?.address}</span>
           {navLink(trip.pickup || {}) && (
             <a href={navLink(trip.pickup)} target="_blank" rel="noreferrer"
-              className="text-brand-600 font-medium text-xs whitespace-nowrap">🧭 Navigate</a>
+              className="text-brand-600 font-medium text-xs whitespace-nowrap">🧭 {t('navigate')}</a>
           )}
         </div>
         {trip.mode === 'trip' && trip.drop?.address && (
           <div className="flex items-center gap-2 flex-wrap">
-            <span>Drop: {trip.drop.address}</span>
+            <span>{t('drop')}: {trip.drop.address}</span>
             {navLink(trip.drop || {}) && (
               <a href={navLink(trip.drop)} target="_blank" rel="noreferrer"
-                className="text-brand-600 font-medium text-xs whitespace-nowrap">🧭 Navigate</a>
+                className="text-brand-600 font-medium text-xs whitespace-nowrap">🧭 {t('navigate')}</a>
             )}
           </div>
         )}
         {trip.mode === 'outstation' && (
           <>
             <div>
-              To: <b>{trip.destination}</b>{' '}
+              {t('toLabel')}: <b>{trip.destination}</b>{' '}
               <span className="text-gray-400">
-                ({trip.tripType === 'round-trip' ? 'round trip' : 'one way'})
+                ({trip.tripType === 'round-trip' ? t('roundTrip') : t('oneWay')})
               </span>
             </div>
-            {trip.distanceKm > 0 && <div>Approx distance: {trip.distanceKm} km</div>}
+            {trip.distanceKm > 0 && <div>{t('approxDistance')}: {trip.distanceKm} km</div>}
           </>
         )}
-        <div>City: {trip.city}</div>
+        <div>{t('city')}: {trip.city}</div>
         {(trip.mode === 'outstation' || trip.mode === 'hire') && trip.scheduledAt && (
-          <div>When: {new Date(trip.scheduledAt).toLocaleString('en-IN')}</div>
+          <div>{t('whenLabel')}: {new Date(trip.scheduledAt).toLocaleString('en-IN')}</div>
         )}
-        {trip.estimatedFare > 0 && <div>Estimate: ₹{trip.estimatedFare}</div>}
+        {trip.estimatedFare > 0 && <div>{t('estimateLabel')}: ₹{trip.estimatedFare}</div>}
         {trip.status === 'completed' && trip.finalFare > 0 && (
-          <div className="font-medium text-gray-800">Fare: ₹{trip.finalFare}</div>
+          <div className="font-medium text-gray-800">{t('fareLabel')}: ₹{trip.finalFare}</div>
         )}
         {/* Platform fee only shown when a commission is actually in effect (> 0) */}
         {trip.status === 'completed' && trip.commissionPercent > 0 && (
           <div className="text-gray-500 text-xs">
-            Platform fee ({trip.commissionPercent}%): ₹{trip.platformFee}
+            {t('platformFee')} ({trip.commissionPercent}%): ₹{trip.platformFee}
             {role === 'driver' && trip.finalFare > 0 && (
-              <> · you keep ₹{trip.finalFare - trip.platformFee}</>
+              <> · {t('youKeep')} ₹{trip.finalFare - trip.platformFee}</>
             )}
           </div>
         )}
@@ -178,13 +181,13 @@ export default function TripCard({ trip, role, onAction }) {
           {role === 'rider' && trip.paymentStatus !== 'paid' && (
             <div className="space-y-1">
               <div className="text-gray-600">
-                Pay ₹{trip.finalFare} directly to your driver by UPI:
+                ₹{trip.finalFare} — {t('payByUpi')}:
               </div>
               {trip.driver?.upiNumber && (
-                <div className="font-medium">UPI number: {trip.driver.upiNumber}</div>
+                <div className="font-medium">{t('upiNumberLabel')}: {trip.driver.upiNumber}</div>
               )}
               {trip.driver?.upiId && (
-                <div className="font-medium">UPI ID: {trip.driver.upiId}</div>
+                <div className="font-medium">{t('upiIdLabel')}: {trip.driver.upiId}</div>
               )}
               {trip.driver?.qrImage && (
                 <img src={trip.driver.qrImage} alt="Driver UPI QR"
@@ -192,7 +195,7 @@ export default function TripCard({ trip, role, onAction }) {
               )}
               {!trip.driver?.upiNumber && !trip.driver?.upiId && !trip.driver?.qrImage && (
                 <div className="text-gray-400 text-xs">
-                  Driver hasn't added UPI details — pay by cash or ask on WhatsApp.
+                  {t('noUpiDetails')}
                 </div>
               )}
             </div>
@@ -200,20 +203,20 @@ export default function TripCard({ trip, role, onAction }) {
           <div className="mt-1">
             {trip.paymentStatus === 'pending' && role === 'rider' && (
               <button onClick={() => onAction?.('claim-paid', trip)}
-                className="bg-brand-500 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-brand-600 transition">I've paid</button>
+                className="bg-brand-500 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-brand-600 transition">{t('ivePaid')}</button>
             )}
             {trip.paymentStatus === 'claimed' && role === 'rider' && (
-              <span className="text-yellow-700 text-xs">Waiting for the driver to confirm your payment…</span>
+              <span className="text-yellow-700 text-xs">{t('waitingConfirm')}</span>
             )}
             {trip.paymentStatus === 'claimed' && role === 'driver' && (
               <button onClick={() => onAction?.('confirm-payment', trip)}
-                className="bg-green-600 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-green-700 transition">Payment received</button>
+                className="bg-green-600 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-green-700 transition">{t('paymentReceived')}</button>
             )}
             {trip.paymentStatus === 'pending' && role === 'driver' && (
-              <span className="text-gray-400 text-xs">Awaiting payment from rider.</span>
+              <span className="text-gray-400 text-xs">{t('awaitingPayment')}</span>
             )}
             {trip.paymentStatus === 'paid' && (
-              <span className="text-green-700 text-xs">✓ Payment confirmed</span>
+              <span className="text-green-700 text-xs">{t('paymentConfirmed')}</span>
             )}
           </div>
         </div>
@@ -230,7 +233,7 @@ export default function TripCard({ trip, role, onAction }) {
               )}
               <div>
                 <div>
-                  {role === 'rider' ? 'Driver' : 'Rider'}: <b>{other.name}</b>
+                  {role === 'rider' ? t('driverLabel') : t('riderLabel')}: <b>{other.name}</b>
                 </div>
                 {role === 'rider' && (
                   <div className="text-xs text-gray-500">
@@ -239,7 +242,7 @@ export default function TripCard({ trip, role, onAction }) {
                         <Stars value={other.ratingAvg} /> {other.ratingAvg} ({other.ratingCount})
                       </>
                     ) : (
-                      <span className="text-gray-400">New driver</span>
+                      <span className="text-gray-400">{t('newDriver')}</span>
                     )}
                     {trip.vehicle?.model && <> · {trip.vehicle.model}</>}
                     {trip.vehicle?.registrationNumber && <> · {trip.vehicle.registrationNumber}</>}
@@ -252,18 +255,18 @@ export default function TripCard({ trip, role, onAction }) {
                 <a
                   href={`tel:${other.phone}`}
                   className="inline-flex items-center gap-1 border border-brand-500 text-brand-600 font-medium rounded-full px-3 py-1 text-xs hover:bg-brand-50 transition whitespace-nowrap"
-                  title={`Call the ${role === 'rider' ? 'driver' : 'rider'}`}
+                  title={`${t('call')} ${role === 'rider' ? t('driverLabel') : t('riderLabel')}`}
                 >
-                  📞 Call {role === 'rider' ? 'driver' : 'rider'}
+                  📞 {t('call')} {role === 'rider' ? t('driverLabel') : t('riderLabel')}
                 </a>
                 <a
                   href={waLink(other.phone, waMessage(trip, role, lang))}
                   target="_blank"
                   rel="noreferrer"
                   className="inline-flex items-center gap-1 bg-green-600 text-white font-medium rounded-full px-3 py-1 text-xs hover:bg-green-700 transition whitespace-nowrap"
-                  title={`Message the ${role === 'rider' ? 'driver' : 'rider'} on WhatsApp`}
+                  title={`${t('whatsapp')} ${role === 'rider' ? t('driverLabel') : t('riderLabel')}`}
                 >
-                  WhatsApp {role === 'rider' ? 'driver' : 'rider'}
+                  {t('whatsapp')} {role === 'rider' ? t('driverLabel') : t('riderLabel')}
                 </a>
               </div>
             )}
@@ -273,12 +276,12 @@ export default function TripCard({ trip, role, onAction }) {
           {role === 'rider' && other.ratingCount > 0 && (
             <div className="mt-1">
               <button onClick={toggleReviews} className="text-brand-600 text-xs font-medium">
-                {showReviews ? 'Hide reviews' : 'See reviews'}
+                {showReviews ? t('hideReviews') : t('seeReviews')}
               </button>
               {showReviews && (
                 <div className="mt-1 space-y-1">
-                  {reviews === null && <div className="text-xs text-gray-400">Loading…</div>}
-                  {reviews?.length === 0 && <div className="text-xs text-gray-400">No written reviews yet.</div>}
+                  {reviews === null && <div className="text-xs text-gray-400">{t('loadingDots')}</div>}
+                  {reviews?.length === 0 && <div className="text-xs text-gray-400">{t('noWrittenReviews')}</div>}
                   {reviews?.map((r, i) => (
                     <div key={i} className="text-xs bg-gray-50 rounded p-2">
                       <Stars value={r.rating} /> <span className="text-gray-600">{r.review}</span>
@@ -296,26 +299,26 @@ export default function TripCard({ trip, role, onAction }) {
         <div className="mt-3 flex flex-wrap gap-2">
           {role === 'driver' && trip.status === 'requested' && (
             <button onClick={() => onAction('accept', trip)}
-              className="bg-brand-500 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-brand-600 transition">Accept</button>
+              className="bg-brand-500 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-brand-600 transition">{t('accept')}</button>
           )}
           {role === 'driver' && trip.status === 'accepted' && (
             <button onClick={() => onAction('start', trip)}
-              className="bg-indigo-600 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-indigo-700 transition">Start trip</button>
+              className="bg-indigo-600 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-indigo-700 transition">{t('startTrip')}</button>
           )}
           {role === 'driver' && trip.status === 'started' && (
             <button onClick={() => onAction('complete', trip)}
-              className="bg-green-600 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-green-700 transition">Complete</button>
+              className="bg-green-600 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-green-700 transition">{t('complete')}</button>
           )}
           {['requested', 'accepted'].includes(trip.status) && (
             <button onClick={() => onAction('cancel', trip)}
-              className="border border-gray-300 text-gray-600 text-sm px-4 py-2 rounded-lg hover:border-red-300 hover:text-red-600 transition">Cancel</button>
+              className="border border-gray-300 text-gray-600 text-sm px-4 py-2 rounded-lg hover:border-red-300 hover:text-red-600 transition">{t('cancel')}</button>
           )}
           {role === 'rider' && trip.status === 'completed' && !trip.rating && (
             <button onClick={() => onAction('rate', trip)}
-              className="border border-brand-500 text-brand-600 text-sm font-medium px-4 py-2 rounded-lg hover:bg-brand-50 transition">Rate driver</button>
+              className="border border-brand-500 text-brand-600 text-sm font-medium px-4 py-2 rounded-lg hover:bg-brand-50 transition">{t('rateDriver')}</button>
           )}
           {role === 'rider' && trip.rating && (
-            <span className="text-sm text-gray-400">You rated ★ {trip.rating}</span>
+            <span className="text-sm text-gray-400">{t('youRated')} ★ {trip.rating}</span>
           )}
         </div>
       )}

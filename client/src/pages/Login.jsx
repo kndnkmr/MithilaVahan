@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { authAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useT } from '../services/i18n';
 import PasswordToggleIcon from '../components/PasswordToggleIcon';
 
 // Where each role lands after login.
@@ -14,6 +15,7 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
+  const t = useT();
   const navigate = useNavigate();
 
   const submit = async (e) => {
@@ -33,12 +35,12 @@ export default function Login() {
 
   return (
     <div className="max-w-sm mx-auto px-4 py-12">
-      <h1 className="text-2xl font-bold mb-1">Welcome back</h1>
-      <p className="text-gray-500 text-sm mb-6">Login with your phone number.</p>
+      <h1 className="text-2xl font-bold mb-1">{t('welcomeBack')}</h1>
+      <p className="text-gray-500 text-sm mb-6">{t('login')}.</p>
 
       <form onSubmit={submit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium mb-1">Phone number</label>
+          <label className="block text-sm font-medium mb-1">{t('phone')}</label>
           <input
             type="tel"
             inputMode="numeric"
@@ -51,7 +53,7 @@ export default function Login() {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">Password</label>
+          <label className="block text-sm font-medium mb-1">{t('password')}</label>
           <div className="relative">
             <input
               type={showPassword ? 'text' : 'password'}
@@ -71,14 +73,14 @@ export default function Login() {
           </div>
         </div>
         <button disabled={loading} className="btn-primary w-full">
-          {loading ? 'Logging in…' : 'Login'}
+          {loading ? t('loggingIn') : t('login')}
         </button>
       </form>
 
       <p className="text-sm text-gray-500 mt-4 text-center">
-        New here?{' '}
+        {t('noAccount')}{' '}
         <Link to="/register" className="text-brand-600 font-medium">
-          Create an account
+          {t('createAccount')}
         </Link>
       </p>
     </div>

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { driverAPI, tripAPI, vehicleAPI, cityAPI, uploadAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useT } from '../services/i18n';
 import { getSocket } from '../services/socket';
 import { watchCoordinates } from '../services/location';
 import TripCard from '../components/TripCard';
@@ -20,6 +21,7 @@ const FALLBACK_DOC =
 
 export default function DriverDashboard() {
   const { user, updateUser } = useAuth();
+  const L = useT();
   const [tab, setTab] = useState('requests');
   const [online, setOnline] = useState(user?.isOnline || false);
   const [togglingOnline, setTogglingOnline] = useState(false);
@@ -180,12 +182,10 @@ export default function DriverDashboard() {
     <div className="max-w-3xl mx-auto px-4 py-8">
       <div className="flex items-start justify-between mb-6 gap-3">
         <div>
-          <h1 className="text-2xl font-bold">Driver dashboard</h1>
+          <h1 className="text-2xl font-bold">{L('driverDashboard')}</h1>
           {approved && (
             <p className="text-sm text-gray-500 mt-0.5">
-              {online
-                ? 'You are online — you can receive trip requests.'
-                : 'You are offline — go online to receive trip requests.'}
+              {online ? L('onlineHint') : L('offlineHint')}
             </p>
           )}
         </div>
@@ -203,7 +203,7 @@ export default function DriverDashboard() {
             className={`w-2 h-2 rounded-full ${online ? 'bg-white' : 'bg-gray-500'}`}
             aria-hidden="true"
           />
-          {togglingOnline ? 'Saving…' : online ? 'Online' : 'Go online'}
+          {togglingOnline ? L('saving') : online ? L('online') : L('goOnline')}
         </button>
       </div>
 
@@ -218,11 +218,11 @@ export default function DriverDashboard() {
       {/* Tabs — horizontally scrollable so they never clip on small phones */}
       <div className="flex gap-2 mb-4 text-sm overflow-x-auto pb-1">
         {[
-          ['requests', 'Requests'],
-          ['active', 'My trips'],
-          ['profile', 'Profile & Docs'],
-          ['vehicles', 'My vehicles'],
-          ['payment', 'Payment'],
+          ['requests', L('tabRequests')],
+          ['active', L('tabActive')],
+          ['profile', L('tabProfile')],
+          ['vehicles', L('tabVehicles')],
+          ['payment', L('tabPayment')],
         ].map(([key, label]) => (
           <button
             key={key}
@@ -240,20 +240,20 @@ export default function DriverDashboard() {
       {tab === 'requests' && (
         <div className="space-y-3">
           {!approved ? (
-            <p className="text-gray-500 text-sm">Approval pending — no requests yet.</p>
+            <p className="text-gray-500 text-sm">{L('approvalPending')}</p>
           ) : !online ? (
             <div className="text-center py-8">
-              <p className="text-gray-500 text-sm mb-3">You're offline. Go online to start receiving trip requests.</p>
+              <p className="text-gray-500 text-sm mb-3">{L('offlinePrompt')}</p>
               <button
                 onClick={toggleOnline}
                 disabled={togglingOnline}
                 className="bg-green-600 text-white px-5 py-2 rounded-full text-sm font-semibold hover:bg-green-700 disabled:opacity-50"
               >
-                {togglingOnline ? 'Saving…' : 'Go online'}
+                {togglingOnline ? L('saving') : L('goOnline')}
               </button>
             </div>
           ) : available.length === 0 ? (
-            <p className="text-gray-500 text-sm">No open requests right now. Stay online — new requests appear here automatically.</p>
+            <p className="text-gray-500 text-sm">{L('noOpenRequests')}</p>
           ) : (
             available.map((t) => (
               <TripCard key={t._id} trip={t} role="driver" onAction={handleTripAction} />
@@ -265,7 +265,7 @@ export default function DriverDashboard() {
       {tab === 'active' && (
         <div className="space-y-3">
           {myTrips.length === 0 ? (
-            <p className="text-gray-500 text-sm">No trips yet.</p>
+            <p className="text-gray-500 text-sm">{L('noTripsYet')}</p>
           ) : (
             myTrips.map((t) => (
               <TripCard key={t._id} trip={t} role="driver" onAction={handleTripAction} />
@@ -292,24 +292,24 @@ export default function DriverDashboard() {
       {/* Modals */}
       <PromptModal
         open={!!completeTrip}
-        title="Complete trip"
-        description="Confirm the final fare the rider will pay. Leave as-is to use the estimate."
+        title={L('completeTripTitle')}
+        description={L('completeTripDesc')}
         fields={[{
-          name: 'finalFare', label: 'Final fare (₹)', type: 'number', min: 0,
+          name: 'finalFare', label: L('finalFare'), type: 'number', min: 0,
           defaultValue: completeTrip?.estimatedFare || '',
           placeholder: 'e.g. 150',
         }]}
-        submitText="Complete trip"
+        submitText={L('completeTripTitle')}
         onCancel={() => setCompleteTrip(null)}
         onSubmit={doComplete}
       />
       <PromptModal
         open={!!cancelTrip}
-        title="Cancel trip"
-        description="Optionally tell the rider why."
-        fields={[{ name: 'reason', label: 'Reason (optional)', type: 'textarea', placeholder: 'e.g. Vehicle issue' }]}
-        submitText="Cancel trip"
-        cancelText="Keep trip"
+        title={L('cancelTripTitle')}
+        description={L('cancelTripDesc')}
+        fields={[{ name: 'reason', label: L('reasonOptional'), type: 'textarea', placeholder: 'e.g. Vehicle issue' }]}
+        submitText={L('cancelTripTitle')}
+        cancelText={L('keepTrip')}
         onCancel={() => setCancelTrip(null)}
         onSubmit={doCancel}
       />

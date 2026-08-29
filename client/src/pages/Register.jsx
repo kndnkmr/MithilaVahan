@@ -3,6 +3,7 @@ import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { authAPI, cityAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useT } from '../services/i18n';
 import PasswordToggleIcon from '../components/PasswordToggleIcon';
 
 const HOME_BY_ROLE = { rider: '/book', driver: '/driver', admin: '/admin' };
@@ -18,6 +19,7 @@ export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
+  const t = useT();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -43,7 +45,7 @@ export default function Register() {
 
   return (
     <div className="max-w-sm mx-auto px-4 py-12">
-      <h1 className="text-2xl font-bold mb-6">Create account</h1>
+      <h1 className="text-2xl font-bold mb-6">{t('createAccount')}</h1>
 
       <form onSubmit={submit} className="space-y-4">
         {/* Role toggle */}
@@ -57,12 +59,12 @@ export default function Register() {
                 form.role === r ? 'bg-brand-500 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'
               }`}
             >
-              {r === 'rider' ? 'I want to ride' : 'I have a vehicle'}
+              {r === 'rider' ? t('rider') : t('driverOwner')}
             </button>
           ))}
         </div>
 
-        <input value={form.name} onChange={set('name')} placeholder="Full name" className="input" required />
+        <input value={form.name} onChange={set('name')} placeholder={t('name')} className="input" required />
         <input
           type="tel" inputMode="numeric" maxLength={10}
           value={form.phone} onChange={set('phone')} placeholder="10-digit mobile" className="input" required
@@ -109,13 +111,13 @@ export default function Register() {
         )}
 
         <button disabled={loading} className="btn-primary w-full">
-          {loading ? 'Creating…' : 'Create account'}
+          {loading ? t('creatingAccount') : t('createAccount')}
         </button>
       </form>
 
       <p className="text-sm text-gray-500 mt-4 text-center">
-        Already have an account?{' '}
-        <Link to="/login" className="text-brand-600 font-medium">Login</Link>
+        {t('haveAccount')}{' '}
+        <Link to="/login" className="text-brand-600 font-medium">{t('login')}</Link>
       </p>
     </div>
   );
