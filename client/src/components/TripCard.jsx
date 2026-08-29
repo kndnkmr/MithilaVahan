@@ -29,6 +29,41 @@ function waLink(phone, text) {
   return `https://wa.me/91${digits}?text=${encodeURIComponent(text)}`;
 }
 
+// Compose an intuitive, role-aware WhatsApp opener so each side sends a message
+// that makes sense for who they are and what they need — instead of one bland
+// "regarding our trip" line for everyone.
+function waMessage(trip, role) {
+  const senderName = (role === 'rider' ? trip.rider?.name : trip.driver?.name) || '';
+  const iAm = senderName ? ` This is ${senderName}.` : '';
+  const where =
+    trip.mode === 'outstation' && trip.destination
+      ? ` to ${trip.destination}`
+      : trip.mode === 'hire'
+      ? ' (full-day hire)'
+      : '';
+  const pickup = trip.pickup?.address ? ` My pickup is: ${trip.pickup.address}.` : '';
+
+  if (role === 'rider') {
+    // Rider messaging the driver — help the driver find them.
+    if (trip.status === 'accepted') {
+      return `Hi, you accepted my MithilaVahan ${trip.vehicleType} trip${where}.${iAm}${pickup} Please let me know your ETA.`;
+    }
+    if (trip.status === 'started') {
+      return `Hi, regarding my ongoing MithilaVahan ${trip.vehicleType} trip${where}.${iAm}`;
+    }
+    return `Hi, about my MithilaVahan ${trip.vehicleType} trip${where}.${iAm}${pickup}`;
+  }
+
+  // Driver messaging the rider — identify themselves and reassure.
+  if (trip.status === 'accepted') {
+    return `Hi, I'm your MithilaVahan driver for the ${trip.vehicleType} trip${where}.${iAm} I'm heading to your pickup${trip.pickup?.address ? ` at ${trip.pickup.address}` : ''}. Please share your exact location.`;
+  }
+  if (trip.status === 'started') {
+    return `Hi, this is your MithilaVahan driver.${iAm} We're on the way${where}.`;
+  }
+  return `Hi, regarding your MithilaVahan ${trip.vehicleType} trip${where}.${iAm}`;
+}
+
 export default function TripCard({ trip, role, onAction }) {
   const other = role === 'rider' ? trip.driver : trip.rider;
   const [reviews, setReviews] = useState(null);
@@ -189,12 +224,13 @@ export default function TripCard({ trip, role, onAction }) {
             </div>
             {other.phone && (
               <a
-                href={waLink(other.phone, `Hi, regarding our MithilaVahan ${trip.vehicleType} trip.`)}
+                href={waLink(other.phone, waMessage(trip, role))}
                 target="_blank"
                 rel="noreferrer"
                 className="text-green-600 font-medium shrink-0"
+                title={`Message the ${role === 'rider' ? 'driver' : 'rider'} on WhatsApp`}
               >
-                WhatsApp
+                WhatsApp {role === 'rider' ? 'driver' : 'rider'}
               </a>
             )}
           </div>
