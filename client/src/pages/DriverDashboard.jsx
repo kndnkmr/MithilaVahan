@@ -39,6 +39,7 @@ export default function DriverDashboard() {
   const [available, setAvailable] = useState([]);
   const [myTrips, setMyTrips] = useState([]);
   const [vehicles, setVehicles] = useState([]);
+  const [vehiclesLoaded, setVehiclesLoaded] = useState(false);
   const [cities, setCities] = useState([]);
   // Modal targets (null when closed)
   const [completeTrip, setCompleteTrip] = useState(null);
@@ -48,7 +49,11 @@ export default function DriverDashboard() {
 
   const loadAll = () => {
     tripAPI.mine().then((r) => setMyTrips(r.data.trips)).catch(() => {});
-    vehicleAPI.mine().then((r) => setVehicles(r.data.vehicles)).catch(() => {});
+    vehicleAPI
+      .mine()
+      .then((r) => setVehicles(r.data.vehicles))
+      .catch(() => {})
+      .finally(() => setVehiclesLoaded(true));
     if (approved) tripAPI.available().then((r) => setAvailable(r.data.trips)).catch(() => {});
   };
 
@@ -202,8 +207,13 @@ export default function DriverDashboard() {
         </button>
       </div>
 
-      {/* Guided onboarding — shows until the driver is fully set up + approved */}
-      <OnboardingChecklist user={user} vehicles={vehicles} onGoToTab={goToTab} />
+      {/* Guided onboarding — shows until the driver is fully set up + approved.
+          Wait for the vehicle list to load first, otherwise the checklist
+          briefly shows "Add a vehicle" as incomplete on the empty initial
+          state and then flickers away once vehicles arrive. */}
+      {vehiclesLoaded && (
+        <OnboardingChecklist user={user} vehicles={vehicles} onGoToTab={goToTab} />
+      )}
 
       {/* Tabs — horizontally scrollable so they never clip on small phones */}
       <div className="flex gap-2 mb-4 text-sm overflow-x-auto pb-1">
