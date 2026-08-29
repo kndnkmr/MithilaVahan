@@ -4,7 +4,7 @@
 
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getDestination, DESTINATIONS } from '../data/destinations';
+import { getDestination, DESTINATIONS, IMAGE_CREDITS } from '../data/destinations';
 import { useSeo } from '../services/seo';
 
 // Indicative per-km by class (mirrors the server's guide) for the fare table.
@@ -121,6 +121,11 @@ export default function DestinationDetail() {
             Book Darbhanga → {dest.name}
           </button>
         </section>
+
+        {/* Image attribution (for CC BY-SA photos) */}
+        {IMAGE_CREDITS[dest.slug] && (
+          <p className="text-[11px] text-gray-400">{IMAGE_CREDITS[dest.slug]}</p>
+        )}
 
         {/* Internal links to other destinations (SEO + discovery) */}
         <section>

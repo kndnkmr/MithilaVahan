@@ -38,7 +38,8 @@ const RAW = [
 
   // --- Pilgrimage & tourism ---
   { name: 'Bodh Gaya', category: 'Pilgrimage & Tourism', emoji: '☸️', km: 240, time: '~5.5 hrs',
-    img: U('1524492412937-b28074a5d7da'),
+    // Mahabodhi Temple, Bodh Gaya — Wikimedia Commons (CC BY-SA), see IMAGE_CREDITS below
+    img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Mahabodhi_Temple_Bodh_Gaya_Bihar_India.jpg/960px-Mahabodhi_Temple_Bodh_Gaya_Bihar_India.jpg',
     desc: 'Where the Buddha attained enlightenment — the Mahabodhi Temple draws visitors worldwide.',
     long: 'Bodh Gaya is among the most sacred Buddhist sites in the world. A round-trip with a driver from Darbhanga lets you visit the Mahabodhi Temple and monasteries comfortably, with rest stops on the way.' },
   { name: 'Vaishali', category: 'Pilgrimage & Tourism', emoji: '🏛️', km: 90, time: '~2.5 hrs',
@@ -50,7 +51,8 @@ const RAW = [
     desc: 'Hills, hot springs and a ropeway — a serene ancient capital with Buddhist and Jain sites.',
     long: 'Rajgir offers hills, hot springs, a ropeway to the Vishwa Shanti Stupa, and ancient sites. A round-trip cab makes a comfortable weekend outing from Mithilanchal.' },
   { name: 'Nalanda', category: 'Pilgrimage & Tourism', emoji: '📜', km: 210, time: '~5 hrs',
-    img: U('1548013146-72479768bada'),
+    // Nalanda Mahavihara ruins — Wikimedia Commons (CC BY-SA), see IMAGE_CREDITS below
+    img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/Archeological_Ruins_of_Nalanda_Mahavihara.jpg/960px-Archeological_Ruins_of_Nalanda_Mahavihara.jpg',
     desc: 'Ruins of the legendary ancient university — a UNESCO World Heritage Site.',
     long: 'Nalanda, the ruins of the great ancient university, is a UNESCO World Heritage Site. Combine it with Rajgir on a round-trip with a knowledgeable local driver.' },
   { name: 'Deoghar', category: 'Pilgrimage & Tourism', emoji: '🔱', km: 230, time: '~5.5 hrs',
@@ -88,6 +90,13 @@ export const DESTINATIONS = RAW.map((d) => ({ ...d, slug: toSlug(d.name) }));
 export function getDestination(slug) {
   return DESTINATIONS.find((d) => d.slug === slug);
 }
+
+// Attribution for images that require it (Wikimedia Commons CC BY-SA).
+// Keyed by slug; shown as a small credit line where the image appears.
+export const IMAGE_CREDITS = {
+  'bodh-gaya': 'Photo: Mahabodhi Temple, Bodh Gaya — Wikimedia Commons (CC BY-SA)',
+  nalanda: 'Photo: Nalanda Mahavihara ruins — Wikimedia Commons (CC BY-SA)',
+};
 
 export const CATEGORIES = ['Nearby', 'Pilgrimage & Tourism', 'Major Cities', 'Nepal'];
 
