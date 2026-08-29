@@ -39,26 +39,35 @@ if ('serviceWorker' in navigator && import.meta.env.PROD) {
     window.location.reload();
   });
 
+  // Tell a worker to activate immediately.
+  const activate = (worker) => worker?.postMessage({ type: 'SKIP_WAITING' });
+
   window.addEventListener('load', () => {
     navigator.serviceWorker
       .register('/sw.js')
       .then((reg) => {
-        // A new worker was found — tell it to activate immediately once ready.
+        // Case A: a new worker is ALREADY waiting (e.g. installed on a previous
+        // visit but never activated because tabs stayed open). This is the
+        // "stuck on old version" situation — activate it right now.
+        if (reg.waiting && navigator.serviceWorker.controller) {
+          activate(reg.waiting);
+        }
+
+        // Case B: a new worker is found now — activate it the moment it installs.
         reg.addEventListener('updatefound', () => {
           const sw = reg.installing;
           if (!sw) return;
           sw.addEventListener('statechange', () => {
-            // "installed" + an existing controller => this is an UPDATE (not
-            // the first install), so activate it now.
             if (sw.state === 'installed' && navigator.serviceWorker.controller) {
-              reg.waiting?.postMessage({ type: 'SKIP_WAITING' });
+              activate(sw);
             }
           });
         });
 
-        // Check for a new deploy periodically and when the user returns to the tab.
+        // Check for a new deploy on load, periodically, and on tab focus.
         const check = () => reg.update().catch(() => {});
-        setInterval(check, 60 * 60 * 1000); // hourly
+        check();
+        setInterval(check, 15 * 60 * 1000); // every 15 min (was hourly)
         document.addEventListener('visibilitychange', () => {
           if (document.visibilityState === 'visible') check();
         });
