@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { authAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import PasswordToggleIcon from '../components/PasswordToggleIcon';
 
 // Where each role lands after login.
 const HOME_BY_ROLE = { rider: '/book', driver: '/driver', admin: '/admin' };
@@ -10,6 +11,7 @@ const HOME_BY_ROLE = { rider: '/book', driver: '/driver', admin: '/admin' };
 export default function Login() {
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -50,13 +52,23 @@ export default function Login() {
         </div>
         <div>
           <label className="block text-sm font-medium mb-1">Password</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full border rounded-md px-3 py-2"
-            required
-          />
+          <div className="relative">
+            <input
+              type={showPassword ? 'text' : 'password'}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full border rounded-md px-3 py-2 pr-11"
+              required
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((s) => !s)}
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+            >
+              <PasswordToggleIcon visible={showPassword} />
+            </button>
+          </div>
         </div>
         <button
           disabled={loading}

@@ -3,6 +3,7 @@ import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { authAPI, cityAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import PasswordToggleIcon from '../components/PasswordToggleIcon';
 
 const HOME_BY_ROLE = { rider: '/book', driver: '/driver', admin: '/admin' };
 
@@ -14,6 +15,7 @@ export default function Register() {
     referralCode: refFromUrl,
   });
   const [cities, setCities] = useState([]);
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -79,10 +81,20 @@ export default function Register() {
             <option key={c._id} value={c.name}>{c.name}</option>
           ))}
         </select>
-        <input
-          type="password" value={form.password} onChange={set('password')}
-          placeholder="Password (min 6 chars)" className="w-full border rounded-md px-3 py-2" required
-        />
+        <div className="relative">
+          <input
+            type={showPassword ? 'text' : 'password'} value={form.password} onChange={set('password')}
+            placeholder="Password (min 6 chars)" className="w-full border rounded-md px-3 py-2 pr-11" required
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword((s) => !s)}
+            aria-label={showPassword ? 'Hide password' : 'Show password'}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+          >
+            <PasswordToggleIcon visible={showPassword} />
+          </button>
+        </div>
 
         {/* Referral code (prefilled from a ?ref= link, editable) */}
         <input
