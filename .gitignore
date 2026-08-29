@@ -22,3 +22,9 @@ server/uploads/*
 .DS_Store
 .vscode/
 .idea/
+
+# Unrelated local work files (not part of MithilaVahan)
+RosterBA-*.docx
+RosterBA-*.md
+generate_coe_docx.py
+update_l1_doc.py
