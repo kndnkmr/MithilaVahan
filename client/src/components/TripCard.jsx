@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { driverAPI } from '../services/api';
 import { navLink } from '../services/maps';
+import TripStatusGuide from './TripStatusGuide';
 
 // Render ★ rating compactly.
 function Stars({ value }) {
@@ -60,6 +61,9 @@ export default function TripCard({ trip, role, onAction }) {
           {trip.status}
         </span>
       </div>
+
+      {/* Step-by-step guide for the current status + viewer role */}
+      <TripStatusGuide status={trip.status} role={role} />
 
       <div className="text-sm text-gray-600 space-y-0.5">
         <div className="flex items-center gap-2 flex-wrap">

@@ -120,6 +120,9 @@ export default function DriverDashboard() {
         const match = vehicles.find((v) => v.type === trip.vehicleType && v.approvalStatus === 'approved');
         await tripAPI.accept(trip._id, { vehicleId: match?._id });
         setAvailable((prev) => prev.filter((t) => t._id !== trip._id));
+        // Jump to "My trips" so the driver immediately sees Start/Complete for it.
+        setTab('active');
+        setTimeout(() => contentRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
       } else if (action === 'start') {
         await tripAPI.updateStatus(trip._id, { status: 'started' });
       } else if (action === 'confirm-payment') {
