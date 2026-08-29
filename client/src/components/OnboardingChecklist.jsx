@@ -2,26 +2,29 @@
 // they can accept trips, with a progress bar and deep links to each step.
 // Mirrors the server-side getDriverSetup rule so it stays consistent.
 
+import { useT } from '../services/i18n';
+
 // Compute the steps from the current user + their vehicles.
-function computeSteps(user, vehicles) {
+function computeSteps(user, vehicles, L) {
   const docs = user?.documents || {};
   const hasVehicle = Array.isArray(vehicles) && vehicles.length > 0;
   return [
-    { key: 'details', label: 'Add your details', hint: 'City & WhatsApp number', tab: 'profile',
+    { key: 'details', label: L('obDetails'), hint: L('obDetailsHint'), tab: 'profile',
       done: !!(user?.city && user?.whatsappNumber) },
-    { key: 'documents', label: 'Submit documents', hint: 'Licence, RC, insurance', tab: 'profile',
+    { key: 'documents', label: L('obDocs'), hint: L('obDocsHint'), tab: 'profile',
       done: !!(docs.drivingLicense && docs.rcBook && docs.insurance) },
-    { key: 'vehicle', label: 'Add a vehicle', hint: 'Type, model, photos, rates', tab: 'vehicles',
+    { key: 'vehicle', label: L('obVehicle'), hint: L('obVehicleHint'), tab: 'vehicles',
       done: hasVehicle },
-    { key: 'payment', label: 'Add payment details', hint: 'UPI number or ID', tab: 'payment',
+    { key: 'payment', label: L('obPayment'), hint: L('obPaymentHint'), tab: 'payment',
       done: !!(user?.upiNumber || user?.upiId) },
-    { key: 'approval', label: 'Get approved', hint: 'Our team reviews your details', tab: null,
+    { key: 'approval', label: L('obApproval'), hint: L('obApprovalHint'), tab: null,
       done: user?.driverStatus === 'approved' },
   ];
 }
 
 export default function OnboardingChecklist({ user, vehicles, onGoToTab }) {
-  const steps = computeSteps(user, vehicles);
+  const L = useT();
+  const steps = computeSteps(user, vehicles, L);
   const done = steps.filter((s) => s.done).length;
   const total = steps.length;
   const allDone = done === total;
@@ -34,11 +37,11 @@ export default function OnboardingChecklist({ user, vehicles, onGoToTab }) {
   return (
     <div className="card p-5 mb-6">
       <div className="flex items-center justify-between mb-1">
-        <h3 className="font-semibold">Finish setting up to start earning</h3>
+        <h3 className="font-semibold">{L('obTitle')}</h3>
         <span className="text-sm text-gray-500">{done}/{total}</span>
       </div>
       <p className="text-sm text-gray-500 mb-3">
-        Complete these steps and get approved — then go online to accept trips.
+        {L('obSub')}
       </p>
 
       {/* Progress bar */}
@@ -65,11 +68,11 @@ export default function OnboardingChecklist({ user, vehicles, onGoToTab }) {
                 onClick={() => onGoToTab(s.tab)}
                 className="text-brand-600 text-sm font-medium shrink-0"
               >
-                Do this →
+                {L('obDoThis')} →
               </button>
             )}
             {!s.done && !s.tab && (
-              <span className="text-xs text-yellow-600 shrink-0">Pending</span>
+              <span className="text-xs text-yellow-600 shrink-0">{L('obPendingStep')}</span>
             )}
           </li>
         ))}

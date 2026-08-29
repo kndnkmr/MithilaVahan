@@ -179,6 +179,63 @@ const DICT = {
   haveAccount: { en: 'Already have an account?', hi: 'पहले से खाता है?' },
   createAccount: { en: 'Create account', hi: 'खाता बनाएँ' },
   welcomeBack: { en: 'Welcome back', hi: 'वापसी पर स्वागत है' },
+
+  // --- Driver: Profile & Documents tab ---
+  yourDetails: { en: 'Your details', hi: 'आपकी जानकारी' },
+  yourDetailsSub: { en: 'Riders and our team use these to reach and verify you.', hi: 'यात्री और हमारी टीम आपसे संपर्क व सत्यापन के लिए इनका उपयोग करते हैं।' },
+  selectYourCity: { en: 'Select your city', hi: 'अपना शहर चुनें' },
+  whatsappNumber: { en: 'WhatsApp number', hi: 'WhatsApp नंबर' },
+  documents: { en: 'Documents', hi: 'दस्तावेज़' },
+  documentsSub: { en: 'Take a clear photo of each paper with your phone and upload it. Required before your account is approved.', hi: 'हर कागज़ की साफ़ फ़ोटो खींचकर अपलोड करें। अप्रूवल के लिए ज़रूरी है।' },
+  drivingLicence: { en: 'Driving licence', hi: 'ड्राइविंग लाइसेंस' },
+  rcBook: { en: 'RC book (vehicle registration)', hi: 'RC बुक (गाड़ी रजिस्ट्रेशन)' },
+  insurance: { en: 'Insurance', hi: 'बीमा (इंश्योरेंस)' },
+  uploading: { en: 'Uploading…', hi: 'अपलोड हो रहा है…' },
+  replacePhoto: { en: 'Replace photo', hi: 'फ़ोटो बदलें' },
+  uploadPhoto: { en: '📷 Upload photo', hi: '📷 फ़ोटो अपलोड करें' },
+  saveDetails: { en: 'Save details', hi: 'जानकारी सहेजें' },
+
+  // --- Driver: Payment tab ---
+  yourPaymentDetails: { en: 'Your payment details', hi: 'आपकी भुगतान जानकारी' },
+  paymentSub: { en: 'Riders pay you directly by UPI — the platform never holds your money and takes no cut.', hi: 'यात्री आपको सीधे UPI से भुगतान करते हैं — प्लेटफ़ॉर्म आपका पैसा नहीं रखता और कोई कमीशन नहीं लेता।' },
+  upiNumberField: { en: 'UPI number (mobile linked to UPI)', hi: 'UPI नंबर (UPI से जुड़ा मोबाइल)' },
+  upiIdField: { en: 'UPI ID (optional)', hi: 'UPI आईडी (वैकल्पिक)' },
+  upiQrField: { en: 'UPI QR image (optional)', hi: 'UPI QR इमेज (वैकल्पिक)' },
+  replaceQr: { en: 'Replace QR image', hi: 'QR इमेज बदलें' },
+  uploadQr: { en: 'Upload your UPI QR', hi: 'अपना UPI QR अपलोड करें' },
+  qrScanHint: { en: 'Riders scan this to pay you.', hi: 'यात्री इसे स्कैन करके आपको भुगतान करते हैं।' },
+  save: { en: 'Save', hi: 'सहेजें' },
+
+  // --- Driver: Add vehicle form ---
+  addVehicle: { en: 'Add a vehicle', hi: 'वाहन जोड़ें' },
+  vehicleModel: { en: 'Model', hi: 'मॉडल' },
+  registrationNo: { en: 'Registration no.', hi: 'रजिस्ट्रेशन नंबर' },
+  seatingCapacity: { en: 'Seating capacity', hi: 'बैठने की क्षमता' },
+  baseFareField: { en: 'Base fare (₹)', hi: 'बेस किराया (₹)' },
+  perKmField: { en: 'Per km (₹)', hi: 'प्रति किमी (₹)' },
+  perDayField: { en: 'Per day (₹)', hi: 'प्रति दिन (₹)' },
+  vehiclePhotos: { en: 'Vehicle photos', hi: 'वाहन की फ़ोटो' },
+  photosHint: { en: 'Add up to 4 photos so riders can see your vehicle.', hi: 'यात्री आपकी गाड़ी देख सकें, इसके लिए 4 तक फ़ोटो जोड़ें।' },
+  addingBtn: { en: 'Adding…', hi: 'जोड़ा जा रहा है…' },
+  addVehicleBtn: { en: 'Add vehicle', hi: 'वाहन जोड़ें' },
+  noVehiclesYet: { en: 'No vehicles yet. Add one below.', hi: 'अभी कोई वाहन नहीं। नीचे जोड़ें।' },
+  selectCityShort: { en: 'Select city', hi: 'शहर चुनें' },
+
+  // --- Driver onboarding checklist ---
+  obTitle: { en: 'Finish setting up to start earning', hi: 'कमाई शुरू करने के लिए सेटअप पूरा करें' },
+  obSub: { en: 'Complete these steps and get approved — then go online to accept trips.', hi: 'ये चरण पूरे करें और अप्रूवल पाएँ — फिर ऑनलाइन जाकर यात्राएँ लें।' },
+  obDoThis: { en: 'Do this', hi: 'यह करें' },
+  obPendingStep: { en: 'Pending', hi: 'लंबित' },
+  obDetails: { en: 'Add your details', hi: 'अपनी जानकारी जोड़ें' },
+  obDetailsHint: { en: 'City & WhatsApp number', hi: 'शहर व WhatsApp नंबर' },
+  obDocs: { en: 'Submit documents', hi: 'दस्तावेज़ जमा करें' },
+  obDocsHint: { en: 'Licence, RC, insurance', hi: 'लाइसेंस, RC, बीमा' },
+  obVehicle: { en: 'Add a vehicle', hi: 'वाहन जोड़ें' },
+  obVehicleHint: { en: 'Type, model, photos, rates', hi: 'प्रकार, मॉडल, फ़ोटो, दरें' },
+  obPayment: { en: 'Add payment details', hi: 'भुगतान जानकारी जोड़ें' },
+  obPaymentHint: { en: 'UPI number or ID', hi: 'UPI नंबर या आईडी' },
+  obApproval: { en: 'Get approved', hi: 'अप्रूवल पाएँ' },
+  obApprovalHint: { en: 'Our team reviews your details', hi: 'हमारी टीम आपकी जानकारी जाँचती है' },
 };
 
 // The hook: const t = useT(); then t('login')

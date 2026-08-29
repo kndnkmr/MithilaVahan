@@ -319,6 +319,7 @@ export default function DriverDashboard() {
 
 // --- Profile & Documents sub-tab: city, WhatsApp, and verification documents ---
 function ProfileTab({ user, updateUser, cities }) {
+  const L = useT();
   const [city, setCity] = useState(user.city || '');
   const [whatsappNumber, setWhatsappNumber] = useState(user.whatsappNumber || '');
   const [docs, setDocs] = useState({
@@ -370,23 +371,23 @@ function ProfileTab({ user, updateUser, cities }) {
   };
 
   const DOC_FIELDS = [
-    ['drivingLicense', 'Driving licence', 'Your DL card (front). / आपका ड्राइविंग लाइसेंस।'],
-    ['rcBook', 'RC book (vehicle registration)', 'Vehicle registration paper. / गाड़ी का RC (रजिस्ट्रेशन)।'],
-    ['insurance', 'Insurance', 'Valid insurance paper. / बीमा (इंश्योरेंस) कागज़।'],
+    ['drivingLicense', L('drivingLicence'), 'Your DL card (front). / आपका ड्राइविंग लाइसेंस।'],
+    ['rcBook', L('rcBook'), 'Vehicle registration paper. / गाड़ी का RC (रजिस्ट्रेशन)।'],
+    ['insurance', L('insurance'), 'Valid insurance paper. / बीमा (इंश्योरेंस) कागज़।'],
   ];
 
   return (
     <form onSubmit={save} className="card p-4 space-y-4 max-w-md">
       <div>
-        <h3 className="font-medium">Your details</h3>
-        <p className="text-sm text-gray-500 mb-3">Riders and our team use these to reach and verify you.</p>
-        <label className="block text-sm font-medium mb-1">City</label>
+        <h3 className="font-medium">{L('yourDetails')}</h3>
+        <p className="text-sm text-gray-500 mb-3">{L('yourDetailsSub')}</p>
+        <label className="block text-sm font-medium mb-1">{L('city')}</label>
         <select value={city} onChange={(e) => setCity(e.target.value)} className="input mb-1" required>
-          <option value="">Select your city</option>
+          <option value="">{L('selectYourCity')}</option>
           {cities.map((c) => <option key={c._id} value={c.name}>{c.name}</option>)}
         </select>
         <p className="text-xs text-gray-400 mb-3">Where you drive. / आप कहाँ चलाते हैं।</p>
-        <label className="block text-sm font-medium mb-1">WhatsApp number</label>
+        <label className="block text-sm font-medium mb-1">{L('whatsappNumber')}</label>
         <input
           type="tel" inputMode="numeric" maxLength={10}
           value={whatsappNumber}
@@ -398,10 +399,9 @@ function ProfileTab({ user, updateUser, cities }) {
       </div>
 
       <div>
-        <h3 className="font-medium">Documents</h3>
+        <h3 className="font-medium">{L('documents')}</h3>
         <p className="text-sm text-gray-500 mb-1">
-          Take a clear photo of each paper with your phone and upload it. Required before your
-          account is approved.
+          {L('documentsSub')}
         </p>
         <p className="text-xs text-gray-400 mb-3">
           हर कागज़ की साफ़ फ़ोटो खींचकर अपलोड करें। अप्रूवल के लिए ज़रूरी है।
@@ -419,7 +419,7 @@ function ProfileTab({ user, updateUser, cities }) {
                 <div className="text-sm font-medium">{label}</div>
                 <div className="text-xs text-gray-400">{hint}</div>
                 <label className="text-brand-600 text-sm font-medium cursor-pointer">
-                  {uploading === key ? 'Uploading…' : docs[key] ? 'Replace photo' : '📷 Upload photo'}
+                  {uploading === key ? L('uploading') : docs[key] ? L('replacePhoto') : L('uploadPhoto')}
                   <input type="file" accept="image/*" className="hidden"
                     onChange={(e) => uploadDoc(key, e.target.files?.[0])} disabled={uploading === key} />
                 </label>
@@ -432,7 +432,7 @@ function ProfileTab({ user, updateUser, cities }) {
 
       <button disabled={saving || uploading}
         className="btn-primary text-sm">
-        {saving ? 'Saving…' : 'Save details'}
+        {saving ? L('saving') : L('saveDetails')}
       </button>
     </form>
   );
@@ -440,6 +440,7 @@ function ProfileTab({ user, updateUser, cities }) {
 
 // --- Payment details sub-tab: driver's UPI number/ID + optional QR image ---
 function PaymentTab({ user, updateUser }) {
+  const L = useT();
   const [upiNumber, setUpiNumber] = useState(user.upiNumber || '');
   const [upiId, setUpiId] = useState(user.upiId || '');
   const [qrImage, setQrImage] = useState(user.qrImage || '');
@@ -478,13 +479,13 @@ function PaymentTab({ user, updateUser }) {
 
   return (
     <form onSubmit={save} className="card p-4 space-y-3 max-w-md">
-      <h3 className="font-medium">Your payment details</h3>
+      <h3 className="font-medium">{L('yourPaymentDetails')}</h3>
       <p className="text-sm text-gray-500">
-        Riders pay you directly by UPI — the platform never holds your money and takes no cut.
+        {L('paymentSub')}
       </p>
 
       <div>
-        <label className="block text-sm font-medium mb-1">UPI number (mobile linked to UPI)</label>
+        <label className="block text-sm font-medium mb-1">{L('upiNumberField')}</label>
         <input
           type="tel" inputMode="numeric" maxLength={10}
           value={upiNumber} onChange={(e) => setUpiNumber(e.target.value)}
@@ -496,7 +497,7 @@ function PaymentTab({ user, updateUser }) {
       </div>
 
       <div>
-        <label className="block text-sm font-medium mb-1">UPI ID (optional)</label>
+        <label className="block text-sm font-medium mb-1">{L('upiIdField')}</label>
         <input value={upiId} onChange={(e) => setUpiId(e.target.value)}
           placeholder="yourname@okhdfcbank" className="input" />
         <p className="text-xs text-gray-400 mt-1">
@@ -504,19 +505,19 @@ function PaymentTab({ user, updateUser }) {
         </p>
       </div>
       <div>
-        <label className="block text-sm font-medium mb-1">UPI QR image (optional)</label>
+        <label className="block text-sm font-medium mb-1">{L('upiQrField')}</label>
         {qrImage && (
           <img src={qrImage} alt="Your UPI QR" className="w-32 h-32 object-contain border rounded-md mb-2"
             onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = FALLBACK_DOC; }} />
         )}
         <label className="inline-block border-2 border-dashed rounded-md px-4 py-2 text-sm text-gray-500 cursor-pointer hover:border-brand-400">
-          {uploading ? 'Uploading…' : qrImage ? 'Replace QR image' : 'Upload your UPI QR'}
+          {uploading ? L('uploading') : qrImage ? L('replaceQr') : L('uploadQr')}
           <input type="file" accept="image/*" className="hidden" onChange={onQr} disabled={uploading} />
         </label>
-        <p className="text-xs text-gray-400 mt-1">Riders scan this to pay you.</p>
+        <p className="text-xs text-gray-400 mt-1">{L('qrScanHint')}</p>
       </div>
       <button disabled={saving || uploading} className="btn-primary text-sm">
-        {saving ? 'Saving…' : 'Save'}
+        {saving ? L('saving') : L('save')}
       </button>
     </form>
   );
@@ -566,6 +567,7 @@ function VehicleRow({ v }) {
 
 // --- Vehicles sub-tab: list + add form ---
 function VehiclesTab({ vehicles, cities, onChange, onAdded, defaultCity }) {
+  const L = useT();
   const [form, setForm] = useState({
     type: 'car', model: '', registrationNumber: '', capacity: 4,
     city: defaultCity || '', perKmRate: '', perDayRate: '', baseFare: '',
@@ -624,14 +626,14 @@ function VehiclesTab({ vehicles, cities, onChange, onAdded, defaultCity }) {
     <div className="space-y-6">
       <div className="space-y-2">
         {vehicles.length === 0 ? (
-          <p className="text-gray-500 text-sm">No vehicles yet. Add one below.</p>
+          <p className="text-gray-500 text-sm">{L('noVehiclesYet')}</p>
         ) : (
           vehicles.map((v) => <VehicleRow key={v._id} v={v} />)
         )}
       </div>
 
       <form onSubmit={addVehicle} className="card p-4 space-y-3">
-        <h3 className="font-medium">Add a vehicle</h3>
+        <h3 className="font-medium">{L('addVehicle')}</h3>
 
         {/* Plain-language intro so first-time drivers know what this is */}
         <div className="bg-brand-50 border border-brand-100 rounded-lg p-3 text-sm text-brand-800">
@@ -644,54 +646,54 @@ function VehiclesTab({ vehicles, cities, onChange, onAdded, defaultCity }) {
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-sm font-medium mb-1">Vehicle type</label>
+            <label className="block text-sm font-medium mb-1">{L('vehicleType')}</label>
             <select value={form.type} onChange={set('type')} className="input capitalize">
-              {VEHICLE_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+              {VEHICLE_TYPES.map((vtype) => <option key={vtype} value={vtype}>{vtype}</option>)}
             </select>
             <p className="text-xs text-gray-400 mt-1">What kind of vehicle is it? / गाड़ी किस प्रकार की है?</p>
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">City</label>
+            <label className="block text-sm font-medium mb-1">{L('city')}</label>
             <select value={form.city} onChange={set('city')} className="input" required>
-              <option value="">Select city</option>
+              <option value="">{L('selectCityShort')}</option>
               {cities.map((c) => <option key={c._id} value={c.name}>{c.name}</option>)}
             </select>
             <p className="text-xs text-gray-400 mt-1">Where you drive most. / आप कहाँ चलाते हैं।</p>
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Model</label>
+            <label className="block text-sm font-medium mb-1">{L('vehicleModel')}</label>
             <input value={form.model} onChange={set('model')} placeholder="Maruti Swift"
               className="input" required />
             <p className="text-xs text-gray-400 mt-1">The vehicle’s name/model. / गाड़ी का नाम।</p>
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Registration no.</label>
+            <label className="block text-sm font-medium mb-1">{L('registrationNo')}</label>
             <input value={form.registrationNumber} onChange={set('registrationNumber')} placeholder="BR06 AB 1234"
               className="input" required />
             <p className="text-xs text-gray-400 mt-1">Number plate — on your RC book. / नंबर प्लेट (RC बुक पर)।</p>
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">
-              Seating capacity {(form.type === 'truck' || form.type === 'tempo') ? '/ load' : ''}
+              {L('seatingCapacity')} {(form.type === 'truck' || form.type === 'tempo') ? '/ load' : ''}
             </label>
             <input type="number" min={1} value={form.capacity} onChange={set('capacity')}
               className="input" />
             <p className="text-xs text-gray-400 mt-1">How many passengers can sit. / कितने यात्री बैठ सकते हैं।</p>
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Base fare (₹)</label>
+            <label className="block text-sm font-medium mb-1">{L('baseFareField')}</label>
             <input type="number" min={0} value={form.baseFare} onChange={set('baseFare')}
               className="input" />
             <p className="text-xs text-gray-400 mt-1">Minimum/pickup charge. / न्यूनतम शुल्क।</p>
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Per km (₹)</label>
+            <label className="block text-sm font-medium mb-1">{L('perKmField')}</label>
             <input type="number" min={0} value={form.perKmRate} onChange={set('perKmRate')}
               className="input" />
             <p className="text-xs text-gray-400 mt-1">Rate for each km. / प्रति किलोमीटर दर।</p>
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Per day (₹)</label>
+            <label className="block text-sm font-medium mb-1">{L('perDayField')}</label>
             <input type="number" min={0} value={form.perDayRate} onChange={set('perDayRate')}
               className="input" />
             <p className="text-xs text-gray-400 mt-1">Full-day hire rate. / पूरे दिन का किराया।</p>
@@ -700,7 +702,7 @@ function VehiclesTab({ vehicles, cities, onChange, onAdded, defaultCity }) {
 
         {/* Vehicle photos */}
         <div>
-          <label className="block text-sm font-medium mb-1">Vehicle photos</label>
+          <label className="block text-sm font-medium mb-1">{L('vehiclePhotos')}</label>
           <div className="flex flex-wrap gap-2 mb-2">
             {photos.map((url, i) => (
               <div key={i} className="relative">
@@ -720,11 +722,11 @@ function VehiclesTab({ vehicles, cities, onChange, onAdded, defaultCity }) {
               <input type="file" accept="image/*" multiple className="hidden" onChange={onPhotos} disabled={uploading} />
             </label>
           </div>
-          <p className="text-xs text-gray-400">Add up to 4 photos so riders can see your vehicle.</p>
+          <p className="text-xs text-gray-400">{L('photosHint')}</p>
         </div>
 
         <button disabled={saving || uploading} className="btn-primary text-sm">
-          {saving ? 'Adding…' : 'Add vehicle'}
+          {saving ? L('addingBtn') : L('addVehicleBtn')}
         </button>
       </form>
     </div>
