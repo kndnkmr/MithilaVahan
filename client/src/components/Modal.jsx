@@ -83,12 +83,14 @@ export function PromptModal({
   onCancel,
 }) {
   const [values, setValues] = useState({});
+  const [error, setError] = useState('');
 
   useEffect(() => {
     if (open) {
       const initial = {};
       fields.forEach((f) => { initial[f.name] = f.defaultValue ?? ''; });
       setValues(initial);
+      setError('');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
@@ -97,10 +99,16 @@ export function PromptModal({
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Basic required validation
-    for (const f of fields) {
-      if (f.required && !String(values[f.name] ?? '').trim()) return;
+    // Required validation — show a visible message instead of silently doing
+    // nothing (a silent return made buttons feel "broken").
+    const missing = fields.find(
+      (f) => f.required && !String(values[f.name] ?? '').trim()
+    );
+    if (missing) {
+      setError(`${missing.label} is required.`);
+      return;
     }
+    setError('');
     onSubmit(values);
   };
 
@@ -137,6 +145,7 @@ export function PromptModal({
             </div>
           ))}
         </div>
+        {error && <p className="text-sm text-red-600 mb-3 -mt-2">{error}</p>}
         <div className="flex justify-end gap-3">
           <button type="button" onClick={onCancel}
             className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition">

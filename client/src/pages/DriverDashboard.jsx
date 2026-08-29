@@ -293,9 +293,9 @@ export default function DriverDashboard() {
       <PromptModal
         open={!!completeTrip}
         title="Complete trip"
-        description="Enter the final fare the rider will pay."
+        description="Confirm the final fare the rider will pay. Leave as-is to use the estimate."
         fields={[{
-          name: 'finalFare', label: 'Final fare (₹)', type: 'number', min: 0, required: true,
+          name: 'finalFare', label: 'Final fare (₹)', type: 'number', min: 0,
           defaultValue: completeTrip?.estimatedFare || '',
           placeholder: 'e.g. 150',
         }]}
