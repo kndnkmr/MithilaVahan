@@ -5,7 +5,7 @@
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getDestination, DESTINATIONS, IMAGE_CREDITS } from '../data/destinations';
-import { useSeo } from '../services/seo';
+import SEO from '../components/SEO';
 
 // Indicative per-km by class (mirrors the server's guide) for the fare table.
 const CLASSES = [
@@ -19,13 +19,6 @@ export default function DestinationDetail() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const dest = getDestination(slug);
-
-  useSeo(
-    dest ? `Darbhanga to ${dest.name} Taxi & Cab | MithilaVahan` : 'Destination | MithilaVahan',
-    dest
-      ? `Book a Darbhanga to ${dest.name} taxi with a driver — approx ${dest.km} km, ${dest.time}. One-way or round-trip. Live tracking, no commission.`
-      : undefined
-  );
 
   if (!dest) {
     return (
@@ -55,6 +48,12 @@ export default function DestinationDetail() {
 
   return (
     <div>
+      <SEO
+        path={`/destinations/${slug}`}
+        title={`Darbhanga to ${dest.name} Taxi & Cab`}
+        description={`Book a Darbhanga to ${dest.name} taxi with a driver — approx ${dest.km} km, ${dest.time}. One-way or round-trip. Live tracking, no commission.`}
+        image={dest.img}
+      />
       <section
         className="relative text-white bg-brand-700 bg-cover bg-center"
         style={dest.img ? { backgroundImage: `url(${dest.img})` } : undefined}

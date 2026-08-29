@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { vehicleAPI, cityAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import { useSeo } from '../services/seo';
+import SEO from '../components/SEO';
 import { vehicleImage } from '../data/vehicleImages';
 
 const TYPE_EMOJI = { car: '🚗', auto: '🛺', tempo: '🚐', bus: '🚌', truck: '🚚', bike: '🏍️' };
@@ -19,10 +19,6 @@ function Stars({ value }) {
 export default function BrowseVehicles() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  useSeo(
-    'Browse vehicles for rent in Darbhanga & Muzaffarpur | MithilaVahan',
-    'See cars, autos, tempos, buses and trucks available with a driver in Mithilanchal — with photos, capacity and rates. Book the one you want.'
-  );
 
   const [cities, setCities] = useState([]);
   const [city, setCity] = useState(user?.city || '');
@@ -52,6 +48,11 @@ export default function BrowseVehicles() {
 
   return (
     <div>
+      <SEO
+        path="/vehicles"
+        title="Browse Vehicles for Rent in Darbhanga & Muzaffarpur"
+        description="See cars, autos, tempos, buses and trucks available with a driver in Mithilanchal — photos, capacity and rates. Book the one you want."
+      />
       {/* Header */}
       <section className="bg-gradient-to-br from-brand-500 to-brand-700 text-white">
         <div className="max-w-6xl mx-auto px-4 py-12 text-center">

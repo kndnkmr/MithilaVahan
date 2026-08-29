@@ -4,15 +4,11 @@
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { DESTINATIONS, CATEGORIES, HERO_IMG } from '../data/destinations';
-import { useSeo } from '../services/seo';
+import SEO from '../components/SEO';
 
 export default function Destinations() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  useSeo(
-    'Places to Explore from Darbhanga & Muzaffarpur | MithilaVahan',
-    'Book outstation taxis from Darbhanga and Muzaffarpur to Patna, Bodh Gaya, Kathmandu, Janakpur and more — with a driver, one-way or round-trip.'
-  );
 
   const book = (name) => {
     const path = `/book?mode=outstation&to=${encodeURIComponent(name)}`;
@@ -22,6 +18,11 @@ export default function Destinations() {
 
   return (
     <div>
+      <SEO
+        path="/destinations"
+        title="Places to Explore from Darbhanga & Muzaffarpur"
+        description="Book outstation taxis from Darbhanga & Muzaffarpur to Patna, Bodh Gaya, Kathmandu, Janakpur and more — with a driver, one-way or round-trip."
+      />
       {/* Header */}
       <section
         className="relative text-white bg-brand-700 bg-cover bg-center"

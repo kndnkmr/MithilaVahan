@@ -2,19 +2,19 @@
 
 import { Link } from 'react-router-dom';
 import { ARTICLES } from '../data/blogData';
-import { useSeo } from '../services/seo';
+import SEO from '../components/SEO';
 
 export default function BlogList() {
-  useSeo(
-    'Travel Guide & Blog | MithilaVahan',
-    'Travel guides and tips for Darbhanga, Muzaffarpur and Mithilanchal — outstation routes, places to visit, and booking advice.'
-  );
-
   // newest first (copy, don't mutate the imported array)
   const posts = [...ARTICLES].sort((a, b) => new Date(b.date) - new Date(a.date));
 
   return (
     <div>
+      <SEO
+        path="/blog"
+        title="Travel Guide & Blog"
+        description="Travel guides and tips for Darbhanga, Muzaffarpur and Mithilanchal — outstation routes, places to visit, and booking advice."
+      />
       <section className="bg-gradient-to-br from-brand-500 to-brand-700 text-white">
         <div className="max-w-5xl mx-auto px-4 py-12 text-center">
           <h1 className="text-3xl sm:text-4xl font-bold">Travel Guide & Blog</h1>

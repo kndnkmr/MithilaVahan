@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useT } from '../services/i18n';
 import { HERO_IMG } from '../data/destinations';
 import { settingsAPI } from '../services/api';
+import SEO from '../components/SEO';
 
 const VEHICLE_TYPES = [
   { key: 'car', label: 'Car', hi: 'कार', emoji: '🚗' },
@@ -68,6 +69,11 @@ export default function Home() {
 
   return (
     <div>
+      <SEO
+        path="/"
+        title="Car, Auto & Truck Rental with Driver in Darbhanga"
+        description="Book cars, autos, tempos, buses and trucks with a driver across Darbhanga & Muzaffarpur. Local owners rent out, locals ride — transparent fares, no commission."
+      />
       {/* Hero */}
       <section
         className="relative text-white bg-brand-700 bg-cover bg-center"

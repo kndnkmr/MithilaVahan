@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import LegalLayout, { H2, P } from './LegalLayout';
+import SEO from '../../components/SEO';
 
 export default function AboutUs() {
   return (
@@ -7,6 +8,11 @@ export default function AboutUs() {
       title="About MithilaVahan"
       subtitle="Local transport, run by locals — for Mithilanchal."
     >
+      <SEO
+        path="/about"
+        title="About Us — Local Rides & Vehicle Rental for Mithilanchal"
+        description="MithilaVahan is a local ride and vehicle-rental platform for Darbhanga, Muzaffarpur and Mithilanchal — connecting riders with local vehicle owners and drivers."
+      />
       <P>
         MithilaVahan (मिथिला + वाहन — “vehicles of Mithila”) is a local ride and vehicle-rental
         platform built for Mithilanchal. We connect people who need to travel with local vehicle

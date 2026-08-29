@@ -2,16 +2,11 @@
 
 import { Link, useParams } from 'react-router-dom';
 import { getArticle, ARTICLES } from '../data/blogData';
-import { useSeo } from '../services/seo';
+import SEO from '../components/SEO';
 
 export default function BlogArticle() {
   const { slug } = useParams();
   const article = getArticle(slug);
-
-  useSeo(
-    article ? `${article.title} | MithilaVahan` : 'Article | MithilaVahan',
-    article?.description
-  );
 
   if (!article) {
     return (
@@ -25,6 +20,13 @@ export default function BlogArticle() {
 
   return (
     <article className="max-w-3xl mx-auto px-4 py-10">
+      <SEO
+        path={`/blog/${slug}`}
+        title={article.title}
+        description={article.description}
+        type="article"
+        image={article.image}
+      />
       <Link to="/blog" className="text-brand-600 text-sm">← Back to blog</Link>
       <h1 className="text-3xl font-bold mt-3 leading-tight">{article.title}</h1>
       <div className="text-sm text-gray-400 mt-2">
