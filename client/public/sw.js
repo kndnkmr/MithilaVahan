@@ -9,7 +9,7 @@
 
 // Bump this version string on each meaningful change so old caches are purged
 // and every device picks up the new build automatically.
-const CACHE = 'mithilavahan-v2';
+const CACHE = 'mithilavahan-v3';
 const SHELL = ['/', '/index.html', '/icon-192.png', '/icon-512.png'];
 
 self.addEventListener('install', (event) => {
