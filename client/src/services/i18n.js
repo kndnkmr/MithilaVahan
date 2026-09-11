@@ -218,6 +218,7 @@ const DICT = {
   perKmField: { en: 'Per km (₹)', hi: 'प्रति किमी (₹)' },
   perDayField: { en: 'Per day (₹)', hi: 'प्रति दिन (₹)' },
   vehiclePhotos: { en: 'Vehicle photos', hi: 'वाहन की फ़ोटो' },
+  markLuxury: { en: 'This is a premium / luxury vehicle', hi: 'यह एक प्रीमियम / लक्ज़री वाहन है' },
   photosHint: { en: 'Add up to 4 photos so riders can see your vehicle.', hi: 'यात्री आपकी गाड़ी देख सकें, इसके लिए 4 तक फ़ोटो जोड़ें।' },
   addingBtn: { en: 'Adding…', hi: 'जोड़ा जा रहा है…' },
   addVehicleBtn: { en: 'Add vehicle', hi: 'वाहन जोड़ें' },

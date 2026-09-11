@@ -570,7 +570,7 @@ function VehiclesTab({ vehicles, cities, onChange, onAdded, defaultCity }) {
   const L = useT();
   const [form, setForm] = useState({
     type: 'car', model: '', registrationNumber: '', capacity: 4,
-    city: defaultCity || '', perKmRate: '', perDayRate: '', baseFare: '',
+    city: defaultCity || '', perKmRate: '', perDayRate: '', baseFare: '', isLuxury: false,
   });
   const [photos, setPhotos] = useState([]); // uploaded image URLs
   const [uploading, setUploading] = useState(false);
@@ -607,6 +607,7 @@ function VehiclesTab({ vehicles, cities, onChange, onAdded, defaultCity }) {
         perKmRate: Number(form.perKmRate) || 0,
         perDayRate: Number(form.perDayRate) || 0,
         baseFare: Number(form.baseFare) || 0,
+        isLuxury: !!form.isLuxury,
       });
       toast.success('Vehicle added — pending approval');
       // Update the list immediately (so the onboarding checklist turns green
@@ -699,6 +700,17 @@ function VehiclesTab({ vehicles, cities, onChange, onAdded, defaultCity }) {
             <p className="text-xs text-gray-400 mt-1">Full-day hire rate. / पूरे दिन का किराया।</p>
           </div>
         </div>
+
+        {/* Luxury / premium toggle (only makes sense for cars/tempo/bus) */}
+        <label className="flex items-center gap-2 text-sm cursor-pointer">
+          <input
+            type="checkbox"
+            checked={form.isLuxury}
+            onChange={(e) => setForm((f) => ({ ...f, isLuxury: e.target.checked }))}
+            className="w-4 h-4"
+          />
+          <span>{L('markLuxury')}</span>
+        </label>
 
         {/* Vehicle photos */}
         <div>

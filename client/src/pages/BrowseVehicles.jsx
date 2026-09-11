@@ -2,7 +2,7 @@
 // and book a specific one. This is the "show me the vehicle" experience.
 
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { vehicleAPI, cityAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import SEO from '../components/SEO';
@@ -19,10 +19,13 @@ function Stars({ value }) {
 export default function BrowseVehicles() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const [cities, setCities] = useState([]);
   const [city, setCity] = useState(user?.city || '');
   const [type, setType] = useState('');
+  // Luxury filter — can be turned on via ?tag=luxury (from the Services page).
+  const [luxuryOnly, setLuxuryOnly] = useState(searchParams.get('tag') === 'luxury');
   const [vehicles, setVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -35,11 +38,12 @@ export default function BrowseVehicles() {
     const params = {};
     if (city) params.city = city;
     if (type) params.type = type;
+    if (luxuryOnly) params.luxury = 'true';
     vehicleAPI.list(params)
       .then((r) => setVehicles(r.data.vehicles || []))
       .catch(() => setVehicles([]))
       .finally(() => setLoading(false));
-  }, [city, type]);
+  }, [city, type, luxuryOnly]);
 
   const book = (v) => {
     const path = `/book?vehicleId=${v._id}&type=${v.type}&city=${encodeURIComponent(v.city)}`;
@@ -56,8 +60,14 @@ export default function BrowseVehicles() {
       {/* Header */}
       <section className="bg-gradient-to-br from-brand-500 to-brand-700 text-white">
         <div className="max-w-6xl mx-auto px-4 py-12 text-center">
-          <h1 className="text-3xl sm:text-4xl font-bold mb-2">Browse vehicles</h1>
-          <p className="text-brand-50">See what’s available near you and book the one you like</p>
+          <h1 className="text-3xl sm:text-4xl font-bold mb-2">
+            {luxuryOnly ? 'Premium & luxury vehicles' : 'Browse vehicles'}
+          </h1>
+          <p className="text-brand-50">
+            {luxuryOnly
+              ? 'Travel in comfort — premium cars and SUVs with a driver'
+              : 'See what’s available near you and book the one you like'}
+          </p>
         </div>
       </section>
 
@@ -72,6 +82,15 @@ export default function BrowseVehicles() {
             <option value="">All vehicle types</option>
             {VEHICLE_TYPES.map((t) => <option key={t} value={t} className="capitalize">{t}</option>)}
           </select>
+          <button
+            type="button"
+            onClick={() => setLuxuryOnly((v) => !v)}
+            className={`px-4 rounded-md border text-sm font-medium transition ${
+              luxuryOnly ? 'bg-brand-500 text-white border-brand-500' : 'bg-white text-gray-600 hover:border-brand-400'
+            }`}
+          >
+            ✨ Luxury only
+          </button>
         </div>
 
         {loading ? (
@@ -100,6 +119,11 @@ export default function BrowseVehicles() {
                   {v.owner?.isOnline && (
                     <span className="absolute top-2 right-2 text-xs bg-green-500 text-white px-2 py-0.5 rounded-full">
                       ● Online
+                    </span>
+                  )}
+                  {v.isLuxury && (
+                    <span className="absolute bottom-2 right-2 text-[11px] font-semibold bg-amber-500 text-white px-2 py-0.5 rounded-full">
+                      ✨ Luxury
                     </span>
                   )}
                 </div>

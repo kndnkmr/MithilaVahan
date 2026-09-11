@@ -36,6 +36,9 @@ const vehicleSchema = new mongoose.Schema(
     supportsTrip: { type: Boolean, default: true }, // point-to-point
     supportsHire: { type: Boolean, default: true }, // day/multi-day with driver
 
+    // Premium/luxury vehicle (owner-marked) — surfaced under the "luxury" filter.
+    isLuxury: { type: Boolean, default: false },
+
     // Admin approves a listing before it appears to riders
     approvalStatus: {
       type: String,

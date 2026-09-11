@@ -8,7 +8,7 @@ async function createVehicle(req, res) {
   try {
     const {
       type, model, registrationNumber, capacity, city,
-      photos, perKmRate, perDayRate, baseFare, supportsTrip, supportsHire,
+      photos, perKmRate, perDayRate, baseFare, supportsTrip, supportsHire, isLuxury,
     } = req.body;
 
     if (!type || !model || !registrationNumber || !city) {
@@ -31,6 +31,7 @@ async function createVehicle(req, res) {
       baseFare: baseFare || 0,
       supportsTrip: supportsTrip !== false,
       supportsHire: supportsHire !== false,
+      isLuxury: !!isLuxury,
       // new listings await admin approval
       approvalStatus: 'pending',
     });
@@ -57,7 +58,7 @@ async function updateVehicle(req, res) {
     }
 
     const allowed = ['model', 'capacity', 'city', 'photos', 'perKmRate', 'perDayRate',
-      'baseFare', 'supportsTrip', 'supportsHire', 'isActive'];
+      'baseFare', 'supportsTrip', 'supportsHire', 'isActive', 'isLuxury'];
     for (const key of allowed) {
       if (req.body[key] !== undefined) vehicle[key] = req.body[key];
     }
@@ -77,6 +78,7 @@ async function listVehicles(req, res) {
   const filter = { approvalStatus: 'approved', isActive: true };
   if (req.query.city) filter.city = req.query.city;
   if (req.query.type) filter.type = req.query.type;
+  if (req.query.luxury === 'true') filter.isLuxury = true;
 
   const vehicles = await Vehicle.find(filter)
     .populate('owner', 'name phone whatsappNumber ratingAvg ratingCount isOnline')
