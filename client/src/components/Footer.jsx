@@ -6,17 +6,20 @@ const COLS = [
     title: 'Book',
     links: [
       ['Our services', '/services'],
+      ['Popular routes', '/routes'],
       ['Book a ride', '/book'],
       ['Browse vehicles', '/vehicles'],
+      ['Our fleet', '/fleet'],
+      ['Fares & pricing', '/fares'],
       ['Places to explore', '/destinations'],
       ['Travel blog', '/blog'],
-      ['Get the app', '/install'],
     ],
   },
   {
     title: 'Company',
     links: [
       ['About us', '/about'],
+      ['Contact us', '/contact'],
       ['Become a driver', '/register'],
       ['Refer & earn', '/refer'],
       ['Support & Grievance', '/support'],

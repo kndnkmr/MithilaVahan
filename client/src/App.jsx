@@ -29,6 +29,9 @@ import VehicleDetail from './pages/VehicleDetail';
 import Services from './pages/Services';
 import Enquire from './pages/Enquire';
 import RoutesHub from './pages/Routes';
+import Fares from './pages/Fares';
+import Fleet from './pages/Fleet';
+import Contact from './pages/Contact';
 
 // Guards a route by auth + optional role list.
 function Protected({ children, roles }) {
@@ -58,6 +61,9 @@ export default function App() {
           <Route path="/services" element={<Services />} />
           <Route path="/enquire" element={<Enquire />} />
           <Route path="/routes" element={<RoutesHub />} />
+          <Route path="/fares" element={<Fares />} />
+          <Route path="/fleet" element={<Fleet />} />
+          <Route path="/contact" element={<Contact />} />
           <Route path="/destinations" element={<Destinations />} />
           <Route path="/destinations/:slug" element={<DestinationDetail />} />
           <Route path="/terms" element={<Terms />} />

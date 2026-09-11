@@ -4,6 +4,9 @@
   <url><loc>https://mithilavahan.in/destinations</loc><priority>0.9</priority></url>
   <url><loc>https://mithilavahan.in/routes</loc><priority>0.9</priority></url>
   <url><loc>https://mithilavahan.in/services</loc><priority>0.8</priority></url>
+  <url><loc>https://mithilavahan.in/fleet</loc><priority>0.7</priority></url>
+  <url><loc>https://mithilavahan.in/fares</loc><priority>0.7</priority></url>
+  <url><loc>https://mithilavahan.in/contact</loc><priority>0.6</priority></url>
   <url><loc>https://mithilavahan.in/register</loc><priority>0.7</priority></url>
   <url><loc>https://mithilavahan.in/install</loc><priority>0.5</priority></url>
   <url><loc>https://mithilavahan.in/blog</loc><priority>0.7</priority></url>

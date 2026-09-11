@@ -29,6 +29,7 @@ export default function Navbar() {
 
           {/* Secondary links — desktop/tablet only (mobile uses the bottom nav) */}
           <Link to="/services" className="text-gray-600 hover:text-brand-600 hidden md:inline">{t('services')}</Link>
+          <Link to="/routes" className="text-gray-600 hover:text-brand-600 hidden lg:inline">{t('routes')}</Link>
           <Link to="/vehicles" className="text-gray-600 hover:text-brand-600 hidden md:inline">{t('vehicles')}</Link>
           <Link to="/destinations" className="text-gray-600 hover:text-brand-600 hidden md:inline">{t('explore')}</Link>
           <Link to="/blog" className="text-gray-600 hover:text-brand-600 hidden md:inline">{t('blog')}</Link>
