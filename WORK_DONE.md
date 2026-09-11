@@ -29,8 +29,11 @@ feature overview and [HOW_IT_WORKS.md](./HOW_IT_WORKS.md) for the deep dive.
 - Enquiry (public): `POST /api/enquiries` `{type,name,phone,details}` → 201
 - Luxury filter: `GET /api/vehicles?luxury=true` → 200
 
-**Booking modes:** `trip` (in-city), `hire` (per-day), `outstation` (one-way/round), `airport`
-(direction: pickup/drop). **Public services page:** `/services`. **Enquiry form:** `/enquire?type=`.
+**Booking modes:** `trip` (in-city), `hire` (per-day + hourly-package guidance), `outstation`
+(one-way/round), `airport` (direction: pickup/drop).
+**Public pages:** `/services`, `/routes`, `/fares`, `/fleet`, `/contact`, `/enquire?type=`,
+`/vehicles?tag=luxury`.
+**Testimonials:** `GET /api/trips/reviews` (public, renders only if real reviews exist).
 
 **Test accounts:** rider `9700000011` / `test123`; driver `9700000022` / `test123`.
 ⚠️ The driver test account was left **deactivated** during admin deactivate/reactivate testing —
@@ -39,6 +42,29 @@ reactivate it via **Admin → Drivers → Reactivate** if you need to log in as 
 ---
 
 ## Changelog
+
+### Savaari-parity content + growth (testimonials, routes, fares, fleet, contact, install/share)
+- **Real testimonials** — public `GET /api/trips/reviews` returns recent 4–5★ trips that have
+  review text (rider first name + route label + rating, privacy-safe). `Testimonials.jsx` shows
+  them on Home + Services and renders **nothing when there are none** (honest — no fake reviews).
+- **Popular routes hub (`/routes`)** — scannable Darbhanga→X table (distance, time, "from" fare)
+  grouped by category, each linking to its detailed route page. In sitemap.
+- **Hourly local packages** — hire booking offers 4hr/40km, 8hr/80km, 12hr/120km buttons (add to
+  notes); Services "Local hire & packages" card.
+- **Fare transparency (`/fares`)** — how fares work, indicative rate table, what's extra (tolls/
+  night/Nepal), no-commission promise.
+- **Fleet guide (`/fleet`)** — each vehicle type with seats/luggage/best-for + book buttons.
+- **Contact page (`/contact`)** — email (support@mithilavahan.in), in-app support, enquiry,
+  during-trip (call/WhatsApp/SOS), service areas, hours.
+- **1-click Install + Share (mirrors Promedicoz)** — shared `PwaContext` (canInstall/isInstalled/
+  promptInstall) wrapped at app root so navbar/home/install don't fight over the one-time
+  `beforeinstallprompt`. Home hero has Install (native prompt on Chromium, else `/install`) +
+  Share (native share sheet, else `/install`). `InstallButton` refactored to `usePwa()`.
+- **Home popular-search shortcuts** — hero row: Airport cab, Luxury car, Wedding car,
+  Darbhanga→Patna (bilingual).
+- Nav/footer wired for all new pages; new pages added to `sitemap.xml`.
+- **Note:** `/fares` and `/fleet` are English-only so far (Services/Enquire are bilingual);
+  a follow-up can translate them via the same inline `{en,hi}` + `useLang()` pattern.
 
 ### Services expansion — "better than Savaari" (Phases A/B/C + polish)
 Goal: match Savaari's breadth (one-way/round, local, airport, tempo, luxury, wedding,
