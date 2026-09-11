@@ -118,6 +118,8 @@ export default function TripCard({ trip, role, onAction }) {
             ? `${t('modeHire')} (${trip.days}d)`
             : trip.mode === 'outstation'
             ? t('modeOutstation')
+            : trip.mode === 'airport'
+            ? t('modeAirport')
             : t('modeTrip')}
         </div>
         <span className={`text-xs px-2 py-0.5 rounded-full ${STATUS_STYLES[trip.status]}`}>

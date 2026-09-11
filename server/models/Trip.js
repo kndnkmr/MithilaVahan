@@ -1,12 +1,13 @@
 // Trip model — a ride/rental booking between a rider and a driver.
-// Supports three modes:
+// Supports these modes:
 //   'trip'       = in-city point-to-point (per-km)
 //   'hire'       = book for a duration / per day
 //   'outstation' = long inter-city journey (per-km, one-way or round-trip)
+//   'airport'    = airport transfer (per-km); one end is an airport
 
 const mongoose = require('mongoose');
 
-const TRIP_MODES = ['trip', 'hire', 'outstation'];
+const TRIP_MODES = ['trip', 'hire', 'outstation', 'airport'];
 
 const TRIP_STATUSES = [
   'requested', // rider created it, waiting for a driver to accept
@@ -46,6 +47,13 @@ const tripSchema = new mongoose.Schema(
 
     // For outstation: one-way vs round-trip (driver waits & returns).
     tripType: { type: String, enum: ['one-way', 'round-trip'], default: 'one-way' },
+
+    // For airport mode: which way the transfer goes.
+    //   'pickup' = from the airport to the rider's location
+    //   'drop'   = from the rider's location to the airport
+    airportDirection: { type: String, enum: ['pickup', 'drop', ''], default: '' },
+    // The airport involved (e.g. "Darbhanga Airport (DBR)").
+    airportName: { type: String, trim: true, default: '' },
 
     // When the rider wants the vehicle (now, or a scheduled time).
     // Outstation trips are almost always scheduled for a future date/time.

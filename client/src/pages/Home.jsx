@@ -137,11 +137,12 @@ export default function Home() {
 
       {/* Booking modes */}
       <section className="bg-white border-y">
-        <div className="max-w-6xl mx-auto px-4 py-14 grid sm:grid-cols-3 gap-6">
+        <div className="max-w-6xl mx-auto px-4 py-14 grid grid-cols-2 lg:grid-cols-4 gap-6">
           {[
             ['🏙️', 'In-city rides', 'Quick point-to-point trips within your city.', '/book?mode=trip'],
             ['📅', 'Full-day hire', 'Book a vehicle with driver by the day.', '/book?mode=hire'],
             ['🛣️', 'Outstation trips', 'Long trips to Patna, Kathmandu & beyond — one-way or round-trip.', '/book?mode=outstation'],
+            ['✈️', 'Airport transfers', 'To/from Darbhanga, Patna & Gaya airports — on time, every time.', '/book?mode=airport'],
           ].map(([icon, title, desc, path]) => (
             <button key={title} onClick={() => go(path)} className="text-center rounded-xl p-4 hover:bg-brand-50 transition">
               <div className="text-3xl mb-2">{icon}</div>

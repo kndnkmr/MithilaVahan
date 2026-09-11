@@ -20,7 +20,7 @@ function estimateFare({ mode, vehicle, distanceKm = 0, days = 1, tripType = 'one
     return Math.round(base + perKm * km);
   }
 
-  // trip (in-city point-to-point)
+  // trip (in-city point-to-point) AND airport transfers both use per-km.
   const base = vehicle.baseFare || 0;
   const perKm = vehicle.perKmRate || 0;
   return Math.round(base + perKm * Math.max(0, distanceKm));

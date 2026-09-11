@@ -25,6 +25,7 @@ async function requestTrip(req, res) {
     const {
       city, mode, vehicleType, pickup, drop, destination, tripType,
       scheduledAt, days, distanceKm, paymentMode, notes, vehicleId,
+      airportDirection, airportName,
     } = req.body;
 
     if (!city || !vehicleType || !pickup?.address) {
@@ -32,11 +33,18 @@ async function requestTrip(req, res) {
     }
 
     // Normalize the mode to one the schema allows.
-    const safeMode = ['hire', 'outstation'].includes(mode) ? mode : 'trip';
+    const safeMode = ['hire', 'outstation', 'airport'].includes(mode) ? mode : 'trip';
 
     // Outstation trips need a destination.
     if (safeMode === 'outstation' && !destination) {
       return res.status(400).json({ message: 'Destination is required for an outstation trip' });
+    }
+
+    // Airport transfers need a direction + a drop (the non-airport end lives in
+    // pickup/drop, but we still want to know which way it goes).
+    const safeAirportDir = airportDirection === 'pickup' ? 'pickup' : airportDirection === 'drop' ? 'drop' : '';
+    if (safeMode === 'airport' && !safeAirportDir) {
+      return res.status(400).json({ message: 'Airport transfer needs a direction (pickup or drop)' });
     }
 
     const safeTripType = tripType === 'round-trip' ? 'round-trip' : 'one-way';
@@ -67,6 +75,8 @@ async function requestTrip(req, res) {
         : undefined,
       destination: safeMode === 'outstation' ? destination : '',
       tripType: safeMode === 'outstation' ? safeTripType : 'one-way',
+      airportDirection: safeMode === 'airport' ? safeAirportDir : '',
+      airportName: safeMode === 'airport' ? (airportName || '') : '',
       scheduledAt: scheduledAt || Date.now(),
       days: days || 1,
       distanceKm: distanceKm || 0,

@@ -11,6 +11,15 @@ const TYPE_EMOJI = { car: '🚗', auto: '🛺', tempo: '🚐', bus: '🚌', truc
 
 const VEHICLE_TYPES = ['car', 'auto', 'tempo', 'bus', 'truck', 'bike'];
 
+// Airports MithilaVahan serves. Darbhanga (DBR) is the local one; nearby
+// airports are common outstation airport-transfer destinations.
+const AIRPORTS = [
+  'Darbhanga Airport (DBR)',
+  'Patna Airport (PAT)',
+  'Gaya Airport (GAY)',
+];
+const BOOKING_MODES = ['trip', 'hire', 'outstation', 'airport'];
+
 // A sensible default schedule value (~1 hour from now) in the local
 // "YYYY-MM-DDTHH:mm" format that <input type="datetime-local"> expects.
 function defaultSchedule() {
@@ -26,7 +35,7 @@ export default function RiderBook() {
   const [searchParams] = useSearchParams();
   // Prefill from query params set when tapping cards/routes on Home.
   const preType = VEHICLE_TYPES.includes(searchParams.get('type')) ? searchParams.get('type') : 'car';
-  const preMode = ['trip', 'hire', 'outstation'].includes(searchParams.get('mode'))
+  const preMode = BOOKING_MODES.includes(searchParams.get('mode'))
     ? searchParams.get('mode')
     : 'trip';
   const preTo = searchParams.get('to') || '';
@@ -50,6 +59,9 @@ export default function RiderBook() {
     distanceKm: '',
     paymentMode: 'cash',
     notes: '',
+    // Airport fields
+    airportDirection: 'drop', // 'drop' = to the airport, 'pickup' = from the airport
+    airportName: AIRPORTS[0],
   });
   // Pickup/drop GPS coords [lng, lat] — power dispatch + approx distance. Optional.
   const [pickupCoords, setPickupCoords] = useState(null);
@@ -156,16 +168,34 @@ export default function RiderBook() {
     }
     setLoading(true);
     try {
+      // For airport mode, one end is the airport and the other is the rider's
+      // location (entered in the pickup field). We map them to pickup/drop by
+      // direction so the driver sees a clear from → to.
+      let pickupPayload = { address: form.pickup, coordinates: pickupCoords || undefined };
+      let dropPayload;
+      if (form.mode === 'airport') {
+        if (form.airportDirection === 'pickup') {
+          // From the airport → to the rider's location.
+          pickupPayload = { address: form.airportName };
+          dropPayload = { address: form.pickup, coordinates: pickupCoords || undefined };
+        } else {
+          // From the rider's location → to the airport.
+          dropPayload = { address: form.airportName };
+        }
+      } else if (form.mode === 'trip') {
+        dropPayload = { address: form.drop, coordinates: dropCoords || undefined };
+      }
+
       await tripAPI.request({
         city: form.city,
         mode: form.mode,
         vehicleType: form.vehicleType,
-        pickup: { address: form.pickup, coordinates: pickupCoords || undefined },
-        drop: form.mode === 'trip'
-          ? { address: form.drop, coordinates: dropCoords || undefined }
-          : undefined,
+        pickup: pickupPayload,
+        drop: dropPayload,
         destination: form.mode === 'outstation' ? form.destination : undefined,
         tripType: form.mode === 'outstation' ? form.tripType : undefined,
+        airportDirection: form.mode === 'airport' ? form.airportDirection : undefined,
+        airportName: form.mode === 'airport' ? form.airportName : undefined,
         distanceKm: form.distanceKm ? Number(form.distanceKm) : undefined,
         scheduledAt: form.scheduledAt || undefined,
         days: form.mode === 'hire' ? Number(form.days) : 1,
@@ -176,6 +206,8 @@ export default function RiderBook() {
       toast.success(
         form.mode === 'outstation'
           ? 'Outstation trip requested! Finding a driver…'
+          : form.mode === 'airport'
+          ? 'Airport transfer requested! Finding a driver…'
           : 'Trip requested! Finding a driver…'
       );
       navigate('/trips');
@@ -232,11 +264,12 @@ export default function RiderBook() {
         {/* Mode */}
         <div>
           <label className="block text-sm font-medium mb-1">{t('bookingType')}</label>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             {[
               ['trip', t('inCity'), 'Point to point'],
               ['hire', t('hire'), 'Per day'],
               ['outstation', t('outstation'), 'Long trip'],
+              ['airport', t('airport'), 'Airport transfer'],
             ].map(([val, label, sub]) => (
               <button
                 key={val}
@@ -265,10 +298,51 @@ export default function RiderBook() {
           </select>
         </div>
 
+        {/* Airport transfer options */}
+        {form.mode === 'airport' && (
+          <div className="space-y-3 bg-brand-50 border border-brand-100 rounded-lg p-3">
+            <div>
+              <label className="block text-sm font-medium mb-1">Direction</label>
+              <div className="flex rounded-md border overflow-hidden">
+                {[
+                  ['drop', 'Going to airport'],
+                  ['pickup', 'Coming from airport'],
+                ].map(([val, label]) => (
+                  <button
+                    key={val}
+                    type="button"
+                    onClick={() => setForm((f) => ({ ...f, airportDirection: val }))}
+                    className={`flex-1 py-2 text-sm ${
+                      form.airportDirection === val ? 'bg-brand-500 text-white' : 'bg-white text-gray-600'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Airport</label>
+              <select value={form.airportName} onChange={set('airportName')} className="input">
+                {AIRPORTS.map((a) => <option key={a} value={a}>{a}</option>)}
+              </select>
+              <p className="text-xs text-gray-400 mt-1">
+                {form.airportDirection === 'drop'
+                  ? 'We’ll drop you at this airport. / हम आपको इस एयरपोर्ट पर छोड़ेंगे।'
+                  : 'We’ll pick you up from this airport. / हम आपको इस एयरपोर्ट से लेंगे।'}
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Pickup / Drop */}
         <div>
           <div className="flex items-center justify-between mb-1">
-            <label className="block text-sm font-medium">Pickup location</label>
+            <label className="block text-sm font-medium">
+              {form.mode === 'airport'
+                ? (form.airportDirection === 'drop' ? 'Your pickup location (from)' : 'Your drop location (to)')
+                : 'Pickup location'}
+            </label>
             <button
               type="button"
               onClick={useMyLocation}
