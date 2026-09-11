@@ -509,8 +509,13 @@ export default function RiderBook() {
             })}
           </div>
           {form.scheduledAt && (
-            <input type="datetime-local" value={form.scheduledAt} onChange={set('scheduledAt')}
-              className="input" />
+            <>
+              <input type="datetime-local" value={form.scheduledAt} onChange={set('scheduledAt')}
+                min={defaultSchedule().slice(0, 16)} className="input" />
+              <p className="text-xs text-gray-400 mt-1">
+                Book ahead for flights, trains & outstation trips. / फ्लाइट, ट्रेन व आउटस्टेशन के लिए पहले से बुक करें।
+              </p>
+            </>
           )}
         </div>
 

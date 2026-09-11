@@ -92,6 +92,10 @@ export default function TripCard({ trip, role, onAction }) {
   const other = role === 'rider' ? trip.driver : trip.rider;
   const lang = useLang();
   const t = useT();
+  // An advance ("book for later") trip: scheduled clearly after it was created.
+  const isScheduled =
+    trip.scheduledAt &&
+    new Date(trip.scheduledAt).getTime() - new Date(trip.createdAt || 0).getTime() > 30 * 60 * 1000;
   // status label localized (statuses map to stRequested/stAccepted/... keys)
   const stKey = { requested: 'stRequested', accepted: 'stAccepted', started: 'stStarted', completed: 'stCompleted', cancelled: 'stCancelled' }[trip.status];
   const [reviews, setReviews] = useState(null);
@@ -122,9 +126,16 @@ export default function TripCard({ trip, role, onAction }) {
             ? t('modeAirport')
             : t('modeTrip')}
         </div>
-        <span className={`text-xs px-2 py-0.5 rounded-full ${STATUS_STYLES[trip.status]}`}>
-          {stKey ? t(stKey) : trip.status}
-        </span>
+        <div className="flex items-center gap-1.5 shrink-0">
+          {isScheduled && ['requested', 'accepted'].includes(trip.status) && (
+            <span className="text-xs px-2 py-0.5 rounded-full bg-brand-100 text-brand-700">
+              {lang === 'hi' ? 'शेड्यूल्ड' : 'Scheduled'}
+            </span>
+          )}
+          <span className={`text-xs px-2 py-0.5 rounded-full ${STATUS_STYLES[trip.status]}`}>
+            {stKey ? t(stKey) : trip.status}
+          </span>
+        </div>
       </div>
 
       {/* Step-by-step guide for the current status + viewer role */}
@@ -159,8 +170,10 @@ export default function TripCard({ trip, role, onAction }) {
           </>
         )}
         <div>{t('city')}: {trip.city}</div>
-        {(trip.mode === 'outstation' || trip.mode === 'hire') && trip.scheduledAt && (
-          <div>{t('whenLabel')}: {new Date(trip.scheduledAt).toLocaleString('en-IN')}</div>
+        {isScheduled && (
+          <div className="text-brand-700 font-medium">
+            🗓️ {t('whenLabel')}: {new Date(trip.scheduledAt).toLocaleString('en-IN')}
+          </div>
         )}
         {trip.estimatedFare > 0 && <div>{t('estimateLabel')}: ₹{trip.estimatedFare}</div>}
         {trip.status === 'completed' && trip.finalFare > 0 && (
