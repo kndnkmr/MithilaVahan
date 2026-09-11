@@ -26,10 +26,49 @@ feature overview and [HOW_IT_WORKS.md](./HOW_IT_WORKS.md) for the deep dive.
 - Backend loads: `cd server && node -e "require('./server.js')"` (a MongoDB `uri undefined` error locally is expected — `MONGODB_URI` is only set on Render)
 - Indexing: search `site:mithilavahan.in` on Google
 - Push key live: `GET /api/push/public-key`
+- Enquiry (public): `POST /api/enquiries` `{type,name,phone,details}` → 201
+- Luxury filter: `GET /api/vehicles?luxury=true` → 200
+
+**Booking modes:** `trip` (in-city), `hire` (per-day), `outstation` (one-way/round), `airport`
+(direction: pickup/drop). **Public services page:** `/services`. **Enquiry form:** `/enquire?type=`.
+
+**Test accounts:** rider `9700000011` / `test123`; driver `9700000022` / `test123`.
+⚠️ The driver test account was left **deactivated** during admin deactivate/reactivate testing —
+reactivate it via **Admin → Drivers → Reactivate** if you need to log in as that driver.
 
 ---
 
 ## Changelog
+
+### Services expansion — "better than Savaari" (Phases A/B/C + polish)
+Goal: match Savaari's breadth (one-way/round, local, airport, tempo, luxury, wedding,
+corporate, tour) while keeping MithilaVahan's edge (no commission, live tracking, local,
+bilingual). Built in phases; every phase live-tested with regression checks.
+
+- **Phase A — Airport transfers** — new `airport` booking mode with a direction toggle
+  ("Going to airport" / "Coming from airport") and an airport picker (Darbhanga DBR, Patna PAT,
+  Gaya GAY). Backend: `airport` mode + `airportDirection`/`airportName` on the Trip model,
+  validated in `tripController`; fare reuses the per-km `trip` logic. Home service card +
+  TripCard label ("Airport transfer"), bilingual. Backward-compatible — existing modes untouched.
+- **Phase B — Services grid + enquiry system** —
+  - **`/services`** page: 9-card Savaari-style grid. Local / Outstation / Airport / Hire /
+    Tempo route into the booking form with the right mode/type prefilled; Luxury → the luxury
+    browse; Wedding / Corporate / Tour → enquiry.
+  - **Enquiry system**: new `Enquiry` model (type wedding|corporate|tour|other; name+phone+
+    details required; status new|contacted|closed; adminNote). `POST /api/enquiries` is
+    **public** (uses new `optionalAuth` middleware — links the user if signed in, never blocks).
+    `/enquire?type=` form is per-type (tailored copy) with a success screen.
+  - **Admin → Enquiries tab**: list, tap-to-WhatsApp the enquirer, mark contacted/closed.
+    `GET /admin/enquiries`, `PUT /admin/enquiries/:id`.
+  - Nav: "Services" in navbar + footer; "View all services" link on Home.
+- **Phase C — information & trust layer** — Services page gained "How it works" (3 steps),
+  "Why MithilaVahan" (4 cards), and a 5-question FAQ. Enquire pages gained per-type "What's
+  included" bullets + 2 FAQs each. (Destination route pages already had fare tables + FAQs.)
+- **Luxury vehicle tag** — owners tick "premium / luxury" when adding a vehicle (`isLuxury` on
+  the Vehicle model); public list supports `?luxury=true`; BrowseVehicles supports
+  `/vehicles?tag=luxury` (luxury heading, "✨ Luxury only" toggle, ✨ badge on cards).
+- **Bilingual Services & Enquire pages** — both fully EN/हिंदी via inline `{en,hi}` strings +
+  `useLang()` (chosen over 60+ flat dict keys for these prose-heavy pages).
 
 ### Discoverability, brand & ops
 - **Cloudinary image hosting live** — reused the existing (Promedicoz) Cloudinary account;
@@ -43,9 +82,13 @@ feature overview and [HOW_IT_WORKS.md](./HOW_IT_WORKS.md) for the deep dive.
   Twitter tags in `index.html` so non-JS crawlers (WhatsApp/Facebook) get a preview card.
 - **Brand logo** — reusable `Logo` component (SVG mark + wordmark) in navbar and footer;
   matching favicon / PWA `icon.svg`.
-- **Auto-updating service worker** — registration in `main.jsx` checks for a new build on
-  load / tab focus / hourly and reloads once when the new SW activates; `sw.js` handles the
-  `SKIP_WAITING` message and cache version bump. Ends the "I don't see my changes" cache lag.
+- **Auto-updating service worker (Promedicoz-matched)** — `sw.js` self-activates via
+  `skipWaiting()` inside its own `install` handler (no fragile page-messaging handshake — that
+  was what left devices stuck on an old cached build). `main.jsx` checks for a new build on
+  load, every 15 min, and on tab focus/return, then reloads once (with an "Updating…" toast)
+  when the new worker takes control. Cache bumped to `mithilavahan-v3`. Ends the "I don't see
+  my changes" cache lag. NOTE: a device must load this SW once to adopt the new behaviour; if
+  a user is stuck on a very old cache, one incognito load / cache clear fixes them.
 - **Google Search Console** — verified via HTML file, sitemap submitted (26 URLs), homepage
   requested for indexing. (Google Business Profile intentionally skipped — a physical video
   verification is a poor fit for an online platform; organic web search is the right channel.)
