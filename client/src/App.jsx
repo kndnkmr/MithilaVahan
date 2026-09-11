@@ -26,6 +26,8 @@ import BlogList from './pages/BlogList';
 import BlogArticle from './pages/BlogArticle';
 import BrowseVehicles from './pages/BrowseVehicles';
 import VehicleDetail from './pages/VehicleDetail';
+import Services from './pages/Services';
+import Enquire from './pages/Enquire';
 
 // Guards a route by auth + optional role list.
 function Protected({ children, roles }) {
@@ -52,6 +54,8 @@ export default function App() {
           <Route path="/install" element={<InstallApp />} />
           <Route path="/vehicles" element={<BrowseVehicles />} />
           <Route path="/vehicles/:id" element={<VehicleDetail />} />
+          <Route path="/services" element={<Services />} />
+          <Route path="/enquire" element={<Enquire />} />
           <Route path="/destinations" element={<Destinations />} />
           <Route path="/destinations/:slug" element={<DestinationDetail />} />
           <Route path="/terms" element={<Terms />} />

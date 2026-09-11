@@ -12,6 +12,7 @@ export default function AdminDashboard() {
   const [riders, setRiders] = useState([]);
   const [vehicles, setVehicles] = useState([]);
   const [complaints, setComplaints] = useState([]);
+  const [enquiries, setEnquiries] = useState([]);
   const [commission, setCommission] = useState(0);
   const [savingCommission, setSavingCommission] = useState(false);
   const [fareGuide, setFareGuide] = useState([]);
@@ -27,6 +28,7 @@ export default function AdminDashboard() {
   const loadRiders = () => adminAPI.riders().then((r) => setRiders(r.data.riders)).catch(() => {});
   const loadVehicles = () => adminAPI.vehicles().then((r) => setVehicles(r.data.vehicles)).catch(() => {});
   const loadComplaints = () => complaintAPI.all().then((r) => setComplaints(r.data.complaints)).catch(() => {});
+  const loadEnquiries = () => adminAPI.enquiries().then((r) => setEnquiries(r.data.enquiries)).catch(() => {});
   const loadSettings = () =>
     adminAPI.getSettings().then((r) => {
       setCommission(r.data.settings.commissionPercent);
@@ -39,6 +41,7 @@ export default function AdminDashboard() {
     loadRiders();
     loadVehicles();
     loadComplaints();
+    loadEnquiries();
     loadSettings();
 
     // Live SOS alerts — a raised SOS is the one thing an admin must not miss.
@@ -106,6 +109,16 @@ export default function AdminDashboard() {
       await complaintAPI.update(id, { status });
       toast.success(`Marked ${status}`);
       loadComplaints();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed');
+    }
+  };
+
+  const setEnquiryStatus = async (id, status) => {
+    try {
+      await adminAPI.updateEnquiry(id, { status });
+      toast.success(`Marked ${status}`);
+      loadEnquiries();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed');
     }
@@ -186,7 +199,7 @@ export default function AdminDashboard() {
 
       {/* Tabs — scrollable on small screens */}
       <div className="flex gap-2 mb-4 text-sm overflow-x-auto pb-1">
-        {[['drivers', 'Drivers'], ['riders', 'Riders'], ['vehicles', 'Vehicles'], ['complaints', 'Complaints'], ['settings', 'Settings']].map(([key, label]) => (
+        {[['drivers', 'Drivers'], ['riders', 'Riders'], ['vehicles', 'Vehicles'], ['complaints', 'Complaints'], ['enquiries', 'Enquiries'], ['settings', 'Settings']].map(([key, label]) => (
           <button key={key} onClick={() => setTab(key)}
             className={`px-4 py-2 rounded-full whitespace-nowrap shrink-0 transition ${
               tab === key ? 'bg-brand-500 text-white' : 'bg-white border text-gray-600 hover:border-brand-400'
@@ -452,6 +465,53 @@ export default function AdminDashboard() {
                   <button onClick={() => setComplaintStatus(c._id, 'resolved')}
                     className="border text-xs px-3 py-1 rounded">Mark resolved</button>
                 )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {tab === 'enquiries' && (
+        <div className="space-y-2">
+          {enquiries.length === 0 && <p className="text-gray-500 text-sm">No enquiries yet.</p>}
+          {enquiries.map((en) => (
+            <div key={en._id} className="card p-3">
+              <div className="flex items-center justify-between gap-2">
+                <div className="font-medium capitalize">
+                  {en.type} enquiry
+                  {en.city ? <span className="text-gray-400 font-normal"> · {en.city}</span> : null}
+                </div>
+                <span className={`text-xs px-2 py-0.5 rounded-full shrink-0 ${
+                  en.status === 'closed' ? 'bg-gray-200 text-gray-600'
+                    : en.status === 'contacted' ? 'bg-blue-100 text-blue-700'
+                    : 'bg-yellow-100 text-yellow-700'
+                }`}>{en.status}</span>
+              </div>
+              <div className="text-sm text-gray-500">
+                {en.name} ·{' '}
+                <a href={`tel:${en.phone}`} className="text-brand-600">{en.phone}</a>
+                {en.date ? <span className="text-gray-400"> · {en.date}</span> : null}
+              </div>
+              <p className="text-sm text-gray-700 mt-1 whitespace-pre-wrap">{en.details}</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                <a
+                  href={`https://wa.me/91${String(en.phone).replace(/\D/g, '').slice(-10)}?text=${encodeURIComponent(`Hi ${en.name}, this is MithilaVahan regarding your ${en.type} enquiry.`)}`}
+                  target="_blank" rel="noreferrer"
+                  className="bg-green-600 text-white text-xs px-3 py-1 rounded"
+                >
+                  WhatsApp
+                </a>
+                {en.status !== 'contacted' && (
+                  <button onClick={() => setEnquiryStatus(en._id, 'contacted')}
+                    className="border text-xs px-3 py-1 rounded">Mark contacted</button>
+                )}
+                {en.status !== 'closed' && (
+                  <button onClick={() => setEnquiryStatus(en._id, 'closed')}
+                    className="border text-xs px-3 py-1 rounded">Close</button>
+                )}
+              </div>
+              <div className="text-xs text-gray-400 mt-2">
+                {new Date(en.createdAt).toLocaleString('en-IN')}
               </div>
             </div>
           ))}

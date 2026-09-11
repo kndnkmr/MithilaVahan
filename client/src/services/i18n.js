@@ -42,6 +42,7 @@ const DICT = {
   support: { en: 'Support', hi: 'सहायता' },
   blog: { en: 'Blog', hi: 'ब्लॉग' },
   vehicles: { en: 'Vehicles', hi: 'वाहन' },
+  services: { en: 'Services', hi: 'सेवाएँ' },
 
   // home
   heroTitle: { en: 'Rent vehicles & book rides across Mithilanchal', hi: 'मिथिलांचल में वाहन किराए पर लें और सवारी बुक करें' },

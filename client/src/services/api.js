@@ -60,6 +60,11 @@ export const complaintAPI = {
   update: (id, data) => api.put(`/admin/complaints/${id}`, data),
 };
 
+// Service enquiries (wedding / corporate / tour / other). Create is public.
+export const enquiryAPI = {
+  create: (data) => api.post('/enquiries', data),
+};
+
 export const uploadAPI = {
   // file: a File object from an <input type="file">
   image: (file) => {
@@ -93,6 +98,8 @@ export const adminAPI = {
   // Accepts { commissionPercent } and/or { fareGuide }
   updateSettings: (data) =>
     api.put('/admin/settings', typeof data === 'number' ? { commissionPercent: data } : data),
+  enquiries: (params) => api.get('/admin/enquiries', { params }),
+  updateEnquiry: (id, data) => api.put(`/admin/enquiries/${id}`, data),
 };
 
 export default api;

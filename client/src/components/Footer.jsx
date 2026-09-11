@@ -5,6 +5,7 @@ const COLS = [
   {
     title: 'Book',
     links: [
+      ['Our services', '/services'],
       ['Book a ride', '/book'],
       ['Browse vehicles', '/vehicles'],
       ['Places to explore', '/destinations'],

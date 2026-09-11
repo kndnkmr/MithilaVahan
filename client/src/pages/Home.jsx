@@ -151,6 +151,11 @@ export default function Home() {
             </button>
           ))}
         </div>
+        <div className="text-center mt-6">
+          <Link to="/services" className="text-brand-600 font-medium hover:underline">
+            View all services — weddings, corporate, tours & more →
+          </Link>
+        </div>
       </section>
 
       {/* Indicative price guide */}

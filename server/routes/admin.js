@@ -32,4 +32,8 @@ const { listComplaints, updateComplaint } = require('../controllers/complaintCon
 router.get('/complaints', listComplaints);
 router.put('/complaints/:id', updateComplaint);
 
+const { listEnquiries, updateEnquiry } = require('../controllers/enquiryController');
+router.get('/enquiries', listEnquiries);
+router.put('/enquiries/:id', updateEnquiry);
+
 module.exports = router;
