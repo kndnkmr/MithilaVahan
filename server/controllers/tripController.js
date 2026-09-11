@@ -495,6 +495,46 @@ async function driverReviews(req, res) {
   }
 }
 
+// GET /api/drivers/:id/profile  (PUBLIC) — privacy-safe public driver profile
+// for a trust page: first name, rating, trips completed, their vehicles, and
+// recent reviews. No phone/email/exact identity.
+async function driverProfile(req, res) {
+  try {
+    const driver = await User.findById(req.params.id)
+      .select('name ratingAvg ratingCount role city createdAt driverStatus isSuspended');
+    if (!driver || driver.role !== 'driver' || driver.isSuspended) {
+      return res.status(404).json({ message: 'Driver not found' });
+    }
+
+    const Vehicle = require('../models/Vehicle');
+    const [completed, trips, vehicles] = await Promise.all([
+      Trip.countDocuments({ driver: driver._id, status: 'completed' }),
+      Trip.find({ driver: driver._id, rating: { $gte: 1 }, review: { $ne: '' } })
+        .select('rating review completedAt')
+        .sort({ completedAt: -1 })
+        .limit(10),
+      Vehicle.find({ owner: driver._id, approvalStatus: 'approved', isActive: true })
+        .select('type model capacity photos isLuxury city'),
+    ]);
+
+    res.json({
+      driver: {
+        name: String(driver.name).split(' ')[0], // first name only
+        ratingAvg: driver.ratingAvg,
+        ratingCount: driver.ratingCount,
+        tripsCompleted: completed,
+        city: driver.city,
+        memberSince: driver.createdAt,
+        verified: driver.driverStatus === 'approved',
+      },
+      vehicles,
+      reviews: trips.map((t) => ({ rating: t.rating, review: t.review, at: t.completedAt })),
+    });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to load driver profile', error: err.message });
+  }
+}
+
 // GET /api/trips/reviews  (PUBLIC) — recent rated trips across the platform,
 // used for the testimonials section. Privacy-safe: rider first name only, plus
 // a short route label for context. Only returns trips that have review TEXT.
@@ -532,5 +572,5 @@ async function recentReviews(req, res) {
 
 module.exports = {
   requestTrip, availableTrips, myTrips, acceptTrip, updateStatus, cancelTrip, rateTrip,
-  claimPaid, confirmPayment, sharedTrip, raiseSos, driverReviews, recentReviews,
+  claimPaid, confirmPayment, sharedTrip, raiseSos, driverReviews, recentReviews, driverProfile,
 };

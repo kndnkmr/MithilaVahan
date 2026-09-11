@@ -6,6 +6,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { DESTINATIONS, CATEGORIES } from '../data/destinations';
 import { useAuth } from '../context/AuthContext';
 import SEO from '../components/SEO';
+import FareQuote from '../components/FareQuote';
 
 // Indicative one-way sedan fare (base + per-km), rounded — a realistic "from" price.
 function fromFare(km) {
@@ -42,6 +43,9 @@ export default function RoutesHub() {
       </section>
 
       <div className="max-w-6xl mx-auto px-4 py-10 space-y-10">
+        {/* Instant fare quote */}
+        <FareQuote />
+
         {CATEGORIES.map((cat) => {
           const routes = DESTINATIONS.filter((d) => d.category === cat);
           if (routes.length === 0) return null;

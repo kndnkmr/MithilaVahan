@@ -1,6 +1,7 @@
 // Displays a single trip; shows role-appropriate actions.
 
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { driverAPI } from '../services/api';
 import { navLink } from '../services/maps';
 import { useLang, useT } from '../services/i18n';
@@ -248,7 +249,12 @@ export default function TripCard({ trip, role, onAction }) {
               )}
               <div>
                 <div>
-                  {role === 'rider' ? t('driverLabel') : t('riderLabel')}: <b>{other.name}</b>
+                  {role === 'rider' ? t('driverLabel') : t('riderLabel')}:{' '}
+                  {role === 'rider' && other._id ? (
+                    <Link to={`/d/${other._id}`} className="font-bold text-brand-600 hover:underline">{other.name}</Link>
+                  ) : (
+                    <b>{other.name}</b>
+                  )}
                 </div>
                 {role === 'rider' && (
                   <div className="text-xs text-gray-500">

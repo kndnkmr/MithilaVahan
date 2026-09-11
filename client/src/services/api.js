@@ -79,6 +79,7 @@ export const driverAPI = {
   setOnline: (isOnline) => api.put('/drivers/online', { isOnline }),
   submitDocuments: (data) => api.put('/drivers/documents', data),
   reviews: (id) => api.get(`/drivers/${id}/reviews`),
+  profile: (id) => api.get(`/drivers/${id}/profile`),
 };
 
 export const pushAPI = {

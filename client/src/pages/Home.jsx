@@ -7,6 +7,7 @@ import { settingsAPI } from '../services/api';
 import { usePwa } from '../context/PwaContext';
 import SEO from '../components/SEO';
 import Testimonials from '../components/Testimonials';
+import FareQuote from '../components/FareQuote';
 
 const VEHICLE_TYPES = [
   { key: 'car', label: 'Car', hi: 'कार', emoji: '🚗' },
@@ -213,6 +214,13 @@ export default function Home() {
           <Link to="/services" className="text-brand-600 font-medium hover:underline">
             View all services — weddings, corporate, tours & more →
           </Link>
+        </div>
+      </section>
+
+      {/* Instant fare quote widget */}
+      <section className="bg-brand-50 border-y">
+        <div className="max-w-6xl mx-auto px-4 py-12">
+          <FareQuote />
         </div>
       </section>
 

@@ -32,6 +32,7 @@ import RoutesHub from './pages/Routes';
 import Fares from './pages/Fares';
 import Fleet from './pages/Fleet';
 import Contact from './pages/Contact';
+import DriverProfile from './pages/DriverProfile';
 
 // Guards a route by auth + optional role list.
 function Protected({ children, roles }) {
@@ -64,6 +65,7 @@ export default function App() {
           <Route path="/fares" element={<Fares />} />
           <Route path="/fleet" element={<Fleet />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/d/:id" element={<DriverProfile />} />
           <Route path="/destinations" element={<Destinations />} />
           <Route path="/destinations/:slug" element={<DestinationDetail />} />
           <Route path="/terms" element={<Terms />} />
