@@ -132,6 +132,64 @@ export default function Services() {
           ))}
         </div>
       </section>
+
+      {/* How it works */}
+      <section className="max-w-6xl mx-auto px-4 py-12">
+        <h2 className="text-2xl font-bold mb-8 text-center">How it works</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          {[
+            ['1', 'Choose your service', 'Pick a ride, rental, airport transfer, or enquire for weddings, corporate & tours.'],
+            ['2', 'Get matched with a local driver', 'A verified local driver accepts. Track them live and coordinate by call or WhatsApp.'],
+            ['3', 'Travel & pay directly', 'Enjoy the trip and pay the driver directly by cash or UPI — no hidden charges, no commission.'],
+          ].map(([n, title, desc]) => (
+            <div key={n} className="text-center">
+              <div className="w-10 h-10 mx-auto mb-3 rounded-full bg-brand-500 text-white flex items-center justify-center font-bold">{n}</div>
+              <h3 className="font-semibold mb-1">{title}</h3>
+              <p className="text-gray-600 text-sm">{desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Why MithilaVahan */}
+      <section className="bg-brand-50 border-y">
+        <div className="max-w-6xl mx-auto px-4 py-12">
+          <h2 className="text-2xl font-bold mb-8 text-center">Why book with MithilaVahan</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {[
+              ['🏠', 'Truly local', 'Built for Mithilanchal — drivers who know Darbhanga, Muzaffarpur and every route around.'],
+              ['💸', 'No commission', 'You pay the driver directly. We don’t take a cut, so fares stay fair for everyone.'],
+              ['🛡️', 'Safe & tracked', 'Verified drivers, live GPS tracking, SOS, and a shareable trip link for your family.'],
+              ['🗣️', 'In your language', 'The whole app works in English and हिंदी, so it’s easy for everyone.'],
+            ].map(([icon, title, desc]) => (
+              <div key={title} className="card p-5">
+                <div className="text-2xl mb-2">{icon}</div>
+                <h3 className="font-semibold mb-1">{title}</h3>
+                <p className="text-gray-600 text-sm">{desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="max-w-3xl mx-auto px-4 py-12">
+        <h2 className="text-2xl font-bold mb-6 text-center">Frequently asked questions</h2>
+        <div className="space-y-4">
+          {[
+            ['Do you serve my area?', 'We currently operate across Darbhanga and Muzaffarpur, with outstation trips all over Bihar, Jharkhand and Nepal. More cities are being added.'],
+            ['How do I pay?', 'You pay the driver directly by cash or UPI after the trip. We never hold your money and take no commission.'],
+            ['Are the drivers verified?', 'Yes. Every driver’s documents (licence, RC, insurance) and vehicle are reviewed and approved by our team before they can take trips.'],
+            ['Can I book for a wedding, company, or a multi-day tour?', 'Yes — use the Enquire option on those services. Tell us your dates and needs and our team will call you back to arrange everything.'],
+            ['Is there a cancellation charge?', 'Cancelling before a driver starts is free. See our Cancellation & Refund policy for details.'],
+          ].map(([q, a], i) => (
+            <div key={i} className="card p-4">
+              <div className="font-medium mb-1">{q}</div>
+              <p className="text-gray-600 text-sm">{a}</p>
+            </div>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }

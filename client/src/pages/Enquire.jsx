@@ -17,6 +17,16 @@ const TYPES = {
     blurb: 'Decorated cars, multiple vehicles for the baraat, guest pickups — tell us your dates and needs and we’ll arrange it.',
     detailsPlaceholder: 'e.g. 2 decorated cars + 1 tempo for 12 guests, on 15 Dec, pickup from Laheriasarai…',
     datePlaceholder: 'Event date(s)',
+    includes: [
+      'Decorated cars on request',
+      'Multiple vehicles coordinated for the baraat & guests',
+      'Well-dressed, verified local drivers',
+      'On-time arrival with a backup plan',
+    ],
+    faqs: [
+      ['How early should I book?', 'For weddings, 1–2 weeks ahead is best so we can reserve enough vehicles for your dates.'],
+      ['Can I get the car decorated?', 'Yes — mention it in your enquiry and we’ll arrange decoration for an add-on cost.'],
+    ],
   },
   corporate: {
     label: 'Corporate Bookings',
@@ -24,6 +34,16 @@ const TYPES = {
     blurb: 'Employee transport, client pickups, monthly tie-ups, event logistics — set up a corporate account with us.',
     detailsPlaceholder: 'e.g. Daily cab for 4 staff, Darbhanga to office, Mon–Sat, monthly billing…',
     datePlaceholder: 'Start date / duration',
+    includes: [
+      'Daily employee & client transport',
+      'Monthly billing / consolidated invoices',
+      'Priority allocation of vehicles',
+      'A dedicated point of contact',
+    ],
+    faqs: [
+      ['Do you offer monthly billing?', 'Yes — corporate accounts can be billed monthly with a single invoice. We’ll set this up when we call you.'],
+      ['Can you handle regular daily trips?', 'Absolutely — fixed daily/weekly schedules are exactly what corporate bookings are for.'],
+    ],
   },
   tour: {
     label: 'Tour Packages',
@@ -31,6 +51,16 @@ const TYPES = {
     blurb: 'Multi-day trips around Mithilanchal, Bihar and Nepal — Janakpur, Bodh Gaya, Kathmandu and more, with a driver who knows the route.',
     detailsPlaceholder: 'e.g. 3-day trip: Darbhanga → Janakpur → Kathmandu for 4 people, mid-Jan…',
     datePlaceholder: 'Travel date(s)',
+    includes: [
+      'Custom multi-day itineraries',
+      'Driver who knows the routes & stops',
+      'Vehicle to suit your group size',
+      'Transparent all-in pricing before you go',
+    ],
+    faqs: [
+      ['Can you plan the full itinerary?', 'Yes — tell us the places and days and we’ll suggest a comfortable route and a clear price.'],
+      ['Do you cover Nepal (Janakpur/Kathmandu)?', 'Yes, cross-border tours are popular from Darbhanga. We’ll guide you on the paperwork needed.'],
+    ],
   },
   other: {
     label: 'Enquiry',
@@ -38,6 +68,8 @@ const TYPES = {
     blurb: 'Tell us what you need and our team will get back to you.',
     detailsPlaceholder: 'Describe what you need…',
     datePlaceholder: 'When do you need it?',
+    includes: [],
+    faqs: [],
   },
 };
 
@@ -156,6 +188,36 @@ export default function Enquire() {
           No account needed. We’ll call you back to confirm details and fare.
         </p>
       </form>
+
+      {/* What's included */}
+      {info.includes?.length > 0 && (
+        <section className="mt-8">
+          <h2 className="font-semibold mb-3">What’s included</h2>
+          <ul className="space-y-2">
+            {info.includes.map((item) => (
+              <li key={item} className="flex items-start gap-2 text-sm text-gray-700">
+                <span className="text-green-600 mt-0.5">✓</span>
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {/* FAQ */}
+      {info.faqs?.length > 0 && (
+        <section className="mt-8">
+          <h2 className="font-semibold mb-3">Common questions</h2>
+          <div className="space-y-3">
+            {info.faqs.map(([q, a], i) => (
+              <div key={i} className="card p-4">
+                <div className="font-medium text-sm mb-1">{q}</div>
+                <p className="text-gray-600 text-sm">{a}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   );
 }
