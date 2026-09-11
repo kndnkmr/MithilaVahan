@@ -5,6 +5,7 @@ import { useT } from '../services/i18n';
 import { HERO_IMG } from '../data/destinations';
 import { settingsAPI } from '../services/api';
 import SEO from '../components/SEO';
+import Testimonials from '../components/Testimonials';
 
 const VEHICLE_TYPES = [
   { key: 'car', label: 'Car', hi: 'कार', emoji: '🚗' },
@@ -255,6 +256,9 @@ export default function Home() {
           </p>
         </div>
       </section>
+
+      {/* Real rider testimonials (renders only if we have reviews) */}
+      <Testimonials limit={6} />
 
       {/* FAQ */}
       <section className="bg-white border-t">

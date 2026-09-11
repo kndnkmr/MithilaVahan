@@ -395,11 +395,40 @@ export default function RiderBook() {
 
         {/* Hire: number of days */}
         {form.mode === 'hire' && (
-          <div>
-            <label className="block text-sm font-medium mb-1">Number of days</label>
-            <input type="number" min={1} value={form.days} onChange={set('days')}
-              className="input" />
-          </div>
+          <>
+            <div className="bg-brand-50 border border-brand-100 rounded-lg p-3">
+              <div className="text-sm font-medium mb-2">Local packages (guide)</div>
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  ['4 hr', '40 km'],
+                  ['8 hr', '80 km'],
+                  ['12 hr', '120 km'],
+                ].map(([hrs, km]) => (
+                  <button
+                    key={hrs}
+                    type="button"
+                    onClick={() => setForm((f) => ({
+                      ...f,
+                      notes: `${f.notes ? f.notes + ' · ' : ''}Local package: ${hrs} / ${km}`.trim(),
+                    }))}
+                    className="rounded-md border bg-white py-2 text-center hover:border-brand-400"
+                  >
+                    <div className="text-sm font-semibold">{hrs}</div>
+                    <div className="text-[11px] text-gray-400">{km}</div>
+                  </button>
+                ))}
+              </div>
+              <p className="text-xs text-gray-400 mt-2">
+                Tap a package to add it to your notes, or set full days below. The driver confirms
+                the final fare. / पैकेज चुनें या नीचे दिन तय करें।
+              </p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Number of days</label>
+              <input type="number" min={1} value={form.days} onChange={set('days')}
+                className="input" />
+            </div>
+          </>
         )}
 
         {/* Outstation: destination, one-way/round-trip, when, approx distance */}

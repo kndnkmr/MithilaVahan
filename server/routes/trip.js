@@ -2,13 +2,16 @@ const express = require('express');
 const { protect, authorize } = require('../middleware/auth');
 const {
   requestTrip, availableTrips, myTrips, acceptTrip, updateStatus, cancelTrip, rateTrip,
-  claimPaid, confirmPayment, sharedTrip, raiseSos,
+  claimPaid, confirmPayment, sharedTrip, raiseSos, recentReviews,
 } = require('../controllers/tripController');
 
 const router = express.Router();
 
 // PUBLIC — shareable trip status page (no auth). Must come before protected routes.
 router.get('/share/:token', sharedTrip);
+
+// PUBLIC — recent testimonials (rated trips) for the homepage/services page.
+router.get('/reviews', recentReviews);
 
 // PUBLIC — instant fare estimate for the booking form (no auth).
 // ?mode=trip|hire|outstation & vehicleType= & distanceKm= & days= & tripType=

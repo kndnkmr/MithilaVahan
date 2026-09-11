@@ -46,6 +46,7 @@ export const tripAPI = {
   sos: (id, coords) => api.put(`/trips/${id}/sos`, coords),
   shared: (token) => api.get(`/trips/share/${token}`),
   estimate: (params) => api.get('/trips/estimate', { params }),
+  reviews: () => api.get('/trips/reviews'),
 };
 
 export const settingsAPI = {

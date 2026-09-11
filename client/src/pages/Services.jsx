@@ -6,6 +6,7 @@
 import { useNavigate } from 'react-router-dom';
 import SEO from '../components/SEO';
 import { useLang } from '../services/i18n';
+import Testimonials from '../components/Testimonials';
 
 // Each string is { en, hi }; pick(str) resolves it for the current language.
 const CTA_BOOK = { en: 'Book now', hi: 'बुक करें' };
@@ -23,8 +24,8 @@ const SERVICES = [
     title: { en: 'Airport transfers', hi: 'एयरपोर्ट ट्रांसफर' },
     desc: { en: 'On-time pickup and drop for Darbhanga, Patna & Gaya airports.', hi: 'दरभंगा, पटना व गया एयरपोर्ट के लिए समय पर पिकअप और ड्रॉप।' } },
   { emoji: '📅', action: '/book?mode=hire', cta: CTA_BOOK,
-    title: { en: 'Full-day hire', hi: 'पूरे दिन का किराया' },
-    desc: { en: 'Keep a vehicle with driver for the whole day — sightseeing, errands, events.', hi: 'पूरे दिन के लिए ड्राइवर सहित वाहन — घूमना, काम, आयोजन।' } },
+    title: { en: 'Local hire & packages', hi: 'लोकल किराया व पैकेज' },
+    desc: { en: 'Hourly packages (4hr/40km, 8hr/80km) or full-day hire with a driver — sightseeing, errands, events.', hi: 'घंटे के पैकेज (4घं/40किमी, 8घं/80किमी) या पूरे दिन का किराया — घूमना, काम, आयोजन।' } },
   { emoji: '🚐', action: '/book?type=tempo', cta: CTA_BOOK,
     title: { en: 'Tempo Traveller', hi: 'टेम्पो ट्रैवलर' },
     desc: { en: 'Spacious group travel for families and tours — 9 to 12 seaters with a driver.', hi: 'परिवार व टूर के लिए बड़ी सवारी — 9 से 12 सीटर, ड्राइवर के साथ।' } },
@@ -177,6 +178,9 @@ export default function Services() {
           </div>
         </div>
       </section>
+
+      {/* Real rider testimonials (renders only if we have reviews) */}
+      <Testimonials limit={6} />
 
       {/* FAQ */}
       <section className="max-w-3xl mx-auto px-4 py-12">

@@ -495,7 +495,42 @@ async function driverReviews(req, res) {
   }
 }
 
+// GET /api/trips/reviews  (PUBLIC) — recent rated trips across the platform,
+// used for the testimonials section. Privacy-safe: rider first name only, plus
+// a short route label for context. Only returns trips that have review TEXT.
+async function recentReviews(req, res) {
+  try {
+    const trips = await Trip.find({ rating: { $gte: 4 }, review: { $ne: '' } })
+      .select('rating review completedAt rider mode destination city vehicleType')
+      .populate('rider', 'name')
+      .sort({ completedAt: -1 })
+      .limit(12);
+
+    const routeLabel = (t) => {
+      if (t.mode === 'outstation' && t.destination) return `Darbhanga → ${t.destination}`;
+      if (t.mode === 'airport') return 'Airport transfer';
+      if (t.mode === 'hire') return 'Full-day hire';
+      return `${t.city || 'Local'} ride`;
+    };
+
+    const reviews = trips
+      .filter((t) => t.review && t.review.trim())
+      .map((t) => ({
+        rating: t.rating,
+        review: t.review,
+        name: t.rider?.name ? String(t.rider.name).split(' ')[0] : 'A rider',
+        route: routeLabel(t),
+        vehicleType: t.vehicleType,
+        at: t.completedAt,
+      }));
+
+    res.json({ reviews });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to load reviews', error: err.message });
+  }
+}
+
 module.exports = {
   requestTrip, availableTrips, myTrips, acceptTrip, updateStatus, cancelTrip, rateTrip,
-  claimPaid, confirmPayment, sharedTrip, raiseSos, driverReviews,
+  claimPaid, confirmPayment, sharedTrip, raiseSos, driverReviews, recentReviews,
 };
