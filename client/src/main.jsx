@@ -5,16 +5,19 @@ import { HelmetProvider } from 'react-helmet-async';
 import { Toaster, default as toast } from 'react-hot-toast';
 import App from './App.jsx';
 import { AuthProvider } from './context/AuthContext.jsx';
+import { PwaProvider } from './context/PwaContext.jsx';
 import './index.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <HelmetProvider>
       <BrowserRouter>
-        <AuthProvider>
-          <App />
-          <Toaster position="top-center" />
-        </AuthProvider>
+        <PwaProvider>
+          <AuthProvider>
+            <App />
+            <Toaster position="top-center" />
+          </AuthProvider>
+        </PwaProvider>
       </BrowserRouter>
     </HelmetProvider>
   </React.StrictMode>

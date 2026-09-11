@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useT } from '../services/i18n';
+import { useT, useLang } from '../services/i18n';
 import { HERO_IMG } from '../data/destinations';
 import { settingsAPI } from '../services/api';
+import { usePwa } from '../context/PwaContext';
 import SEO from '../components/SEO';
 import Testimonials from '../components/Testimonials';
 
@@ -55,7 +56,24 @@ export default function Home() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const t = useT();
+  const lang = useLang();
+  const { canInstall, isInstalled, promptInstall } = usePwa();
   const [openFaq, setOpenFaq] = useState(null);
+
+  // Share via the phone's native share sheet if available; else go to /install
+  // (which has WhatsApp/Facebook/copy-link/QR share options).
+  const handleShare = async () => {
+    const shareData = {
+      title: 'MithilaVahan',
+      text: 'Book cars, autos, tempos & trucks with a driver across Darbhanga & Muzaffarpur — MithilaVahan.',
+      url: 'https://mithilavahan.in',
+    };
+    if (navigator.share) {
+      try { await navigator.share(shareData); } catch { /* user cancelled */ }
+      return;
+    }
+    navigate('/install');
+  };
   // Admin-editable indicative fare guide (falls back to the static PRICE_GUIDE).
   const [fareGuide, setFareGuide] = useState(null);
 
@@ -108,6 +126,45 @@ export default function Home() {
                 </Link>
               </>
             )}
+          </div>
+
+          {/* One-tap install (Chromium) + share — for promotion, like Promedicoz */}
+          <div className="flex flex-wrap justify-center gap-3 mt-5">
+            {!isInstalled && (
+              <button
+                onClick={canInstall ? promptInstall : () => navigate('/install')}
+                className="bg-white/15 border border-white/40 text-white px-5 py-2 rounded-full text-sm font-medium hover:bg-white/25 transition"
+              >
+                📲 {lang === 'hi' ? 'ऐप इंस्टॉल करें' : 'Install app'}
+              </button>
+            )}
+            <button
+              onClick={handleShare}
+              className="bg-white/15 border border-white/40 text-white px-5 py-2 rounded-full text-sm font-medium hover:bg-white/25 transition"
+            >
+              📤 {lang === 'hi' ? 'साझा करें' : 'Share'}
+            </button>
+          </div>
+
+          {/* Popular searches — what people actually look for */}
+          <div className="flex flex-wrap justify-center gap-2 mt-6">
+            <span className="text-brand-100 text-sm self-center">
+              {lang === 'hi' ? 'लोकप्रिय:' : 'Popular:'}
+            </span>
+            {[
+              ['✈️', lang === 'hi' ? 'एयरपोर्ट कैब' : 'Airport cab', '/book?mode=airport'],
+              ['🚙', lang === 'hi' ? 'लक्ज़री कार' : 'Luxury car', '/vehicles?tag=luxury'],
+              ['💒', lang === 'hi' ? 'शादी की कार' : 'Wedding car', '/enquire?type=wedding'],
+              ['🛣️', lang === 'hi' ? 'दरभंगा → पटना' : 'Darbhanga → Patna', '/destinations/patna'],
+            ].map(([icon, label, path]) => (
+              <button
+                key={label}
+                onClick={() => navigate(path)}
+                className="bg-white/90 text-brand-700 text-sm font-medium px-3 py-1.5 rounded-full hover:bg-white transition"
+              >
+                {icon} {label}
+              </button>
+            ))}
           </div>
         </div>
       </section>

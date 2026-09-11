@@ -1,71 +1,38 @@
-// "Install app" affordance.
-//  - Android/Chrome: captures the beforeinstallprompt event and shows a button
-//    that triggers the native install prompt.
-//  - iOS/Safari: no such event exists, so we show a short "Add to Home Screen"
-//    instruction instead (only when not already installed).
-//  - Already installed (standalone display): render nothing.
+// "Install app" affordance (navbar).
+//  - Chromium (Android/desktop Chrome, Edge): one-tap native install via the
+//    shared PwaContext, so it never fights the navbar/home/install page for the
+//    one-time beforeinstallprompt event.
+//  - iOS/Safari: no such event — show a short "Add to Home Screen" hint.
+//  - Already installed: render nothing.
 
-import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-
-function isStandalone() {
-  return (
-    window.matchMedia?.('(display-mode: standalone)').matches ||
-    window.navigator.standalone === true // iOS
-  );
-}
+import { usePwa } from '../context/PwaContext';
 
 function isIOS() {
   return /iphone|ipad|ipod/i.test(window.navigator.userAgent) && !window.MSStream;
 }
 
 export default function InstallButton() {
-  const [deferredPrompt, setDeferredPrompt] = useState(null);
-  const [installed, setInstalled] = useState(isStandalone());
+  const { canInstall, isInstalled, promptInstall } = usePwa();
 
-  useEffect(() => {
-    if (installed) return;
-
-    const onPrompt = (e) => {
-      e.preventDefault(); // stop Chrome's mini-infobar; we'll trigger it ourselves
-      setDeferredPrompt(e);
-    };
-    const onInstalled = () => {
-      setInstalled(true);
-      setDeferredPrompt(null);
-    };
-
-    window.addEventListener('beforeinstallprompt', onPrompt);
-    window.addEventListener('appinstalled', onInstalled);
-    return () => {
-      window.removeEventListener('beforeinstallprompt', onPrompt);
-      window.removeEventListener('appinstalled', onInstalled);
-    };
-  }, [installed]);
-
-  if (installed) return null;
+  if (isInstalled) return null;
 
   const handleClick = async () => {
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
-      await deferredPrompt.userChoice;
-      setDeferredPrompt(null);
+    if (canInstall) {
+      await promptInstall();
       return;
     }
     if (isIOS()) {
-      toast(
-        'To install: tap the Share button, then "Add to Home Screen".',
-        { duration: 6000, icon: '📲' }
-      );
+      toast('To install: tap the Share button, then "Add to Home Screen".', {
+        duration: 6000, icon: '📲',
+      });
       return;
     }
-    // Desktop/other browsers where the prompt isn't available yet.
     toast('Open this site in Chrome on your phone to install the app.', { duration: 5000 });
   };
 
-  // On iOS we always show the button (to surface the instructions). Elsewhere,
-  // show it once the browser has offered install (deferredPrompt captured).
-  if (!deferredPrompt && !isIOS()) return null;
+  // Show when the browser has offered install, or on iOS (to surface the hint).
+  if (!canInstall && !isIOS()) return null;
 
   return (
     <button
