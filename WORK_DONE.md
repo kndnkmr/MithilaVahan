@@ -32,8 +32,9 @@ feature overview and [HOW_IT_WORKS.md](./HOW_IT_WORKS.md) for the deep dive.
 **Booking modes:** `trip` (in-city), `hire` (per-day + hourly-package guidance), `outstation`
 (one-way/round), `airport` (direction: pickup/drop).
 **Public pages:** `/services`, `/routes`, `/fares`, `/fleet`, `/contact`, `/enquire?type=`,
-`/vehicles?tag=luxury`.
-**Testimonials:** `GET /api/trips/reviews` (public, renders only if real reviews exist).
+`/vehicles?tag=luxury`, `/d/:id` (driver profile), `/blog` (11 articles).
+**Public APIs:** `GET /api/trips/reviews` (testimonials), `GET /api/trips/estimate` (fare quote),
+`GET /api/drivers/:id/profile` (driver trust page) — all render/behave gracefully if data is thin.
 
 **Test accounts:** rider `9700000011` / `test123`; driver `9700000022` / `test123`.
 ⚠️ The driver test account was left **deactivated** during admin deactivate/reactivate testing —
@@ -42,6 +43,22 @@ reactivate it via **Admin → Drivers → Reactivate** if you need to log in as 
 ---
 
 ## Changelog
+
+### Beyond Savaari — content engine, scheduling, fare quote, driver profiles
+- **Blog expanded to 11 original articles** — added airport-taxi guide, Darbhanga→Kathmandu by
+  road, Darbhanga Junction station guide, wedding-car booking, and Chhath/festival travel. All
+  original Mithilanchal content, each leads to a booking/enquiry; all in `sitemap.xml`. This is
+  the main ongoing SEO lever (Savaari ranks largely on volume of route/travel content).
+- **Scheduled ("book for later") bookings surfaced** — RiderBook When toggle got helper text +
+  a min datetime; TripCard shows a 🗓️ scheduled time line + a "Scheduled" badge for advance
+  trips (bilingual). Detects advance trips as scheduledAt > 30 min after createdAt.
+- **Instant fare-quote widget** — `FareQuote.jsx` (public, no login): vehicle + one-way/round +
+  distance (or a route preset) → live ₹low–high via `GET /api/trips/estimate`. On Home and
+  Routes. Bilingual.
+- **Public driver profiles** — `GET /api/drivers/:id/profile` (privacy-safe: first name, rating,
+  trips completed, approved vehicles, recent reviews — no phone/identity). `DriverProfile.jsx`
+  at `/d/:id`; the driver's name on a trip card (rider view) links to it. A trust edge Savaari
+  doesn't offer (they hide drivers behind the brand).
 
 ### Savaari-parity content + growth (testimonials, routes, fares, fleet, contact, install/share)
 - **Real testimonials** — public `GET /api/trips/reviews` returns recent 4–5★ trips that have
