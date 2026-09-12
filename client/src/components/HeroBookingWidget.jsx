@@ -40,20 +40,22 @@ export default function HeroBookingWidget() {
 
   return (
     <div className="bg-white rounded-2xl shadow-2xl text-left max-w-2xl mx-auto mt-8 overflow-hidden">
-      {/* Tabs */}
+      {/* Tabs — icon over label so long words (Outstation/आउटस्टेशन) never clip
+          on narrow phones; inline on larger screens. */}
       <div className="flex border-b">
         {TABS.map(([val, label, icon]) => (
           <button
             key={val}
             type="button"
             onClick={() => setMode(val)}
-            className={`flex-1 py-3 text-sm font-medium transition ${
+            className={`flex-1 py-2.5 px-1 font-medium transition flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1 text-xs sm:text-sm ${
               mode === val
                 ? 'text-brand-700 border-b-2 border-brand-500 bg-brand-50'
                 : 'text-gray-500 hover:text-brand-600'
             }`}
           >
-            <span className="mr-1">{icon}</span>{label}
+            <span>{icon}</span>
+            <span className="leading-tight text-center">{label}</span>
           </button>
         ))}
       </div>
