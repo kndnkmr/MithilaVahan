@@ -15,7 +15,7 @@ async function setOnline(req, res) {
 
 // PUT /api/drivers/documents  (submit verification doc URLs)
 async function submitDocuments(req, res) {
-  const { drivingLicense, rcBook, insurance, whatsappNumber, upiId, upiNumber, qrImage, city } = req.body;
+  const { drivingLicense, rcBook, insurance, whatsappNumber, upiId, upiNumber, qrImage, city, email } = req.body;
   const u = req.user;
   if (drivingLicense !== undefined) u.documents.drivingLicense = drivingLicense;
   if (rcBook !== undefined) u.documents.rcBook = rcBook;
@@ -25,7 +25,20 @@ async function submitDocuments(req, res) {
   if (upiNumber !== undefined) u.upiNumber = upiNumber;
   if (qrImage !== undefined) u.qrImage = qrImage;
   if (city !== undefined) u.city = city;
-  await u.save();
+  // Email is optional + unique(sparse): set only when a non-empty value is given
+  // (avoids empty-string collisions on the unique index).
+  if (email !== undefined) {
+    const e = String(email).trim().toLowerCase();
+    u.email = e || undefined;
+  }
+  try {
+    await u.save();
+  } catch (err) {
+    if (err.code === 11000 && err.keyPattern?.email) {
+      return res.status(400).json({ message: 'That email is already used by another account' });
+    }
+    throw err;
+  }
   res.json({
     message: 'Details saved',
     documents: u.documents,

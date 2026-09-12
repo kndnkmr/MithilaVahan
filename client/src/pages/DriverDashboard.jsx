@@ -322,6 +322,7 @@ function ProfileTab({ user, updateUser, cities }) {
   const L = useT();
   const [city, setCity] = useState(user.city || '');
   const [whatsappNumber, setWhatsappNumber] = useState(user.whatsappNumber || '');
+  const [email, setEmail] = useState(user.email || '');
   const [docs, setDocs] = useState({
     drivingLicense: user.documents?.drivingLicense || '',
     rcBook: user.documents?.rcBook || '',
@@ -352,6 +353,7 @@ function ProfileTab({ user, updateUser, cities }) {
       const res = await driverAPI.submitDocuments({
         city,
         whatsappNumber,
+        email,
         drivingLicense: docs.drivingLicense,
         rcBook: docs.rcBook,
         insurance: docs.insurance,
@@ -360,6 +362,7 @@ function ProfileTab({ user, updateUser, cities }) {
       updateUser({
         city,
         whatsappNumber,
+        email,
         documents: res.data.documents,
       });
       toast.success('Profile & documents saved');
@@ -396,6 +399,18 @@ function ProfileTab({ user, updateUser, cities }) {
           className="input"
         />
         <p className="text-xs text-gray-400 mt-1">Riders reach you here on WhatsApp. / यात्री यहाँ WhatsApp पर संपर्क करेंगे।</p>
+
+        <label className="block text-sm font-medium mb-1 mt-3">{L('emailOptional')}</label>
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="you@example.com"
+          className="input"
+        />
+        <p className="text-xs text-gray-400 mt-1">
+          {L('emailHint')}
+        </p>
       </div>
 
       <div>

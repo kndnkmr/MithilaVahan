@@ -217,6 +217,8 @@ const DICT = {
   yourDetailsSub: { en: 'Riders and our team use these to reach and verify you.', hi: 'यात्री और हमारी टीम आपसे संपर्क व सत्यापन के लिए इनका उपयोग करते हैं।' },
   selectYourCity: { en: 'Select your city', hi: 'अपना शहर चुनें' },
   whatsappNumber: { en: 'WhatsApp number', hi: 'WhatsApp नंबर' },
+  emailOptional: { en: 'Email (optional)', hi: 'ईमेल (वैकल्पिक)' },
+  emailHint: { en: 'Get booking & approval updates by email. / बुकिंग व अप्रूवल की सूचना ईमेल पर पाएँ।', hi: 'बुकिंग व अप्रूवल की सूचना ईमेल पर पाएँ।' },
   documents: { en: 'Documents', hi: 'दस्तावेज़' },
   documentsSub: { en: 'Take a clear photo of each paper with your phone and upload it. Required before your account is approved.', hi: 'हर कागज़ की साफ़ फ़ोटो खींचकर अपलोड करें। अप्रूवल के लिए ज़रूरी है।' },
   drivingLicence: { en: 'Driving licence', hi: 'ड्राइविंग लाइसेंस' },
