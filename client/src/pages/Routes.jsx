@@ -14,6 +14,19 @@ function fromFare(km) {
   return `₹${f.toLocaleString('en-IN')}`;
 }
 
+// Airport transfers to/from Darbhanga Airport (DBR) — the cities & towns people
+// most often fly in/out for. Approx one-way road distance to DBR.
+const AIRPORT_ROUTES = [
+  ['Darbhanga city', 8],
+  ['Madhubani', 40],
+  ['Samastipur', 55],
+  ['Muzaffarpur', 70],
+  ['Sitamarhi', 90],
+  ['Saharsa', 95],
+  ['Janakpur (Nepal)', 65],
+  ['Begusarai', 110],
+];
+
 export default function RoutesHub() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -23,12 +36,18 @@ export default function RoutesHub() {
     navigate(user?.role === 'rider' ? path : '/register');
   };
 
+  // Airport transfer booking (to Darbhanga Airport by default).
+  const bookAirport = () => {
+    const path = '/book?mode=airport&airportDir=drop&airportName=' + encodeURIComponent('Darbhanga Airport (DBR)');
+    navigate(user?.role === 'rider' ? path : '/register');
+  };
+
   return (
     <div>
       <SEO
         path="/routes"
-        title="Popular Taxi Routes from Darbhanga — Fares & Distance"
-        description="One-way and round-trip taxi fares from Darbhanga to Patna, Bodh Gaya, Kathmandu, Janakpur and more — with distance, travel time and a driver who knows the route."
+        title="Popular Taxi Routes & Airport Transfers from Darbhanga"
+        description="One-way and round-trip taxi fares from Darbhanga to Patna, Bodh Gaya, Kathmandu, Janakpur and more, plus Darbhanga Airport (DBR) transfers to/from Muzaffarpur, Madhubani, Sitamarhi and nearby towns."
       />
 
       {/* Header */}
@@ -45,6 +64,43 @@ export default function RoutesHub() {
       <div className="max-w-6xl mx-auto px-4 py-10 space-y-10">
         {/* Instant fare quote */}
         <FareQuote />
+
+        {/* Airport transfers — Darbhanga Airport (DBR) to/from cities & towns */}
+        <section>
+          <h2 className="text-xl font-bold mb-1">✈️ Darbhanga Airport (DBR) transfers</h2>
+          <p className="text-gray-500 text-sm mb-3">
+            Reliable pickup & drop between Darbhanga Airport and nearby cities and towns — both ways.
+          </p>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm border rounded-lg overflow-hidden bg-white">
+              <thead className="bg-gray-50 text-gray-600">
+                <tr>
+                  <th className="text-left px-4 py-3">Route (both ways)</th>
+                  <th className="text-left px-4 py-3">Distance</th>
+                  <th className="text-left px-4 py-3">From (one-way)</th>
+                  <th className="px-4 py-3"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {AIRPORT_ROUTES.map(([place, km]) => (
+                  <tr key={place} className="border-t hover:bg-brand-50/40">
+                    <td className="px-4 py-3 font-medium text-gray-800">
+                      ✈️ {place} ⇄ Darbhanga Airport
+                    </td>
+                    <td className="px-4 py-3 text-gray-600">{km} km</td>
+                    <td className="px-4 py-3 text-gray-800 font-medium">{fromFare(km)}</td>
+                    <td className="px-4 py-3 text-right">
+                      <button onClick={bookAirport}
+                        className="bg-brand-500 text-white text-xs px-3 py-1.5 rounded-lg hover:bg-brand-600">
+                        Book
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
 
         {CATEGORIES.map((cat) => {
           const routes = DESTINATIONS.filter((d) => d.category === cat);
