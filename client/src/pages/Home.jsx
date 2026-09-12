@@ -21,10 +21,13 @@ const VEHICLE_TYPES = [
 // Indicative price guide (per-km for outstation, per-day for full-day hire).
 // These are typical local rates shown for guidance — the driver confirms the
 // final fare, and each owner sets their own rates on their listing.
+// Kept in sync with the /fares page (Fares.jsx RATES) so a rider comparing
+// pages sees the same numbers. The admin fareGuide (server settings) overrides
+// this when set.
 const PRICE_GUIDE = [
-  ['Hatchback', 'WagonR, Alto or similar', '₹9/km', '₹2,400'],
-  ['Sedan', 'Dzire, Etios or similar', '₹10/km', '₹2,600'],
-  ['SUV', 'Ertiga, Bolero, Innova', '₹13/km', '₹3,000'],
+  ['Hatchback', 'WagonR, Alto or similar', '₹10/km', '₹2,200'],
+  ['Sedan', 'Dzire, Etios or similar', '₹11/km', '₹2,500'],
+  ['SUV', 'Ertiga, Bolero, Innova', '₹14/km', '₹3,200'],
   ['Tempo / Van', 'Pickup, mini goods', '₹18/km', '₹3,500'],
 ];
 
@@ -177,25 +180,13 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Booking modes */}
+      {/* Link to the full services page (the hero tabs already cover the modes) */}
       <section className="bg-white border-y">
-        <div className="max-w-6xl mx-auto px-4 py-14 grid grid-cols-2 lg:grid-cols-4 gap-6">
-          {[
-            ['🏙️', 'In-city rides', 'Quick point-to-point trips within your city.', '/book?mode=trip'],
-            ['📅', 'Full-day hire', 'Book a vehicle with driver by the day.', '/book?mode=hire'],
-            ['🛣️', 'Outstation trips', 'Long trips to Patna, Kathmandu & beyond — one-way or round-trip.', '/book?mode=outstation'],
-            ['✈️', 'Airport transfers', 'To/from Darbhanga, Patna & Gaya airports — on time, every time.', '/book?mode=airport'],
-          ].map(([icon, title, desc, path]) => (
-            <button key={title} onClick={() => go(path)} className="text-center rounded-xl p-4 hover:bg-brand-50 transition">
-              <div className="text-3xl mb-2">{icon}</div>
-              <div className="font-semibold text-lg mb-1">{title}</div>
-              <p className="text-gray-600 text-sm">{desc}</p>
-            </button>
-          ))}
-        </div>
-        <div className="text-center mt-6">
+        <div className="max-w-6xl mx-auto px-4 py-8 text-center">
           <Link to="/services" className="text-brand-600 font-medium hover:underline">
-            View all services — weddings, corporate, tours & more →
+            {lang === 'hi'
+              ? 'सभी सेवाएँ देखें — शादी, कॉर्पोरेट, टूर व अधिक →'
+              : 'View all services — weddings, corporate, tours & more →'}
           </Link>
         </div>
       </section>

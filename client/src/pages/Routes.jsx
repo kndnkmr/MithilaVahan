@@ -8,9 +8,10 @@ import { useAuth } from '../context/AuthContext';
 import SEO from '../components/SEO';
 import FareQuote from '../components/FareQuote';
 
-// Indicative one-way sedan fare (base + per-km), rounded — a realistic "from" price.
+// Indicative one-way sedan fare (base ₹50 + ₹11/km, matching the /fares page),
+// rounded — a realistic "from" price.
 function fromFare(km) {
-  const f = Math.round((50 + 10 * km) / 50) * 50;
+  const f = Math.round((50 + 11 * km) / 50) * 50;
   return `₹${f.toLocaleString('en-IN')}`;
 }
 

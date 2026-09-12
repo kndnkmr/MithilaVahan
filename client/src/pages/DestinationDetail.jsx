@@ -7,11 +7,11 @@ import { useAuth } from '../context/AuthContext';
 import { getDestination, DESTINATIONS, IMAGE_CREDITS } from '../data/destinations';
 import SEO from '../components/SEO';
 
-// Indicative per-km by class (mirrors the server's guide) for the fare table.
+// Indicative per-km by class — kept in sync with /fares (Fares.jsx RATES).
 const CLASSES = [
-  ['Hatchback', 9],
-  ['Sedan', 10],
-  ['SUV', 13],
+  ['Hatchback', 10],
+  ['Sedan', 11],
+  ['SUV', 14],
 ];
 
 export default function DestinationDetail() {
