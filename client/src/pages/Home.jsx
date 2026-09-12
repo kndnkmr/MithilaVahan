@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useT, useLang } from '../services/i18n';
-import { HERO_IMG } from '../data/destinations';
 import { settingsAPI } from '../services/api';
 import { usePwa } from '../context/PwaContext';
 import SEO from '../components/SEO';
@@ -95,66 +94,33 @@ export default function Home() {
         title="Car, Auto & Truck Rental with Driver in Darbhanga"
         description="Book cars, autos, tempos, buses and trucks with a driver across Darbhanga & Muzaffarpur. Local owners rent out, locals ride — transparent fares, no commission."
       />
-      {/* Hero */}
-      <section
-        className="relative text-white bg-brand-700 bg-cover bg-center"
-        style={{ backgroundImage: `url(${HERO_IMG})` }}
-      >
-        {/* Brand-tinted dark overlay so text stays readable over the photo */}
-        <div className="absolute inset-0 bg-gradient-to-br from-brand-700/85 via-brand-600/75 to-black/60" />
-        <div className="relative max-w-6xl mx-auto px-4 py-24 text-center">
+      {/* Hero — kept focused: headline + the booking widget. Solid brand
+          gradient (no photo) so text and buttons are always crisp. */}
+      <section className="relative text-white bg-gradient-to-br from-brand-600 to-brand-800">
+        <div className="relative max-w-4xl mx-auto px-4 py-12 sm:py-16 text-center">
           <div className="inline-block bg-white/15 rounded-full px-4 py-1 text-sm mb-4">
-            🚕 Now serving Darbhanga & Muzaffarpur
+            🚕 {lang === 'hi' ? 'दरभंगा व मुजफ्फरपुर में उपलब्ध' : 'Now serving Darbhanga & Muzaffarpur'}
           </div>
-          <h1 className="text-3xl sm:text-5xl font-bold mb-4 leading-tight">
+          <h1 className="text-3xl sm:text-4xl font-bold mb-3 leading-tight">
             {t('heroTitle')}
           </h1>
-          <p className="text-brand-50 text-lg max-w-2xl mx-auto mb-8">
+          <p className="text-brand-50 max-w-2xl mx-auto mb-6">
             {t('heroSub')}
           </p>
-          <div className="flex flex-wrap justify-center gap-3">
-            {user?.role === 'rider' && (
-              <Link to="/book" className="bg-white text-brand-700 font-semibold px-8 py-3 rounded-lg shadow hover:shadow-lg transition">
-                {t('bookRide')}
-              </Link>
-            )}
-            {!user && (
-              <>
-                <Link to="/register" className="bg-white text-brand-700 font-semibold px-8 py-3 rounded-lg shadow hover:shadow-lg transition">
-                  {t('getStarted')}
-                </Link>
-                <Link to="/login" className="border border-white/70 px-8 py-3 rounded-lg hover:bg-white/10 transition">
-                  {t('login')}
-                </Link>
-              </>
-            )}
-          </div>
 
-          {/* One-tap install (Chromium) + share — for promotion, like Promedicoz */}
-          <div className="flex flex-wrap justify-center gap-3 mt-5">
-            {!isInstalled && (
-              <button
-                onClick={canInstall ? promptInstall : () => navigate('/install')}
-                className="bg-white/15 border border-white/40 text-white px-5 py-2 rounded-full text-sm font-medium hover:bg-white/25 transition"
-              >
-                📲 {lang === 'hi' ? 'ऐप इंस्टॉल करें' : 'Install app'}
-              </button>
-            )}
-            <button
-              onClick={handleShare}
-              className="bg-white/15 border border-white/40 text-white px-5 py-2 rounded-full text-sm font-medium hover:bg-white/25 transition"
-            >
-              📤 {lang === 'hi' ? 'साझा करें' : 'Share'}
-            </button>
-          </div>
+          {/* Booking widget — the centrepiece: pick a trip type and search */}
+          <HeroBookingWidget />
+        </div>
+      </section>
 
-          {/* Popular searches — what people actually look for */}
-          <div className="flex flex-wrap justify-center gap-2 mt-6">
-            <span className="text-brand-100 text-sm self-center">
-              {lang === 'hi' ? 'लोकप्रिय:' : 'Popular:'}
-            </span>
+      {/* Popular searches + Install/Share — below the hero, uncrowded */}
+      <section className="bg-white border-b">
+        <div className="max-w-6xl mx-auto px-4 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-gray-500 text-sm">{lang === 'hi' ? 'लोकप्रिय:' : 'Popular:'}</span>
             {[
               ['✈️', lang === 'hi' ? 'एयरपोर्ट कैब' : 'Airport cab', '/book?mode=airport'],
+              ['🛫', lang === 'hi' ? 'मुजफ्फरपुर → एयरपोर्ट' : 'Muzaffarpur → Airport', '/book?mode=airport&airportDir=drop&airportName=Darbhanga%20Airport%20(DBR)'],
               ['🚙', lang === 'hi' ? 'लक्ज़री कार' : 'Luxury car', '/vehicles?tag=luxury'],
               ['💒', lang === 'hi' ? 'शादी की कार' : 'Wedding car', '/enquire?type=wedding'],
               ['🛣️', lang === 'hi' ? 'दरभंगा → पटना' : 'Darbhanga → Patna', '/destinations/patna'],
@@ -162,15 +128,28 @@ export default function Home() {
               <button
                 key={label}
                 onClick={() => navigate(path)}
-                className="bg-white/90 text-brand-700 text-sm font-medium px-3 py-1.5 rounded-full hover:bg-white transition"
+                className="border text-gray-700 text-sm font-medium px-3 py-1.5 rounded-full hover:border-brand-400 hover:text-brand-600 transition"
               >
                 {icon} {label}
               </button>
             ))}
           </div>
-
-          {/* Booking widget — the centrepiece: pick a trip type and search */}
-          <HeroBookingWidget />
+          <div className="flex flex-wrap gap-2 shrink-0">
+            {!isInstalled && (
+              <button
+                onClick={canInstall ? promptInstall : () => navigate('/install')}
+                className="border border-brand-500 text-brand-600 px-4 py-1.5 rounded-full text-sm font-medium hover:bg-brand-50 transition"
+              >
+                📲 {lang === 'hi' ? 'ऐप इंस्टॉल करें' : 'Install app'}
+              </button>
+            )}
+            <button
+              onClick={handleShare}
+              className="border text-gray-700 px-4 py-1.5 rounded-full text-sm font-medium hover:border-brand-400 transition"
+            >
+              📤 {lang === 'hi' ? 'साझा करें' : 'Share'}
+            </button>
+          </div>
         </div>
       </section>
 

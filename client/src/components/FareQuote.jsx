@@ -9,12 +9,15 @@ import { useLang } from '../services/i18n';
 
 const VEHICLE_TYPES = ['car', 'auto', 'tempo', 'bus', 'truck', 'bike'];
 
-// A few popular Darbhanga routes with approx one-way km, for quick presets.
+// A few popular routes with approx one-way km, for quick presets. Includes
+// airport runs (Darbhanga & Muzaffarpur → Darbhanga Airport) that people search.
 const PRESETS = [
   ['Patna', 140],
   ['Madhubani', 40],
   ['Muzaffarpur', 65],
   ['Janakpur', 60],
+  ['Muzaffarpur → DBR Airport', 70],
+  ['DBR Airport (city)', 8],
 ];
 
 export default function FareQuote() {
@@ -42,7 +45,7 @@ export default function FareQuote() {
 
   return (
     <div className="card p-5 max-w-md mx-auto">
-      <h3 className="font-semibold text-lg mb-3">💰 {label.title}</h3>
+      <h3 className="font-semibold text-lg mb-3">🧮 {label.title}</h3>
 
       {/* Quick route presets */}
       <div className="flex flex-wrap gap-2 mb-3">
