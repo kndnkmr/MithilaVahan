@@ -32,7 +32,8 @@ feature overview and [HOW_IT_WORKS.md](./HOW_IT_WORKS.md) for the deep dive.
 **Booking modes:** `trip` (in-city), `hire` (per-day + hourly-package guidance), `outstation`
 (one-way/round), `airport` (direction: pickup/drop).
 **Public pages:** `/services`, `/routes`, `/fares`, `/fleet`, `/contact`, `/enquire?type=`,
-`/vehicles?tag=luxury`, `/d/:id` (driver profile), `/blog` (11 articles).
+`/vehicles?tag=luxury`, `/d/:id` (driver profile), `/blog` (11 articles), **`/book`** (guests can
+fill it + see fares; auth required only at final submit, intent preserved via `?next=`).
 **Public APIs:** `GET /api/trips/reviews` (testimonials), `GET /api/trips/estimate` (fare quote),
 `GET /api/drivers/:id/profile` (driver trust page) — all render/behave gracefully if data is thin.
 
@@ -43,6 +44,25 @@ reactivate it via **Admin → Drivers → Reactivate** if you need to log in as 
 ---
 
 ## Changelog
+
+### Usability overhaul (3 tiers) — easier for first-time users
+- **Login wall removed (biggest win)** — `/book` is now a **public route**; guests can fill the
+  whole form and see fares, and are asked to sign in **only at the final "Request trip"**. Intent
+  is preserved: RiderBook sends `/login?next=<current /book url>`, and Login + Register honor
+  `?next=` for riders, restoring the prefilled booking after auth. A guest hint banner explains this.
+- **Booking form fully bilingual** — RiderBook was mostly hardcoded English; now every label,
+  button, placeholder, toast switches EN/हिंदी (~28 new i18n keys). Vehicle dropdown shows friendly
+  emoji+label instead of raw "car/auto/tempo".
+- **Desktop navbar "Book" CTA for everyone** (guests included); removed the duplicate rider Book
+  text link. **Mobile bottom-nav overlap fixed** (`main` got `pb-16 md:pb-0`).
+- **Home decluttered** — removed the duplicate "Booking modes" grid (the hero tabs already cover
+  it); replaced with a single "View all services" link.
+- **Fares reconciled to one set** across Home / Fares / Routes / DestinationDetail
+  (Hatchback ₹10/km, Sedan ₹11/km, SUV ₹14/km) — they previously disagreed.
+- **Polish**: My Trips friendly empty state + "Book your first ride" CTA; Fleet luxury button
+  label fixed (Browse vs Book); bigger fare-quote tap targets; bilingual headings on Contact + Routes.
+- **Known follow-up:** Fares.jsx / Fleet.jsx bodies and Routes table headers are still English
+  (deliberately deprioritised — core flows are bilingual; these are secondary info pages).
 
 ### Beyond Savaari — content engine, scheduling, fare quote, driver profiles
 - **Blog expanded to 11 original articles** — added airport-taxi guide, Darbhanga→Kathmandu by
