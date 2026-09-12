@@ -36,11 +36,13 @@ export default function Navbar() {
           <Link to="/install" className="text-gray-600 hover:text-brand-600 hidden md:inline">📲 {t('getApp')}</Link>
           <span className="hidden md:inline"><InstallButton /></span>
 
-          {/* Primary Book CTA — always visible for guests & riders (not driver/admin) */}
+          {/* Primary Book CTA — desktop/tablet only. On mobile the bottom nav
+              already has a "Book" tab, and keeping this here crowds the bar so
+              Login/Register get pushed off-screen. */}
           {(!user || user.role === 'rider') && (
             <Link
               to="/book"
-              className="bg-brand-500 text-white px-3.5 py-1.5 rounded-lg font-medium shadow-sm hover:bg-brand-600 active:scale-[0.98] shrink-0 whitespace-nowrap transition"
+              className="hidden md:inline-block bg-brand-500 text-white px-3.5 py-1.5 rounded-lg font-medium shadow-sm hover:bg-brand-600 active:scale-[0.98] shrink-0 whitespace-nowrap transition"
             >
               {t('book')}
             </Link>
@@ -50,13 +52,13 @@ export default function Navbar() {
             <>
               <Link
                 to="/login"
-                className="border border-brand-500 text-brand-600 px-3.5 py-1.5 rounded-lg font-medium hover:bg-brand-50 shrink-0 whitespace-nowrap transition"
+                className="border border-brand-500 text-brand-600 px-2.5 sm:px-3.5 py-1.5 rounded-lg font-medium hover:bg-brand-50 shrink-0 whitespace-nowrap transition"
               >
                 {t('login')}
               </Link>
               <Link
                 to="/register"
-                className="bg-brand-500 text-white px-3.5 py-1.5 rounded-lg font-medium shadow-sm hover:bg-brand-600 active:scale-[0.98] shrink-0 whitespace-nowrap transition"
+                className="bg-brand-500 text-white px-2.5 sm:px-3.5 py-1.5 rounded-lg font-medium shadow-sm hover:bg-brand-600 active:scale-[0.98] shrink-0 whitespace-nowrap transition"
               >
                 {t('register')}
               </Link>
