@@ -36,6 +36,12 @@ async function createVehicle(req, res) {
       approvalStatus: 'pending',
     });
 
+    // Notify the admin by email that a vehicle needs review (best-effort).
+    try {
+      const { notifyAdminNewVehicle } = require('../utils/email');
+      notifyAdminNewVehicle(vehicle, req.user); // fire-and-forget; never blocks the response
+    } catch (_) {}
+
     res.status(201).json({ message: 'Vehicle added — pending admin approval', vehicle });
   } catch (err) {
     res.status(500).json({ message: 'Failed to add vehicle', error: err.message });

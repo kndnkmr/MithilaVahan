@@ -91,10 +91,19 @@ async function setVehicleStatus(req, res) {
   if (!['approved', 'rejected', 'pending'].includes(status)) {
     return res.status(400).json({ message: 'Invalid status' });
   }
-  const vehicle = await Vehicle.findById(req.params.id);
+  const vehicle = await Vehicle.findById(req.params.id).populate('owner', 'name email phone');
   if (!vehicle) return res.status(404).json({ message: 'Vehicle not found' });
   vehicle.approvalStatus = status;
   await vehicle.save();
+
+  // Email the owner about the approval/rejection (best-effort; needs their email).
+  if (status === 'approved' || status === 'rejected') {
+    try {
+      const { notifyOwnerVehicleStatus } = require('../utils/email');
+      notifyOwnerVehicleStatus(vehicle, vehicle.owner, status);
+    } catch (_) {}
+  }
+
   res.json({ message: `Vehicle ${status}`, vehicle });
 }
 
