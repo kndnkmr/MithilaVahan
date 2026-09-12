@@ -36,6 +36,16 @@ export default function Navbar() {
           <Link to="/install" className="text-gray-600 hover:text-brand-600 hidden md:inline">📲 {t('getApp')}</Link>
           <span className="hidden md:inline"><InstallButton /></span>
 
+          {/* Primary Book CTA — always visible for guests & riders (not driver/admin) */}
+          {(!user || user.role === 'rider') && (
+            <Link
+              to="/book"
+              className="bg-brand-500 text-white px-3.5 py-1.5 rounded-lg font-medium shadow-sm hover:bg-brand-600 active:scale-[0.98] shrink-0 whitespace-nowrap transition"
+            >
+              {t('book')}
+            </Link>
+          )}
+
           {!user && (
             <>
               <Link
@@ -55,7 +65,6 @@ export default function Navbar() {
 
           {user?.role === 'rider' && (
             <>
-              <Link to="/book" className="text-gray-600 hover:text-brand-600 hidden md:inline">{t('book')}</Link>
               <Link to="/trips" className="text-gray-600 hover:text-brand-600 hidden md:inline">{t('myTrips')}</Link>
               <Link to="/refer" className="text-gray-600 hover:text-brand-600 hidden md:inline">{t('refer')}</Link>
             </>

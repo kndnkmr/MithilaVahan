@@ -5,7 +5,7 @@ import { cityAPI, tripAPI, vehicleAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { getCoordinates } from '../services/location';
 import { haversineKm } from '../services/maps';
-import { useT } from '../services/i18n';
+import { useT, useLang } from '../services/i18n';
 
 const TYPE_EMOJI = { car: '🚗', auto: '🛺', tempo: '🚐', bus: '🚌', truck: '🚚', bike: '🏍️' };
 
@@ -32,6 +32,7 @@ export default function RiderBook() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const t = useT();
+  const lang = useLang();
   const [searchParams] = useSearchParams();
   // Prefill from query params set when tapping cards/routes on Home.
   const preType = VEHICLE_TYPES.includes(searchParams.get('type')) ? searchParams.get('type') : 'car';
@@ -158,15 +159,27 @@ export default function RiderBook() {
   const submit = async (e) => {
     e.preventDefault();
     if (!form.city || !form.pickup) {
-      toast.error('City and pickup are required');
+      toast.error(t('cityPickupRequired'));
+      return;
+    }
+    // Guests can fill everything and see fares; we ask them to sign in only
+    // at the final submit — and return them right back here with their choices.
+    if (!user) {
+      const next = `/book${window.location.search || ''}`;
+      toast(t('signInToBook'), { icon: '🔐' });
+      navigate(`/login?next=${encodeURIComponent(next)}`);
+      return;
+    }
+    if (user.role !== 'rider') {
+      toast.error(t('ridersOnlyBook'));
       return;
     }
     if (form.mode === 'outstation' && !form.destination) {
-      toast.error('Please enter your destination');
+      toast.error(t('enterDestination'));
       return;
     }
     if (form.mode === 'hire' && Number(form.days) < 1) {
-      toast.error('Enter at least 1 day for hire');
+      toast.error(t('atLeastOneDay'));
       return;
     }
     setLoading(true);
@@ -223,7 +236,15 @@ export default function RiderBook() {
 
   return (
     <div className="max-w-lg mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">{t('bookTitle')}</h1>
+      <h1 className="text-2xl font-bold mb-4">{t('bookTitle')}</h1>
+
+      {!user && (
+        <div className="bg-brand-50 border border-brand-100 rounded-lg p-3 mb-4 text-sm text-brand-800">
+          {lang === 'hi'
+            ? 'सब कुछ भरें और किराया देखें — बुकिंग पक्की करते समय ही साइन इन करना होगा।'
+            : 'Fill everything and see the fare — you only need to sign in when you confirm the booking.'}
+        </div>
+      )}
 
       {/* Selected vehicle summary (when booking a specific vehicle from Browse) */}
       {selectedVehicle && (
@@ -255,9 +276,9 @@ export default function RiderBook() {
       <form onSubmit={submit} className="space-y-4 card p-5">
         {/* City */}
         <div>
-          <label className="block text-sm font-medium mb-1">City</label>
+          <label className="block text-sm font-medium mb-1">{t('city')}</label>
           <select value={form.city} onChange={set('city')} className="input" required>
-            <option value="">Select city</option>
+            <option value="">{t('selectCity')}</option>
             {cities.map((c) => (
               <option key={c._id} value={c.name}>{c.name}</option>
             ))}
@@ -269,10 +290,10 @@ export default function RiderBook() {
           <label className="block text-sm font-medium mb-1">{t('bookingType')}</label>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             {[
-              ['trip', t('inCity'), 'Point to point'],
-              ['hire', t('hire'), 'Per day'],
-              ['outstation', t('outstation'), 'Long trip'],
-              ['airport', t('airport'), 'Airport transfer'],
+              ['trip', t('inCity'), t('modeTrip')],
+              ['hire', t('hire'), t('modeHire')],
+              ['outstation', t('outstation'), t('modeOutstation')],
+              ['airport', t('airport'), t('modeAirport')],
             ].map(([val, label, sub]) => (
               <button
                 key={val}
@@ -293,10 +314,12 @@ export default function RiderBook() {
 
         {/* Vehicle type */}
         <div>
-          <label className="block text-sm font-medium mb-1">Vehicle type</label>
+          <label className="block text-sm font-medium mb-1">{t('vehicleType')}</label>
           <select value={form.vehicleType} onChange={set('vehicleType')} className="input">
-            {VEHICLE_TYPES.map((t) => (
-              <option key={t} value={t} className="capitalize">{t}</option>
+            {VEHICLE_TYPES.map((vt) => (
+              <option key={vt} value={vt}>
+                {TYPE_EMOJI[vt] || ''} {vt.charAt(0).toUpperCase() + vt.slice(1)}
+              </option>
             ))}
           </select>
         </div>
@@ -305,11 +328,11 @@ export default function RiderBook() {
         {form.mode === 'airport' && (
           <div className="space-y-3 bg-brand-50 border border-brand-100 rounded-lg p-3">
             <div>
-              <label className="block text-sm font-medium mb-1">Direction</label>
+              <label className="block text-sm font-medium mb-1">{t('direction')}</label>
               <div className="flex rounded-md border overflow-hidden">
                 {[
-                  ['drop', 'Going to airport'],
-                  ['pickup', 'Coming from airport'],
+                  ['drop', t('goingToAirport')],
+                  ['pickup', t('comingFromAirport')],
                 ].map(([val, label]) => (
                   <button
                     key={val}
@@ -325,7 +348,7 @@ export default function RiderBook() {
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Airport</label>
+              <label className="block text-sm font-medium mb-1">{t('airportField')}</label>
               <select value={form.airportName} onChange={set('airportName')} className="input">
                 {AIRPORTS.map((a) => <option key={a} value={a}>{a}</option>)}
               </select>
@@ -343,8 +366,8 @@ export default function RiderBook() {
           <div className="flex items-center justify-between mb-1">
             <label className="block text-sm font-medium">
               {form.mode === 'airport'
-                ? (form.airportDirection === 'drop' ? 'Your pickup location (from)' : 'Your drop location (to)')
-                : 'Pickup location'}
+                ? (form.airportDirection === 'drop' ? t('yourPickupFrom') : t('yourDropTo'))
+                : t('pickup')}
             </label>
             <button
               type="button"
@@ -352,14 +375,14 @@ export default function RiderBook() {
               className="text-xs text-brand-600 font-medium disabled:opacity-50"
               disabled={locating}
             >
-              {locating ? 'Locating…' : pickupCoords ? '📍 Location on' : '📍 Use my location'}
+              {locating ? `📍 ${t('locating')}` : pickupCoords ? `📍 ${t('locationOn')}` : `📍 ${t('useMyLocation')}`}
             </button>
           </div>
           <input value={form.pickup} onChange={set('pickup')} placeholder="e.g. Tower Chowk, Darbhanga"
             className="input" required />
           {pickupCoords && (
             <p className="text-xs text-gray-400 mt-1">
-              📍 Location set — nearest drivers notified first.
+              📍 {t('locationSet')}
             </p>
           )}
         </div>
@@ -369,22 +392,22 @@ export default function RiderBook() {
           <>
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="block text-sm font-medium">Drop location</label>
+                <label className="block text-sm font-medium">{t('drOp')}</label>
                 <button type="button"
                   onClick={async () => {
                     const c = await getCoordinates();
-                    if (c) { setDropCoords(c); toast.success('Drop location set'); }
+                    if (c) { setDropCoords(c); toast.success(t('locationSet')); }
                     else toast.error('Could not get location');
                   }}
                   className="text-xs text-brand-600 font-medium">
-                  {dropCoords ? '📍 Drop set' : '📍 Use my location'}
+                  {dropCoords ? `📍 ${t('dropSet')}` : `📍 ${t('useMyLocation')}`}
                 </button>
               </div>
               <input value={form.drop} onChange={set('drop')} placeholder="e.g. Darbhanga Junction"
                 className="input" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Approx. distance (km)</label>
+              <label className="block text-sm font-medium mb-1">{t('approxDistanceKm')} <span className="text-gray-400 font-normal">({t('optional')})</span></label>
               <input type="number" min={0} value={form.distanceKm} onChange={set('distanceKm')}
                 placeholder="e.g. 6" className="input" />
               <p className="text-xs text-gray-400 mt-1">
@@ -400,7 +423,7 @@ export default function RiderBook() {
         {form.mode === 'hire' && (
           <>
             <div className="bg-brand-50 border border-brand-100 rounded-lg p-3">
-              <div className="text-sm font-medium mb-2">Local packages (guide)</div>
+              <div className="text-sm font-medium mb-2">{t('localPackages')}</div>
               <div className="grid grid-cols-3 gap-2">
                 {[
                   ['4 hr', '40 km'],
@@ -427,7 +450,7 @@ export default function RiderBook() {
               </p>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Number of days</label>
+              <label className="block text-sm font-medium mb-1">{t('numberOfDays')}</label>
               <input type="number" min={1} value={form.days} onChange={set('days')}
                 className="input" />
             </div>
@@ -529,7 +552,9 @@ export default function RiderBook() {
             <div className="text-xl font-bold text-green-800">
               ₹{estimate.low} – ₹{estimate.high}
             </div>
-            <div className="text-xs text-gray-500 mt-0.5">Includes driver · final fare confirmed on the trip</div>
+            <div className="text-xs text-gray-500 mt-0.5">
+              {lang === 'hi' ? 'ड्राइवर सहित · अंतिम किराया यात्रा पर तय होता है' : 'Includes driver · final fare confirmed on the trip'}
+            </div>
           </div>
         )}
 
@@ -551,24 +576,24 @@ export default function RiderBook() {
 
         {/* Payment */}
         <div>
-          <label className="block text-sm font-medium mb-1">Payment</label>
-          <div className="flex gap-3">
-            {['cash', 'upi'].map((p) => (
-              <label key={p} className="flex items-center gap-1.5 text-sm capitalize">
+          <label className="block text-sm font-medium mb-1">{t('paymentMethod')}</label>
+          <div className="flex gap-4">
+            {[['cash', t('cash')], ['upi', t('upi')]].map(([p, lbl]) => (
+              <label key={p} className="flex items-center gap-1.5 text-sm">
                 <input type="radio" name="pay" checked={form.paymentMode === p}
                   onChange={() => setForm((f) => ({ ...f, paymentMode: p }))} />
-                {p}
+                {lbl}
               </label>
             ))}
           </div>
         </div>
 
         <textarea value={form.notes} onChange={set('notes')} rows={2}
-          placeholder="Notes for the driver (optional)"
+          placeholder={t('notesPlaceholder')}
           className="input" />
 
         <button disabled={loading} className="btn-primary w-full">
-          {loading ? t('requesting') : t('requestTrip')}
+          {loading ? t('requesting') : (!user ? t('signInToBook') : t('requestTrip'))}
         </button>
       </form>
     </div>

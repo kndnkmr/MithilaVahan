@@ -35,7 +35,9 @@ export default function Register() {
       const res = await authAPI.register(form);
       login(res.data.token, res.data.user);
       toast.success('Account created!');
-      navigate(HOME_BY_ROLE[res.data.user.role] || '/');
+      const next = searchParams.get('next');
+      if (next && res.data.user.role === 'rider') navigate(next);
+      else navigate(HOME_BY_ROLE[res.data.user.role] || '/');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Registration failed');
     } finally {

@@ -49,7 +49,7 @@ export default function App() {
       <ScrollToTop />
       <Navbar />
       <EnablePush />
-      <main className="flex-1">
+      <main className="flex-1 pb-16 md:pb-0">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
@@ -91,14 +91,9 @@ export default function App() {
             }
           />
 
-          <Route
-            path="/book"
-            element={
-              <Protected roles={['rider']}>
-                <RiderBook />
-              </Protected>
-            }
-          />
+          {/* Public: guests can build a booking + see fares. Auth is required
+              only at the final "Request trip" submit (handled inside RiderBook). */}
+          <Route path="/book" element={<RiderBook />} />
           <Route
             path="/trips"
             element={

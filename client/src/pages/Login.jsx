@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { authAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -17,6 +17,8 @@ export default function Login() {
   const { login } = useAuth();
   const t = useT();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const next = searchParams.get('next'); // where to return after login (e.g. a prefilled /book)
 
   const submit = async (e) => {
     e.preventDefault();
@@ -25,7 +27,10 @@ export default function Login() {
       const res = await authAPI.login({ phone, password });
       login(res.data.token, res.data.user);
       toast.success('Welcome back!');
-      navigate(HOME_BY_ROLE[res.data.user.role] || '/');
+      // Honor ?next= (e.g. a guest who was mid-booking), but only for riders —
+      // drivers/admins always go to their own dashboard.
+      if (next && res.data.user.role === 'rider') navigate(next);
+      else navigate(HOME_BY_ROLE[res.data.user.role] || '/');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Login failed');
     } finally {
@@ -79,7 +84,7 @@ export default function Login() {
 
       <p className="text-sm text-gray-500 mt-4 text-center">
         {t('noAccount')}{' '}
-        <Link to="/register" className="text-brand-600 font-medium">
+        <Link to={next ? `/register?next=${encodeURIComponent(next)}` : '/register'} className="text-brand-600 font-medium">
           {t('createAccount')}
         </Link>
       </p>
