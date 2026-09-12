@@ -8,6 +8,7 @@ import { usePwa } from '../context/PwaContext';
 import SEO from '../components/SEO';
 import Testimonials from '../components/Testimonials';
 import FareQuote from '../components/FareQuote';
+import HeroBookingWidget from '../components/HeroBookingWidget';
 
 const VEHICLE_TYPES = [
   { key: 'car', label: 'Car', hi: 'कार', emoji: '🚗' },
@@ -167,6 +168,9 @@ export default function Home() {
               </button>
             ))}
           </div>
+
+          {/* Booking widget — the centrepiece: pick a trip type and search */}
+          <HeroBookingWidget />
         </div>
       </section>
 

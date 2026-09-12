@@ -41,6 +41,9 @@ export default function RiderBook() {
   const preTo = searchParams.get('to') || '';
   const preVehicleId = searchParams.get('vehicleId') || '';
   const preCity = searchParams.get('city') || '';
+  const preTripType = searchParams.get('tripType') === 'round-trip' ? 'round-trip' : 'one-way';
+  const preAirportDir = searchParams.get('airportDir') === 'pickup' ? 'pickup' : 'drop';
+  const preAirportName = searchParams.get('airportName') || '';
 
   const [cities, setCities] = useState([]);
   // The specific vehicle the rider picked from Browse (if any).
@@ -54,14 +57,14 @@ export default function RiderBook() {
     days: 1,
     // Outstation fields
     destination: preTo,
-    tripType: 'one-way',
+    tripType: preTripType,
     scheduledAt: '',
     distanceKm: '',
     paymentMode: 'cash',
     notes: '',
     // Airport fields
-    airportDirection: 'drop', // 'drop' = to the airport, 'pickup' = from the airport
-    airportName: AIRPORTS[0],
+    airportDirection: preAirportDir, // 'drop' = to the airport, 'pickup' = from the airport
+    airportName: preAirportName && AIRPORTS.includes(preAirportName) ? preAirportName : AIRPORTS[0],
   });
   // Pickup/drop GPS coords [lng, lat] — power dispatch + approx distance. Optional.
   const [pickupCoords, setPickupCoords] = useState(null);
