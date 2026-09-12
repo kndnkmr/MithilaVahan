@@ -163,6 +163,7 @@ const DICT = {
   // --- MyTrips ---
   myTripsTitle: { en: 'My trips', hi: 'मेरी यात्राएँ' },
   noTripsYet: { en: 'No trips yet.', hi: 'अभी कोई यात्रा नहीं।' },
+  bookYourFirstRide: { en: 'Book your first ride', hi: 'अपनी पहली सवारी बुक करें' },
   shareTrip: { en: 'Share trip', hi: 'यात्रा साझा करें' },
   sos: { en: 'SOS', hi: 'SOS' },
   cancelTripTitle: { en: 'Cancel trip', hi: 'यात्रा रद्द करें' },

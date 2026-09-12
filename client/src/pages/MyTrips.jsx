@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { tripAPI } from '../services/api';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useT } from '../services/i18n';
 import { getSocket } from '../services/socket';
@@ -34,6 +35,7 @@ function SlowHint() {
 export default function MyTrips() {
   const { user } = useAuth();
   const t = useT();
+  const navigate = useNavigate();
   const [trips, setTrips] = useState([]);
   // Latest driver location per trip: { [tripId]: [lng, lat] }
   const [driverLocations, setDriverLocations] = useState({});
@@ -182,7 +184,15 @@ export default function MyTrips() {
       {user.role === 'rider' && <EmergencyContact user={user} />}
 
       {trips.length === 0 ? (
-        <p className="text-gray-500">{t('noTripsYet')}</p>
+        <div className="text-center py-12">
+          <div className="text-5xl mb-3">🚕</div>
+          <p className="text-gray-500 mb-4">{t('noTripsYet')}</p>
+          {user.role === 'rider' && (
+            <button onClick={() => navigate('/book')} className="btn-primary inline-block">
+              {t('bookYourFirstRide')} →
+            </button>
+          )}
+        </div>
       ) : (
         <div className="space-y-3">
           {trips.map((tr) => {

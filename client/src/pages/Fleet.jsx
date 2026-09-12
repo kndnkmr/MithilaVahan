@@ -60,7 +60,7 @@ export default function Fleet() {
                 onClick={() => navigate(f.tag === 'luxury' ? '/vehicles?tag=luxury' : `/book?type=${f.type}`)}
                 className="mt-4 self-start bg-brand-500 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-brand-600"
               >
-                Book {f.name.split(' ')[0].toLowerCase()} →
+                {f.tag === 'luxury' ? 'Browse luxury cars' : `Book ${f.name.split(' ')[0]}`} →
               </button>
             </div>
           ))}

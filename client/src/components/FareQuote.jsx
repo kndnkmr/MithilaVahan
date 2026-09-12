@@ -55,7 +55,7 @@ export default function FareQuote() {
             key={name}
             type="button"
             onClick={() => setDistanceKm(String(km))}
-            className="text-xs border rounded-full px-2.5 py-1 text-gray-600 hover:border-brand-400"
+            className="text-sm border rounded-full px-3 py-1.5 text-gray-600 hover:border-brand-400"
           >
             {name} ({km}km)
           </button>

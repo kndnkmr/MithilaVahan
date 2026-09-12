@@ -5,6 +5,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { DESTINATIONS, CATEGORIES } from '../data/destinations';
 import { useAuth } from '../context/AuthContext';
+import { useLang } from '../services/i18n';
 import SEO from '../components/SEO';
 import FareQuote from '../components/FareQuote';
 
@@ -31,6 +32,8 @@ const AIRPORT_ROUTES = [
 export default function RoutesHub() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const lang = useLang();
+  const L = (en, hi) => (lang === 'hi' ? hi : en);
 
   const book = (name) => {
     const path = `/book?mode=outstation&to=${encodeURIComponent(name)}`;
@@ -54,10 +57,9 @@ export default function RoutesHub() {
       {/* Header */}
       <section className="bg-gradient-to-br from-brand-500 to-brand-700 text-white">
         <div className="max-w-6xl mx-auto px-4 py-12 text-center">
-          <h1 className="text-3xl sm:text-4xl font-bold mb-2">Popular routes from Darbhanga</h1>
+          <h1 className="text-3xl sm:text-4xl font-bold mb-2">{L('Popular routes from Darbhanga', 'दरभंगा से लोकप्रिय रूट')}</h1>
           <p className="text-brand-50 max-w-2xl mx-auto">
-            Fixed local drivers, transparent fares and live tracking — one-way or round-trip,
-            to towns across Bihar, Jharkhand and Nepal.
+            {L('Fixed local drivers, transparent fares and live tracking — one-way or round-trip, to towns across Bihar, Jharkhand and Nepal.', 'भरोसेमंद स्थानीय ड्राइवर, पारदर्शी किराया और लाइव ट्रैकिंग — वन-वे या राउंड-ट्रिप, बिहार, झारखंड व नेपाल के शहरों तक।')}
           </p>
         </div>
       </section>
