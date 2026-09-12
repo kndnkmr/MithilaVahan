@@ -542,7 +542,8 @@ function PaymentTab({ user, updateUser }) {
 // to load so we can prompt the driver to re-upload — older photos were stored
 // inline (base64) before image hosting was set up and can look broken; a fresh
 // upload now goes to proper image hosting.
-function VehicleRow({ v }) {
+function VehicleRow({ v, onEdit }) {
+  const L = useT();
   const [photoBroken, setPhotoBroken] = useState(false);
   return (
     <div className="card p-3 flex justify-between items-center">
@@ -569,13 +570,20 @@ function VehicleRow({ v }) {
           )}
         </div>
       </div>
-      <span className={`text-xs px-2 py-0.5 rounded-full shrink-0 ${
-        v.approvalStatus === 'approved' ? 'bg-green-100 text-green-700'
-          : v.approvalStatus === 'rejected' ? 'bg-red-100 text-red-700'
-          : 'bg-yellow-100 text-yellow-700'
-      }`}>
-        {v.approvalStatus}
-      </span>
+      <div className="flex flex-col items-end gap-1 shrink-0">
+        <span className={`text-xs px-2 py-0.5 rounded-full ${
+          v.approvalStatus === 'approved' ? 'bg-green-100 text-green-700'
+            : v.approvalStatus === 'rejected' ? 'bg-red-100 text-red-700'
+            : 'bg-yellow-100 text-yellow-700'
+        }`}>
+          {v.approvalStatus}
+        </span>
+        {onEdit && (
+          <button onClick={() => onEdit(v)} className="text-xs text-brand-600 font-medium hover:underline">
+            ✏️ {L('editLabel')}
+          </button>
+        )}
+      </div>
     </div>
   );
 }
@@ -583,14 +591,36 @@ function VehicleRow({ v }) {
 // --- Vehicles sub-tab: list + add form ---
 function VehiclesTab({ vehicles, cities, onChange, onAdded, defaultCity }) {
   const L = useT();
-  const [form, setForm] = useState({
+  const blankForm = {
     type: 'car', model: '', registrationNumber: '', capacity: 4,
     city: defaultCity || '', perKmRate: '', perDayRate: '', baseFare: '', isLuxury: false,
-  });
+  };
+  const [form, setForm] = useState(blankForm);
   const [photos, setPhotos] = useState([]); // uploaded image URLs
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [editingId, setEditingId] = useState(null); // vehicle _id being edited (null = add mode)
+  const formRef = useRef(null);
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
+
+  // Load a vehicle into the form for editing, and scroll to the form.
+  const editVehicle = (v) => {
+    setEditingId(v._id);
+    setForm({
+      type: v.type, model: v.model || '', registrationNumber: v.registrationNumber || '',
+      capacity: v.capacity || 4, city: v.city || defaultCity || '',
+      perKmRate: v.perKmRate || '', perDayRate: v.perDayRate || '', baseFare: v.baseFare || '',
+      isLuxury: !!v.isLuxury,
+    });
+    setPhotos(v.photos || []);
+    setTimeout(() => formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setForm(blankForm);
+    setPhotos([]);
+  };
 
   // Upload selected image files, appending returned URLs to photos[].
   const onPhotos = async (e) => {
@@ -614,25 +644,34 @@ function VehiclesTab({ vehicles, cities, onChange, onAdded, defaultCity }) {
   const addVehicle = async (e) => {
     e.preventDefault();
     setSaving(true);
+    const payload = {
+      ...form,
+      photos,
+      capacity: Number(form.capacity) || 1,
+      perKmRate: Number(form.perKmRate) || 0,
+      perDayRate: Number(form.perDayRate) || 0,
+      baseFare: Number(form.baseFare) || 0,
+      isLuxury: !!form.isLuxury,
+    };
     try {
-      const res = await vehicleAPI.create({
-        ...form,
-        photos,
-        capacity: Number(form.capacity) || 1,
-        perKmRate: Number(form.perKmRate) || 0,
-        perDayRate: Number(form.perDayRate) || 0,
-        baseFare: Number(form.baseFare) || 0,
-        isLuxury: !!form.isLuxury,
-      });
-      toast.success('Vehicle added — pending approval');
-      // Update the list immediately (so the onboarding checklist turns green
-      // right away, without waiting for the refetch round-trip).
-      if (res.data?.vehicle && onAdded) onAdded(res.data.vehicle);
-      setForm((f) => ({ ...f, model: '', registrationNumber: '' }));
-      setPhotos([]);
-      onChange();
+      if (editingId) {
+        // Editing an existing vehicle — re-submits it for approval on the backend.
+        await vehicleAPI.update(editingId, payload);
+        toast.success('Vehicle updated — pending re-approval');
+        setEditingId(null);
+        setForm(blankForm);
+        setPhotos([]);
+        onChange();
+      } else {
+        const res = await vehicleAPI.create(payload);
+        toast.success('Vehicle added — pending approval');
+        if (res.data?.vehicle && onAdded) onAdded(res.data.vehicle);
+        setForm(blankForm);
+        setPhotos([]);
+        onChange();
+      }
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to add');
+      toast.error(err.response?.data?.message || (editingId ? 'Failed to update' : 'Failed to add'));
     } finally {
       setSaving(false);
     }
@@ -644,12 +683,19 @@ function VehiclesTab({ vehicles, cities, onChange, onAdded, defaultCity }) {
         {vehicles.length === 0 ? (
           <p className="text-gray-500 text-sm">{L('noVehiclesYet')}</p>
         ) : (
-          vehicles.map((v) => <VehicleRow key={v._id} v={v} />)
+          vehicles.map((v) => <VehicleRow key={v._id} v={v} onEdit={editVehicle} />)
         )}
       </div>
 
-      <form onSubmit={addVehicle} className="card p-4 space-y-3">
-        <h3 className="font-medium">{L('addVehicle')}</h3>
+      <form ref={formRef} onSubmit={addVehicle} className="card p-4 space-y-3">
+        <div className="flex items-center justify-between">
+          <h3 className="font-medium">{editingId ? L('editVehicle') : L('addVehicle')}</h3>
+          {editingId && (
+            <button type="button" onClick={cancelEdit} className="text-xs text-gray-500 hover:text-red-600">
+              {L('cancelEdit')}
+            </button>
+          )}
+        </div>
 
         {/* Plain-language intro so first-time drivers know what this is */}
         <div className="bg-brand-50 border border-brand-100 rounded-lg p-3 text-sm text-brand-800">
@@ -753,7 +799,7 @@ function VehiclesTab({ vehicles, cities, onChange, onAdded, defaultCity }) {
         </div>
 
         <button disabled={saving || uploading} className="btn-primary text-sm">
-          {saving ? L('addingBtn') : L('addVehicleBtn')}
+          {saving ? L('addingBtn') : (editingId ? L('saveChanges') : L('addVehicleBtn'))}
         </button>
       </form>
     </div>

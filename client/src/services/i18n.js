@@ -242,6 +242,10 @@ const DICT = {
 
   // --- Driver: Add vehicle form ---
   addVehicle: { en: 'Add a vehicle', hi: 'वाहन जोड़ें' },
+  editVehicle: { en: 'Edit vehicle', hi: 'वाहन संपादित करें' },
+  editLabel: { en: 'Edit', hi: 'संपादित करें' },
+  cancelEdit: { en: 'Cancel edit', hi: 'संपादन रद्द करें' },
+  saveChanges: { en: 'Save changes', hi: 'बदलाव सहेजें' },
   vehicleModel: { en: 'Model', hi: 'मॉडल' },
   registrationNo: { en: 'Registration no.', hi: 'रजिस्ट्रेशन नंबर' },
   seatingCapacity: { en: 'Seating capacity', hi: 'बैठने की क्षमता' },
